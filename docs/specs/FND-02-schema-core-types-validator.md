@@ -1,6 +1,6 @@
 # FND-02 — schema-core: MockSchema types, validator, limits
 
-Status: in progress
+Status: done
 Phase: 1   Team: Core
 Depends on: FND-01
 Size: M

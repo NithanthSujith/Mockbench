@@ -1,6 +1,6 @@
 # FND-01 — Monorepo, tooling, CI skeleton
 
-Status: in progress
+Status: done
 Phase: 1   Team: Core
 Depends on: none
 Size: M
@@ -34,7 +34,7 @@ Any application, schema-core or contract code (placeholders only). Docker files 
 - [x] A fixture file in `packages/schema-core` importing `node:fs` makes `pnpm lint` exit non-zero (asserted by a lint-rule test).
 - [x] A fixture in `apps/web/src` containing `"http://localhost:3000"`, one containing `#fff`, and one calling `fetch(` each fail lint; the same text in `apps/web/vite.config.ts` does not.
 - [x] `check-ownership.mjs team/auth/AUTH-01 apps/api/src/db/schema.ts` exits 1; `… apps/api/src/modules/auth/x.ts docs/specs/AUTH-01-session-core.md` exits 0; `… team/builder/BLD-01 apps/api/src/modules/auth/x.ts` exits 1.
-- [ ] `ci.yml` passes `actionlint` and runs on both `pull_request` and `push` to `main`. *(Workflow written with both triggers; `actionlint` is not installed locally and CI has not run yet - tick after the first push.)*
+- [x] `ci.yml` passes `actionlint` and runs on both `pull_request` and `push` to `main`. *(actionlint v1.7.12 clean; first push run failed only because the FND-08 DB tests need Postgres, fixed by a Postgres 16 service in the workflow; run 42084017950 green. The `pull_request` trigger is configured but only the `push` path has run.)*
 - [x] `LICENSE` is MIT, 2026, "Mockbench contributors".
 - [x] `pnpm contract:docs` exists and prints "not implemented until FND-06" with exit 0.
 
