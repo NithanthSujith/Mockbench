@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.turbo/
+.vite/
+playwright-report/
+test-results/
+.DS_Store
+Thumbs.db
+
+# Claude Code local-only settings
+.claude/settings.local.json

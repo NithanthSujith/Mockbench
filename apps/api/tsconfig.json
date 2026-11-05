@@ -1,0 +1,1 @@
+{ "extends": "@mockbench/tsconfig/node.json", "include": ["src"] }

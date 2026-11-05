@@ -1,0 +1,30 @@
+{
+  "_comment": "Derived from docs/TEAMS.md. A branch team/<team>/<SPEC-ID> may only change files matching its team globs, its own spec file, e2e/<team>/**, and the anyTeam globs. `core` may change anything.",
+  "anyTeam": ["pnpm-lock.yaml", "apps/api/package.json", "apps/web/package.json"],
+  "teams": {
+    "auth": ["apps/api/src/modules/auth/**", "apps/web/src/features/auth/**"],
+    "workspaces": ["apps/api/src/modules/workspaces/**", "apps/web/src/features/workspaces/**"],
+    "projects": [
+      "apps/api/src/modules/projects/**",
+      "apps/api/src/modules/presets/**",
+      "apps/web/src/features/projects/**",
+      "apps/web/src/features/presets/**"
+    ],
+    "builder": [
+      "apps/api/src/modules/routes/**",
+      "apps/api/src/modules/cases/**",
+      "apps/api/src/modules/schema/**",
+      "apps/web/src/features/routes/**",
+      "apps/web/src/features/schema-builder/**",
+      "apps/web/src/features/preview/**"
+    ],
+    "runtime": [
+      "apps/api/src/modules/versions/**",
+      "apps/api/src/modules/dataplane/**",
+      "apps/api/src/modules/requests/**",
+      "apps/api/src/seed/**",
+      "apps/web/src/features/versions/**",
+      "apps/web/src/features/logs/**"
+    ]
+  }
+}

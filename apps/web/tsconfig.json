@@ -1,0 +1,1 @@
+{ "extends": "@mockbench/tsconfig/web.json", "include": ["src"] }
