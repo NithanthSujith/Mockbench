@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "x-envelope-extra": { "kept": true },
+  "components": {
+    "Address": {
+      "type": "object",
+      "x-vendor": "components-can-carry-extras",
+      "fields": [
+        { "key": "city", "node": { "type": "string", "examples": ["Ahmedabad", "Mumbai"] } },
+        { "key": "pincode", "node": { "type": "integer", "min": 100000, "max": 999999 } }
+      ]
+    }
+  },
+  "root": {
+    "type": "object",
+    "description": "Every node type once",
+    "x-vendor": { "nested": [1, 2, { "deep": null }] },
+    "fields": [
+      { "key": "s", "node": { "type": "string", "nullable": true, "description": "a string" } },
+      { "key": "n", "node": { "type": "number", "min": 0.5, "max": 99.5 } },
+      { "key": "i", "node": { "type": "integer", "min": 1, "max": 10 } },
+      { "key": "b", "node": { "type": "boolean" } },
+      { "key": "z", "node": { "type": "null" } },
+      { "key": "e", "node": { "type": "email" } },
+      { "key": "u", "node": { "type": "uuid" } },
+      { "key": "l", "node": { "type": "url" } },
+      { "key": "p", "node": { "type": "phone" } },
+      { "key": "d", "node": { "type": "date" } },
+      { "key": "dt", "node": { "type": "datetime" } },
+      { "key": "en", "node": { "type": "enum", "values": ["a", 2, true] } },
+      {
+        "key": "src",
+        "node": {
+          "type": "string",
+          "source": { "from": "path", "name": "id" },
+          "x-vendor": 1,
+          "x-other": [true]
+        }
+      },
+      { "key": "pin_zero", "node": { "type": "integer", "fixed": 0 } },
+      { "key": "pin_empty", "node": { "type": "string", "fixed": "" } },
+      { "key": "pin_false", "node": { "type": "boolean", "fixed": false } },
+      { "key": "pin_null", "node": { "type": "string", "fixed": null } },
+      { "key": "200", "node": { "type": "string" } },
+      { "key": "1", "node": { "type": "string" } },
+      { "key": "tags", "node": { "type": "array", "items": { "type": "string" } } },
+      {
+        "key": "rows",
+        "node": {
+          "type": "array",
+          "count": 2,
+          "items": {
+            "type": "object",
+            "fields": [{ "key": "id", "node": { "type": "uuid" } }]
+          }
+        }
+      },
+      { "key": "home", "node": { "type": "ref", "name": "Address" } }
+    ]
+  }
+}

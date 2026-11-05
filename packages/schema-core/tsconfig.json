@@ -1,0 +1,1 @@
+{ "extends": "@mockbench/tsconfig/browser-safe.json", "include": ["src"] }

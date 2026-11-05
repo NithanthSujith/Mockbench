@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      { "key": "id", "node": { "type": "uuid" } },
+      { "key": "name", "node": { "type": "string" } },
+      { "key": "email", "node": { "type": "email" } },
+      { "key": "role", "node": { "type": "string" } },
+      { "key": "is_active", "node": { "type": "boolean" } },
+      {
+        "key": "branch_list",
+        "node": { "type": "array", "count": 3, "items": { "type": "string" } }
+      },
+      {
+        "key": "address",
+        "node": {
+          "type": "object",
+          "fields": [
+            { "key": "city", "node": { "type": "string" } },
+            { "key": "pincode", "node": { "type": "integer" } }
+          ]
+        }
+      },
+      {
+        "key": "orders",
+        "node": {
+          "type": "array",
+          "count": 2,
+          "items": {
+            "type": "object",
+            "fields": [
+              { "key": "order_id", "node": { "type": "uuid" } },
+              { "key": "total", "node": { "type": "number" } }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
