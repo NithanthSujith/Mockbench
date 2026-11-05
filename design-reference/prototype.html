@@ -1,0 +1,761 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mockbench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Dark-only. Sticky topbar with workspace + project switchers; rail / editor / response columns that stack when narrow. */
+:root{
+  --bg:#0C0F13; --panel:#14181E; --panel-2:#1A1F27; --panel-3:#222935;
+  --ink:#E8ECF2; --ink-2:#99A3B1; --ink-3:#69737F;
+  --line:#242B35; --line-strong:#39424E;
+  --btn:#E8ECF2; --btn-ink:#14171C;
+  --signal:#E0B152; --signal-soft:#312513; --signal-line:#6B5422;
+  --good:#4ADE80; --warn:#E0B152; --bad:#FB7185; --info:#7CA0FF;
+  --m-GET:#7CA0FF; --m-POST:#5DD08A; --m-PUT:#B79BFF; --m-PATCH:#56C7D8; --m-DELETE:#FB7185;
+  --slab:#0E1217; --slab-line:#20262F;
+  --t-key:#9BB4FF; --t-str:#8ED8A8; --t-num:#E8B37A; --t-bool:#C9A2FF; --t-null:#7B8696; --t-punc:#5F6B7C;
+  --ui:'Archivo',ui-sans-serif,system-ui,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--panel)}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--mono)}
+.eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.spacer{flex:1 1 auto;min-width:0}
+.muted{color:var(--ink-2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* topbar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--panel);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:1680px;margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;letter-spacing:-.02em;font-size:15px;margin-right:4px}
+.sep{color:var(--ink-3)}
+.dd{position:relative}
+.ddbtn{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border:1px solid var(--line-strong);border-radius:7px;background:var(--panel-2);font-size:13px}
+.ddbtn:hover{border-color:var(--ink-3)}
+.ddbtn .car{color:var(--ink-3);font-size:9px}
+.ddmenu{position:absolute;top:calc(100% + 6px);left:0;min-width:240px;z-index:40;background:var(--panel);border:1px solid var(--line-strong);border-radius:9px;padding:5px;box-shadow:0 14px 34px -14px rgba(0,0,0,.85)}
+.ddmenu .lbl{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:7px 9px 4px}
+.ddmenu button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:7px 9px;border-radius:6px;font-size:13px}
+.ddmenu button:hover{background:var(--panel-2)}
+.ddmenu button .tick{color:var(--ink-3);font-size:11px;margin-left:auto}
+.ddmenu .ddsep{height:1px;background:var(--line);margin:5px 0}
+.ddmenu .slug{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+.livepill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;background:rgba(74,222,128,.12);color:var(--good);font-size:11.5px;font-weight:600;border:1px solid rgba(74,222,128,.3)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.baseurl{display:flex;align-items:center;gap:6px;min-width:0;font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:5px 8px}
+.baseurl span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:7px;font-size:13px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.btn-primary{background:var(--btn);color:var(--btn-ink)}
+.btn-primary:hover{opacity:.88}
+.btn-ghost{border-color:var(--line-strong);background:var(--panel);color:var(--ink)}
+.btn-ghost:hover{background:var(--panel-2)}
+.btn-sm{padding:4px 10px;font-size:12.5px}
+.icon-btn{width:32px;height:32px;display:inline-grid;place-items:center;border-radius:7px;border:1px solid var(--line-strong);background:var(--panel);color:var(--ink-2)}
+.icon-btn:hover{background:var(--panel-2);color:var(--ink)}
+
+/* shell */
+.shell{max-width:1680px;margin:0 auto;display:grid;gap:16px;align-items:start;grid-template-columns:248px minmax(0,1fr) 400px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.shell.wide{grid-template-columns:248px minmax(0,1fr)}
+.shell.solo{grid-template-columns:minmax(0,1fr);max-width:1180px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:11px}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);min-width:0}
+.backlink{display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-2);width:100%;text-align:left}
+.backlink:hover{color:var(--ink)}
+.nav{display:flex;flex-direction:column;gap:1px;padding:8px}
+.nav button{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;font-size:13.5px;color:var(--ink-2);text-align:left;width:100%}
+.nav button:hover{background:var(--panel-2);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--panel-3);color:var(--ink)}
+.nav .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.rail-sep{height:1px;background:var(--line)}
+.rail-head{padding:11px 11px 7px}
+.search{width:100%;padding:6px 9px;border:1px solid var(--line-strong);border-radius:6px;background:var(--panel-2);font-size:12.5px}
+.search::placeholder{color:var(--ink-3)}
+.routelist{display:flex;flex-direction:column;gap:1px;padding:3px 8px 10px;max-height:min(50vh,540px);overflow:auto}
+.routeitem{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;width:100%;text-align:left;min-width:0;color:var(--ink-2)}
+.routeitem:hover{background:var(--panel-2);color:var(--ink)}
+.routeitem[aria-current="true"]{background:var(--panel-3);color:var(--ink)}
+.routeitem .p{font-family:var(--mono);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.meth{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;padding:2.5px 5px;border-radius:4px;flex:0 0 auto;min-width:48px;text-align:center}
+.rail-foot{padding:0 8px 8px}
+.dashed{width:100%;justify-content:center;border:1px dashed var(--line-strong);color:var(--ink-2);background:transparent;font-weight:500}
+.dashed:hover{background:var(--panel-2);color:var(--ink);border-style:solid}
+
+/* editor */
+.editor{min-width:0;display:flex;flex-direction:column;gap:16px}
+.phead{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.phead h3{font-size:14px;font-weight:600}
+.pbody{padding:12px 14px;min-width:0}
+.rhead{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--line)}
+.methsel{font-family:var(--mono);font-size:12.5px;font-weight:600;padding:7px 9px;border-radius:6px;border:1px solid var(--line-strong);background:var(--panel-2)}
+.pathin{flex:1 1 240px;min-width:0;font-family:var(--mono);font-size:14px;padding:7px 11px;border:1px solid var(--line-strong);border-radius:6px;background:var(--panel-2)}
+.rdesc{padding:9px 15px;border-bottom:1px solid var(--line);color:var(--ink-2);font-size:13px}
+.cases{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:9px 15px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.casetab{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:6px;border:1px solid transparent;font-size:12.5px;color:var(--ink-2)}
+.casetab:hover{color:var(--ink)}
+.casetab[aria-selected="true"]{background:var(--panel);border-color:var(--line-strong);color:var(--ink)}
+.sc{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:1.5px 5px;border-radius:4px}
+.sc2{color:var(--good);background:rgba(74,222,128,.13)}
+.sc4{color:var(--warn);background:rgba(224,177,82,.14)}
+.sc5{color:var(--bad);background:rgba(251,113,133,.13)}
+.star{color:var(--signal);font-size:10px}
+.subbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 15px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:2px}
+.seg button{padding:4px 11px;border-radius:5px;font-size:12.5px;color:var(--ink-2)}
+.seg button[aria-selected="true"]{background:var(--panel-3);color:var(--ink)}
+.field-mini{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
+.field-mini input,.field-mini select{padding:4px 7px;border:1px solid var(--line-strong);border-radius:6px;background:var(--panel-2);font-size:12px;font-family:var(--mono)}
+
+.builder{padding:6px 0 10px}
+.brow{display:grid;grid-template-columns:auto minmax(96px,1.3fr) 118px minmax(0,1.4fr) auto;align-items:center;gap:8px;padding:3px 15px;min-width:0}
+.brow:hover{background:var(--panel-2)}
+.brow:hover .racts{opacity:1}
+.twist{width:16px;height:16px;display:grid;place-items:center;color:var(--ink-3);font-size:9px;flex:0 0 auto;border-radius:3px}
+.twist:hover{background:var(--panel-3);color:var(--ink)}
+.twist.leaf{visibility:hidden}
+.keyin{width:100%;min-width:0;font-family:var(--mono);font-size:13px;padding:5px 8px;border:1px solid transparent;border-radius:6px;background:transparent}
+.keyin:hover{border-color:var(--line)}
+.keyin:focus{border-color:var(--line-strong);background:var(--panel-2)}
+.itemtag{font-family:var(--mono);font-size:12px;color:var(--ink-3);padding:5px 8px;border:1px dashed var(--line-strong);border-radius:6px;display:inline-block}
+.typesel{width:100%;font-family:var(--mono);font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel-2);color:var(--ink-2)}
+.extra{display:flex;align-items:center;gap:6px;min-width:0}
+.extra input{width:100%;min-width:0;font-family:var(--mono);font-size:12px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink-2)}
+.extra input::placeholder{color:var(--ink-3)}
+.extra input.pinned{border-color:var(--signal-line);background:var(--signal-soft);color:var(--signal)}
+.cntbox{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:12px;color:var(--ink-3);flex:0 0 auto}
+.cntbox input{width:52px;text-align:center}
+.racts{display:flex;gap:2px;opacity:.3;transition:opacity .12s;flex:0 0 auto}
+.racts button{width:24px;height:24px;display:grid;place-items:center;border-radius:5px;color:var(--ink-3);font-size:13px;line-height:1}
+.racts button:hover{background:var(--panel-3);color:var(--ink)}
+.racts button.del:hover{color:var(--bad)}
+.addfield{margin:6px 15px 2px;display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px dashed var(--line-strong);border-radius:6px;font-size:12.5px;color:var(--ink-2)}
+.addfield:hover{color:var(--ink);background:var(--panel-2);border-style:solid}
+
+.slab{background:var(--slab);font-family:var(--mono);font-size:12.5px;line-height:1.65;border-radius:9px;border:1px solid var(--slab-line);overflow:auto;padding:13px 15px;color:var(--ink-2)}
+.k{color:var(--t-key)} .s{color:var(--t-str)} .n{color:var(--t-num)} .b{color:var(--t-bool)} .nl{color:var(--t-null)} .p{color:var(--t-punc)}
+.gen{border-bottom:1px dashed var(--signal-line);padding-bottom:1px}
+.fix{background:rgba(224,177,82,.14);border-radius:3px;padding:0 2px}
+
+.resp{position:sticky;top:calc(env(safe-area-inset-top,0px) + 66px);min-width:0;display:flex;flex-direction:column;gap:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:9px 14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
+.legend i{font-style:normal}
+.sw-gen{border-bottom:1px dashed var(--signal-line);color:var(--ink-2)}
+.sw-fix{background:rgba(224,177,82,.14);color:var(--signal);border-radius:3px;padding:0 3px}
+.hdrs{display:flex;flex-direction:column;gap:3px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding:0 14px 12px}
+.hdrs b{color:var(--ink-2);font-weight:500}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:9px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--panel-2)}
+.rowlink{font-weight:600}
+.note{font-size:12.5px;color:var(--ink-2);padding:0 15px 15px;line-height:1.55}
+
+.setgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));padding:15px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt:hover{background:var(--panel-2)}
+.opt[data-on="1"]{border-color:var(--signal-line);background:var(--signal-soft)}
+.opt input{margin-top:3px;accent-color:var(--signal)}
+.opt .t{font-weight:600;font-size:13px}
+.opt .d{font-size:12px;color:var(--ink-2);line-height:1.45}
+
+/* login */
+.login{min-height:70vh;display:grid;place-items:center;padding-block:40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.loginbox{width:100%;max-width:368px}
+.loginbox .brand{font-size:19px;margin-bottom:6px}
+.loginbox .sub{color:var(--ink-2);font-size:13px;margin-bottom:18px}
+.lfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.lfield label{font-size:12px;color:var(--ink-2)}
+.lfield input{padding:9px 11px;border:1px solid var(--line-strong);border-radius:7px;background:var(--panel-2);font-size:13.5px}
+.lhint{font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.5}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%) translateY(14px);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:50;
+  background:var(--btn);color:var(--btn-ink);padding:9px 15px;border-radius:8px;font-size:13px;font-weight:500;
+  box-shadow:0 10px 30px -10px rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:1240px){
+  .shell,.shell.wide{grid-template-columns:234px minmax(0,1fr)}
+  .resp{grid-column:1 / -1;position:static}
+}
+@media (max-width:860px){
+  .shell,.shell.wide,.shell.solo{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static}
+  .routelist{max-height:220px}
+  .brow{grid-template-columns:auto minmax(80px,1fr) 104px;row-gap:4px}
+  .brow .extra{grid-column:2 / -1}
+  .brow .racts{grid-row:1;grid-column:3;opacity:1}
+  .baseurl{order:9;width:100%}
+  .ddmenu{min-width:200px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+var uid=0; function nid(){return 'n'+(++uid);}
+function N(key,type){return {id:nid(),key:key,type:type,children:[],count:3,values:[],fixed:''};}
+function O(key,kids){var n=N(key,'object');n.children=kids;return n;}
+function A(key,item,c){var n=N(key,'array');n.children=[item];n.count=c||3;return n;}
+function E(key,vals){var n=N(key,'enum');n.values=vals;return n;}
+function F(key,type,v){var n=N(key,type);n.fixed=v;return n;}
+function C(name,status,schema,o){var k={id:'k'+(++uid),name:name,status:status,schema:schema,def:false,delay:0};if(o)for(var p in o)k[p]=o[p];return k;}
+function R(method,path,desc,cases){cases[0].def=true;return {id:'r'+(++uid),method:method,path:path,desc:desc,cases:cases};}
+
+/* ---------- seed data ---------- */
+function invoiceFull(){return O(null,[
+  N('id','uuid'),N('invoice_number','string'),E('status',['draft','sent','paid','void']),
+  N('amount','number'),F('currency','string','INR'),
+  O('customer',[N('name','string'),N('email','email'),N('gstin','string'),O('address',[N('city','string'),N('pincode','integer')])]),
+  A('branch_list',N(null,'string'),3),
+  A('line_items',O(null,[N('sku','string'),N('qty','integer'),N('rate','number')]),2),
+  N('created_at','datetime')
+]);}
+
+var PROJECTS=[
+{id:'p1',ws:'w1',name:'Billing API',slug:'billing-api',desc:'Invoices, payments and customer billing for the ERP front end.',version:'v3',live:true,presetOn:true,mode:'deterministic',indexing:'local',routes:[
+  R('GET','/invoices','Paginated invoice list for the signed-in customer.',[
+    C('List',200,O(null,[A('data',O(null,[N('id','uuid'),N('invoice_number','string'),N('amount','number'),E('status',['draft','sent','paid'])]),3),N('page','integer'),N('per_page','integer'),N('total','integer')])),
+    C('Unauthorized',401,O(null,[F('error','string','unauthorized'),F('message','string','Session has expired')]))]),
+  R('GET','/invoices/:id','One invoice with its line items and the customer snapshot.',[
+    C('Found',200,invoiceFull()),
+    C('Not found',404,O(null,[F('error','string','invoice_not_found'),F('message','string','No invoice with that id'),N('request_id','uuid')])),
+    C('Server error',500,O(null,[F('error','string','internal_error'),N('trace_id','uuid')]),{delay:900})]),
+  R('POST','/invoices','Create a draft invoice.',[
+    C('Created',201,O(null,[N('id','uuid'),N('invoice_number','string'),F('status','string','draft'),N('created_at','datetime')])),
+    C('Validation failed',422,O(null,[F('error','string','validation_failed'),A('fields',O(null,[N('field','string'),N('message','string')]),2)]))]),
+  R('PATCH','/invoices/:id','Partial update. Absent keys are untouched.',[
+    C('Updated',200,O(null,[N('id','uuid'),E('status',['sent','paid','void']),N('updated_at','datetime')]))]),
+  R('GET','/customers/:id/branches','Branch codes a customer can bill against.',[
+    C('Branch list',200,O(null,[N('customer_id','uuid'),A('branch_list',N(null,'string'),4),O('head_office',[N('city','string'),N('pincode','integer')])]))]),
+  R('DELETE','/invoices/:id','Void a draft invoice.',[C('Deleted',204,O(null,[]),{noBody:true})])
+]},
+{id:'p2',ws:'w1',name:'CRM Sync',slug:'crm-sync',desc:'Contact and account sync between the CRM and the plant systems.',version:'v2',live:true,presetOn:true,mode:'deterministic',indexing:'local',routes:[
+  R('GET','/contacts','All contacts, newest first.',[
+    C('List',200,O(null,[A('data',O(null,[N('id','uuid'),N('name','string'),N('email','email'),N('company','string')]),4),N('total','integer')]))]),
+  R('POST','/contacts/sync','Kick off a background sync.',[
+    C('Accepted',202,O(null,[N('job_id','uuid'),F('state','string','queued')])),
+    C('Already running',409,O(null,[F('error','string','sync_in_progress'),N('job_id','uuid')]))]),
+  R('GET','/contacts/:id','One contact.',[
+    C('Found',200,O(null,[N('id','uuid'),N('name','string'),N('email','email'),N('phone','phone'),O('company',[N('name','string'),N('city','string')]),A('tags',N(null,'string'),3)])),
+    C('Not found',404,O(null,[F('error','string','contact_not_found')]))])
+]},
+{id:'p3',ws:'w1',name:'Warehouse',slug:'warehouse',desc:'Stock lookups for the dispatch screens. Not published yet.',version:null,live:false,presetOn:false,mode:'deterministic',indexing:'local',routes:[
+  R('GET','/stock','Stock on hand across all godowns.',[
+    C('List',200,O(null,[A('items',O(null,[N('sku','string'),N('qty','integer'),N('godown','string')]),5)]))]),
+  R('GET','/stock/:sku','Stock for one SKU.',[
+    C('Found',200,O(null,[N('sku','string'),N('qty','integer'),A('by_godown',O(null,[N('godown','string'),N('qty','integer')]),2)])),
+    C('Not found',404,O(null,[F('error','string','sku_not_found')]))])
+]},
+{id:'p4',ws:'w2',name:'Pantry App',slug:'pantry-app',desc:'Weekend side project. Recipe and pantry endpoints.',version:'v1',live:true,presetOn:false,mode:'seeded',indexing:'local',routes:[
+  R('GET','/recipes','Saved recipes.',[
+    C('List',200,O(null,[A('data',O(null,[N('id','uuid'),N('title','string'),N('minutes','integer')]),4)]))]),
+  R('GET','/pantry','What is in the pantry.',[
+    C('List',200,O(null,[A('items',O(null,[N('name','string'),N('qty','number'),N('unit','string')]),3)]))])
+]}];
+
+var WORKSPACES=[{id:'w1',name:'Alps Chemicals',slug:'alps'},{id:'w2',name:'Side projects',slug:'side'}];
+
+var PRESET={name:'Alps defaults',rules:[
+  {key:'currency',value:'INR'},
+  {key:'city',values:['Ahmedabad','Mumbai','Bengaluru']},
+  {key:'gstin',pattern:'24AAACA{n:04}Z'},
+  {key:'sku',pattern:'ALP-{n:03}'},
+  {key:'godown',values:['Vatva','Naroda','Sanand']},
+  {key:'pincode',value:380015}
+]};
+
+var HOST='192.168.1.24:8080';
+var S={view:'login',wsId:'w1',projId:'p1',routeId:null,caseId:null,tab:'builder',collapsed:{},filter:'',dd:null};
+
+var $=function(s,r){return (r||document).querySelector(s);};
+var TYPES=['string','number','integer','boolean','email','uuid','url','phone','date','datetime','enum','object','array','null'];
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function ws(){return WORKSPACES.filter(function(w){return w.id===S.wsId;})[0];}
+function wsProjects(){return PROJECTS.filter(function(p){return p.ws===S.wsId;});}
+function proj(){return PROJECTS.filter(function(p){return p.id===S.projId;})[0];}
+function route(){var p=proj();return p.routes.filter(function(r){return r.id===S.routeId;})[0]||p.routes[0];}
+function kase(){var r=route();return r.cases.filter(function(c){return c.id===S.caseId;})[0]||r.cases[0];}
+function caseCount(p){return p.routes.reduce(function(a,r){return a+r.cases.length;},0);}
+function scClass(s){return s<300?'sc2':(s<500?'sc4':'sc5');}
+function base(p){return 'http://'+HOST+'/mock/'+p.slug;}
+
+/* ---------- generator ---------- */
+var POOL={word:['harbour','lattice','quarry','meridian','falcon','cobalt','thicket','pennant','gable','kestrel','anvil','juniper'],
+  name:['Anaya Shah','Rohit Mehta','Priya Nair','Imran Qureshi','Dev Patel','Leela Rao','Farhan Khan','Sneha Iyer'],
+  city:['Ahmedabad','Surat','Pune','Kochi','Indore','Nagpur']};
+var SALT=0;
+function pad(n,w){var s=String(n);while(s.length<w)s='0'+s;return s;}
+function fill(pat,n,key){return pat.replace(/\{n:0(\d)\}/g,function(_,w){return pad(n,+w);}).replace(/\{n\}/g,n).replace(/\{key\}/g,key||'');}
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0);}
+function pick(l,seed){return l[seed%l.length];}
+function presetFor(key){
+  if(!proj().presetOn||!key)return null;
+  for(var i=0;i<PRESET.rules.length;i++){if(PRESET.rules[i].key===key)return PRESET.rules[i];}
+  return null;
+}
+function uuidish(key,n){
+  var seed=0,src=(key||'x')+'/'+n;
+  for(var i=0;i<src.length;i++){seed=(seed*33+src.charCodeAt(i))>>>0;}
+  function hx(len){var o='';for(var j=0;j<len;j++){seed=(seed*1664525+1013904223)>>>0;o+=(seed>>>28).toString(16);}return o;}
+  return hx(8)+'-'+hx(4)+'-5'+hx(3)+'-9'+hx(3)+'-'+hx(12);
+}
+function dstr(n){return new Date(Date.UTC(2026,0,1+n)).toISOString().slice(0,10);}
+function gen(node,key,n,path,meta,pfx){
+  var P=proj();pfx=pfx||'';
+  if(node.type==='object'){
+    var o={};node.children.forEach(function(c){o[c.key||'field']=gen(c,c.key,n,path+'/'+(c.key||'field'),meta,pfx);});return o;
+  }
+  if(node.type==='array'){
+    var it=node.children[0],out=[],cnt=Math.max(0,Math.min(50,node.count|0)),branch=(it.type==='object'||it.type==='array');
+    for(var i=1;i<=cnt;i++){
+      var cp=(P.indexing==='path'&&branch)?pfx+(key||'item')+'-'+i+'-':pfx;
+      out.push(gen(it,key,i,path+'/'+(i-1),meta,cp));
+    }
+    return out;
+  }
+  if(node.fixed!==''&&node.fixed!=null){
+    meta[path]='fix';var f=node.fixed;
+    if(node.type==='number'||node.type==='integer'){var num=Number(f);return isNaN(num)?f:num;}
+    if(node.type==='boolean')return f==='true';
+    return f;
+  }
+  var pr=presetFor(key);
+  if(pr){
+    meta[path]='fix';
+    if(pr.value!==undefined)return pr.value;
+    if(pr.values)return pr.values[(n-1)%pr.values.length];
+    if(pr.pattern)return fill(pr.pattern,n,key);
+  }
+  meta[path]='gen';
+  var k=(P.indexing==='path'?pfx:'')+(key||'item');
+  if(node.type==='enum')return (node.values&&node.values.length)?node.values[(n-1)%node.values.length]:null;
+  if(node.type==='null'){meta[path]='';return null;}
+  if(P.mode!=='deterministic'){
+    var seed=hash((key||'item')+'|'+n+'|'+(P.mode==='random'?SALT:0));
+    switch(node.type){
+      case 'string':return /name|title/.test(key||'')?pick(POOL.name,seed):(/city|godown/.test(key||'')?pick(POOL.city,seed):pick(POOL.word,seed)+'-'+(seed%900+100));
+      case 'email':return pick(POOL.word,seed)+'.'+pick(POOL.word,seed>>4)+'@'+pick(POOL.word,seed>>8)+'.co.in';
+      case 'url':return 'https://'+pick(POOL.word,seed)+'.example.com/'+pick(POOL.word,seed>>6);
+      case 'phone':return '+91 9'+String(seed%900000000+100000000);
+      case 'integer':return seed%4000+1;
+      case 'number':return Math.round((seed%90000+1000))/100;
+      case 'boolean':return seed%2===0;
+      case 'uuid':return uuidish(k,seed%97);
+      case 'date':return dstr(seed%300);
+      case 'datetime':return dstr(seed%300)+'T'+pad(seed%24,2)+':'+pad(seed%60,2)+':00+05:30';
+    }
+  }
+  switch(node.type){
+    case 'string':return k+'-'+n;
+    case 'email':return k+'-'+n+'@example.com';
+    case 'url':return 'https://example.com/'+k+'-'+n;
+    case 'phone':return '+91 90000 0000'+n;
+    case 'integer':return n;
+    case 'number':return n+0.5;
+    case 'boolean':return n%2===1;
+    case 'uuid':return uuidish(k,n);
+    case 'date':return dstr(n);
+    case 'datetime':return dstr(n)+'T00:00:00+05:30';
+    default:return k+'-'+n;
+  }
+}
+function renderVal(v,path,meta,ind){
+  var p0=new Array(ind+1).join('  '),p1=new Array(ind+2).join('  ');
+  if(v===null)return '<span class="nl">null</span>';
+  if(Array.isArray(v)){
+    if(!v.length)return '<span class="p">[]</span>';
+    return '<span class="p">[</span>\n'+v.map(function(x,i){return p1+renderVal(x,path+'/'+i,meta,ind+1);}).join('<span class="p">,</span>\n')+'\n'+p0+'<span class="p">]</span>';
+  }
+  if(typeof v==='object'){
+    var ks=Object.keys(v);
+    if(!ks.length)return '<span class="p">{}</span>';
+    return '<span class="p">{</span>\n'+ks.map(function(k){
+      return p1+'<span class="k">"'+esc(k)+'"</span><span class="p">: </span>'+renderVal(v[k],path+'/'+k,meta,ind+1);
+    }).join('<span class="p">,</span>\n')+'\n'+p0+'<span class="p">}</span>';
+  }
+  var cls=meta[path]==='fix'?' fix':(meta[path]==='gen'?' gen':'');
+  if(typeof v==='string')return '<span class="s'+cls+'">"'+esc(v)+'"</span>';
+  if(typeof v==='number')return '<span class="n'+cls+'">'+v+'</span>';
+  if(typeof v==='boolean')return '<span class="b'+cls+'">'+v+'</span>';
+  return esc(String(v));
+}
+
+/* ---------- builder ---------- */
+function flat(node,depth,out){
+  if(node.type==='object'){
+    node.children.forEach(function(c){out.push({n:c,d:depth,kind:'field'});if(!S.collapsed[c.id])flat(c,depth+1,out);});
+  } else if(node.type==='array'){
+    var it=node.children[0];out.push({n:it,d:depth,kind:'item'});if(!S.collapsed[it.id])flat(it,depth+1,out);
+  }
+}
+function rowHTML(r){
+  var n=r.n,branch=(n.type==='object'||n.type==='array');
+  var tw=branch?'<button class="twist" data-twist="'+n.id+'" aria-label="Collapse">'+(S.collapsed[n.id]?'&#9654;':'&#9660;')+'</button>':'<span class="twist leaf"></span>';
+  var keyCell=r.kind==='item'?'<span class="itemtag">[ item ]</span>'
+    :'<input class="keyin" data-key="'+n.id+'" value="'+esc(n.key||'')+'" spellcheck="false" aria-label="Field name">';
+  var sel='<select class="typesel" data-type="'+n.id+'" aria-label="Type">'+TYPES.map(function(t){return '<option'+(t===n.type?' selected':'')+'>'+t+'</option>';}).join('')+'</select>';
+  var extra;
+  if(n.type==='array')extra='<div class="extra"><span class="cntbox">count <input data-count="'+n.id+'" type="number" min="0" max="50" value="'+n.count+'" aria-label="Array length"></span><span class="muted" style="font-size:12px">items</span></div>';
+  else if(n.type==='enum')extra='<div class="extra"><input data-vals="'+n.id+'" value="'+esc(n.values.join(', '))+'" placeholder="value, value, value" aria-label="Enum values"></div>';
+  else if(n.type==='object')extra='<div class="extra"><span class="muted" style="font-size:12px">'+n.children.length+' field'+(n.children.length===1?'':'s')+'</span></div>';
+  else if(n.type==='null')extra='<div class="extra"></div>';
+  else {
+    var ph=presetFor(n.key)?('from preset '+PRESET.name):'generated';
+    extra='<div class="extra"><input data-fixed="'+n.id+'" class="'+(n.fixed?'pinned':'')+'" value="'+esc(n.fixed||'')+'" placeholder="'+esc(ph)+'" aria-label="Pinned value"></div>';
+  }
+  var acts='<div class="racts">'
+    +(n.type==='object'?'<button data-add="'+n.id+'" title="Add field" aria-label="Add field">+</button>':'')
+    +(r.kind==='field'?'<button class="del" data-del="'+n.id+'" title="Remove field" aria-label="Remove field">&times;</button>':'')+'</div>';
+  return '<div class="brow" style="padding-left:'+(15+r.d*18)+'px">'+tw+keyCell+sel+extra+acts+'</div>';
+}
+function findNode(root,id){
+  if(root.id===id)return root;
+  for(var i=0;i<root.children.length;i++){var r=findNode(root.children[i],id);if(r)return r;}
+  return null;
+}
+function findParent(root,id){
+  for(var i=0;i<root.children.length;i++){
+    if(root.children[i].id===id)return root;
+    var r=findParent(root.children[i],id);if(r)return r;
+  }
+  return null;
+}
+function ser(n){
+  var o={type:n.type};
+  if(n.type==='object')o.fields=n.children.map(function(c){return {key:c.key,node:ser(c)};});
+  if(n.type==='array'){o.count=n.count;o.items=ser(n.children[0]);}
+  if(n.type==='enum')o.values=n.values;
+  if(n.fixed)o.fixed=n.fixed;
+  return o;
+}
+
+/* ---------- chrome ---------- */
+function topbarHTML(){
+  var p=proj();
+  return '<header class="topbar"><div class="topbar-in">'
+   +'<div class="brand">'+markSVG()+'Mockbench</div>'
+   +'<div class="dd"><button class="ddbtn" data-dd="ws">'+esc(ws().name)+' <span class="car">&#9662;</span></button>'
+     +'<div class="ddmenu" '+(S.dd==='ws'?'':'hidden')+'><div class="lbl">Workspace</div>'
+     +WORKSPACES.map(function(w){return '<button data-pickws="'+w.id+'">'+esc(w.name)+'<span class="tick">'+(w.id===S.wsId?'&#10003;':'')+'</span></button>';}).join('')
+     +'<div class="ddsep"></div><button data-act="newws">+ New workspace</button></div></div>'
+   +'<span class="sep">/</span>'
+   +'<div class="dd"><button class="ddbtn" data-dd="proj"><span class="mono">'+esc(p.slug)+'</span> <span class="car">&#9662;</span></button>'
+     +'<div class="ddmenu" '+(S.dd==='proj'?'':'hidden')+'><div class="lbl">Project</div>'
+     +wsProjects().map(function(q){return '<button data-pickproj="'+q.id+'"><span>'+esc(q.name)+'</span> <span class="slug">'+esc(q.slug)+'</span><span class="tick">'+(q.id===S.projId?'&#10003;':'')+'</span></button>';}).join('')
+     +'<div class="ddsep"></div><button data-act="allprojects">All projects</button><button data-act="newproj">+ New project</button></div></div>'
+   +(p.live?'<span class="livepill"><span class="dot"></span>LIVE '+p.version+'</span>':'<span class="muted" style="font-size:12px">not published</span>')
+   +'<span class="spacer"></span>'
+   +'<div class="baseurl"><span id="baseurl">'+esc(base(p))+'</span><button class="icon-btn" style="width:22px;height:22px;border:0" data-copy="#baseurl" aria-label="Copy base URL">&#9099;</button></div>'
+   +'<button class="btn btn-primary" data-act="publish">Publish</button>'
+   +'<div class="dd"><button class="icon-btn" data-dd="acct" aria-label="Account">DS</button>'
+     +'<div class="ddmenu" style="left:auto;right:0" '+(S.dd==='acct'?'':'hidden')+'><div class="lbl">Signed in</div>'
+     +'<div style="padding:2px 9px 8px;font-size:12.5px" class="muted">dhyey@alpschem.in</div><div class="ddsep"></div>'
+     +'<button data-act="signout">Sign out</button></div></div>'
+   +'</div></header>';
+}
+function markSVG(){
+  return '<svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><rect x="1.2" y="1.2" width="17.6" height="17.6" rx="5" fill="none" stroke="currentColor" stroke-width="1.5"/>'
+    +'<path d="M5.5 13.2V6.8l2.4 3.1 2.1-3.1v6.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<circle cx="14" cy="12.4" r="1.5" fill="currentColor"/></svg>';
+}
+function railHTML(){
+  var p=proj(),q=S.filter.toLowerCase();
+  var list=p.routes.filter(function(r){return !q||(r.method+' '+r.path).toLowerCase().indexOf(q)>-1;});
+  return '<aside class="rail"><div class="card">'
+   +'<button class="backlink" data-act="allprojects">&#8592; All projects</button>'
+   +'<nav class="nav">'
+     +navBtn('routes','Routes',p.routes.length)+navBtn('versions','Versions',p.live?3:0)
+     +navBtn('logs','Request log',p.live?128:0)+navBtn('settings','Settings','')
+   +'</nav><div class="rail-sep"></div>'
+   +'<div class="rail-head"><input class="search" id="routeSearch" placeholder="Filter routes" value="'+esc(S.filter)+'" aria-label="Filter routes"></div>'
+   +'<div class="routelist">'+(list.length?list.map(function(r){
+      return '<button class="routeitem" data-route="'+r.id+'" aria-current="'+(r.id===route().id&&S.view==='routes')+'">'
+        +'<span class="meth" style="color:var(--m-'+r.method+');background:color-mix(in srgb,var(--m-'+r.method+') 13%,transparent)">'+r.method+'</span>'
+        +'<span class="p">'+esc(r.path)+'</span></button>';
+    }).join(''):'<div style="padding:10px;color:var(--ink-3);font-size:12.5px">No route matches.</div>')+'</div>'
+   +'<div class="rail-foot"><button class="btn dashed" data-act="newroute">+ New route</button></div>'
+   +'</div></aside>';
+}
+function navBtn(v,label,cnt){
+  return '<button data-view="'+v+'"'+(S.view===v?' aria-current="page"':'')+'>'+label+(cnt!==''?'<span class="cnt">'+cnt+'</span>':'')+'</button>';
+}
+
+/* ---------- views ---------- */
+function viewLogin(){
+  return '<div class="login"><div class="loginbox">'
+   +'<div class="brand">'+markSVG()+'Mockbench</div>'
+   +'<div class="sub">Sign in to the mock server running on this network.</div>'
+   +'<div class="card" style="padding:16px">'
+     +'<div class="lfield"><label for="lemail">Email</label><input id="lemail" type="email" value="dhyey@alpschem.in" autocomplete="username"></div>'
+     +'<div class="lfield"><label for="lpass">Password</label><input id="lpass" type="password" value="password" autocomplete="current-password"></div>'
+     +'<button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" data-act="signin">Sign in</button>'
+     +'<div class="lhint">This instance is open for registration. Set <span class="mono">ALLOW_SIGNUP=false</span> once your team has accounts.</div>'
+   +'</div>'
+   +'<div class="lhint">Server <span class="mono">'+esc(HOST)+'</span> &middot; 2 workspaces &middot; 4 projects</div>'
+   +'</div></div>';
+}
+function viewProjects(){
+  var list=wsProjects();
+  return '<div class="shell solo"><main class="editor"><section class="card">'
+   +'<div class="phead"><h3>'+esc(ws().name)+'</h3><span class="muted" style="font-size:12.5px">'+list.length+' project'+(list.length===1?'':'s')+'</span>'
+     +'<span class="spacer"></span><button class="btn btn-ghost btn-sm" data-act="newproj">+ New project</button></div>'
+   +'<div class="tablewrap"><table><thead><tr><th>Project</th><th>Base URL</th><th>Routes</th><th>Cases</th><th>Live</th><th></th></tr></thead><tbody>'
+   +list.map(function(p){
+     return '<tr><td><span class="rowlink">'+esc(p.name)+'</span><div class="muted" style="font-size:12px;white-space:normal;max-width:360px">'+esc(p.desc)+'</div></td>'
+      +'<td class="mono muted" style="font-size:12px">'+esc(base(p))+'</td>'
+      +'<td class="num">'+p.routes.length+'</td><td class="num">'+caseCount(p)+'</td>'
+      +'<td>'+(p.live?'<span class="livepill"><span class="dot"></span>'+p.version+'</span>':'<span class="muted">—</span>')+'</td>'
+      +'<td style="text-align:right"><button class="btn btn-ghost btn-sm" data-openproj="'+p.id+'">Open</button></td></tr>';
+   }).join('')+'</tbody></table></div>'
+   +'<div class="note" style="padding-top:14px">A project slug is its URL prefix, so slugs are unique across the whole server, not just this workspace.</div>'
+   +'</section></main></div>';
+}
+function viewRoutes(){
+  var p=proj(),r=route(),c=kase(),rows=[];flat(c.schema,0,rows);
+  var builder=S.tab==='builder'
+    ? '<div class="builder">'+rows.map(rowHTML).join('')
+      +(c.schema.children.length?'':'<div style="padding:13px 15px;color:var(--ink-3);font-size:13px">This case returns an empty body.</div>')
+      +'<button class="addfield" data-add="'+c.schema.id+'">+ Add field</button></div>'
+    : '<div class="pbody"><pre class="slab" style="margin:0">'+esc(JSON.stringify({version:1,root:ser(c.schema)},null,2))+'</pre></div>';
+  var meta={},body=c.noBody?null:gen(c.schema,null,1,'',meta);
+  var path=r.path.replace(/:(\w+)/g,function(_,k){return k==='id'?'42':'7';});
+  var curl='curl -i '+base(p)+path+(r.method!=='GET'?" \\\n  -X "+r.method:'')+(c.def?'':" \\\n  -H 'X-Mock-Case: "+c.name+"'");
+  return '<div class="shell">'+railHTML()
+   +'<main class="editor"><section class="card">'
+    +'<div class="rhead">'
+      +'<select class="methsel" id="methSel" aria-label="HTTP method">'+['GET','POST','PUT','PATCH','DELETE'].map(function(m){return '<option'+(m===r.method?' selected':'')+'>'+m+'</option>';}).join('')+'</select>'
+      +'<input class="pathin" id="pathIn" value="'+esc(r.path)+'" spellcheck="false" aria-label="Route path">'
+      +'<button class="btn btn-ghost btn-sm" data-act="dup">Duplicate</button>'
+    +'</div>'
+    +'<div class="rdesc">'+esc(r.desc)+'</div>'
+    +'<div class="cases" role="tablist">'+r.cases.map(function(k){
+        return '<button class="casetab" role="tab" aria-selected="'+(k.id===c.id)+'" data-case="'+k.id+'">'
+          +'<span class="sc '+scClass(k.status)+'">'+k.status+'</span>'+esc(k.name)+(k.def?'<span class="star" title="Default case">&#9733;</span>':'')+'</button>';
+      }).join('')+'<button class="addfield" style="margin:0" data-act="addcase">+ Case</button></div>'
+    +'<div class="subbar">'
+      +'<div class="seg" role="tablist"><button role="tab" aria-selected="'+(S.tab==='builder')+'" data-tab="builder">Builder</button>'
+      +'<button role="tab" aria-selected="'+(S.tab==='json')+'" data-tab="json">JSON</button></div>'
+      +'<span class="field-mini">Status <select id="scSel" aria-label="Status code">'+[200,201,202,204,400,401,403,404,409,422,429,500,502,503].map(function(s){return '<option'+(s===c.status?' selected':'')+'>'+s+'</option>';}).join('')+'</select></span>'
+      +'<span class="field-mini">Delay <input id="delayIn" type="number" min="0" max="5000" step="50" value="'+c.delay+'" style="width:70px" aria-label="Delay in milliseconds"> ms</span>'
+      +'<span class="spacer"></span><span class="eyebrow">'+rows.length+' nodes</span>'
+    +'</div>'+builder+'</section></main>'
+   +'<aside class="resp">'
+     +'<section class="card"><div class="phead"><h3>Response</h3><span class="sc '+scClass(c.status)+'">'+c.status+'</span>'
+       +'<span class="muted" style="font-size:12.5px">'+esc(c.name)+'</span><span class="spacer"></span><span class="eyebrow">'+p.mode+'</span></div>'
+       +'<div class="pbody">'+(c.noBody?'<div class="slab" style="color:var(--ink-3)">— 204 sends no response body —</div>'
+         :'<pre class="slab" style="margin:0">'+renderVal(body,'',meta,0)+'</pre>')+'</div>'
+       +'<div class="hdrs"><div><b>X-Mock-Version:</b> '+(p.version||'unpublished')+'</div><div><b>X-Mock-Route:</b> '+esc(r.method+' '+r.path)+'</div>'
+         +'<div><b>X-Mock-Case:</b> '+esc(c.name)+'</div>'+(c.delay?'<div><b>Delay:</b> '+c.delay+' ms</div>':'')+'</div>'
+       +'<div class="legend"><i><span class="sw-gen">name-1</span> generated from the key</i><i><span class="sw-fix">INR</span> pinned or from a preset</i></div></section>'
+     +'<section class="card"><div class="phead"><h3>Try it</h3><span class="spacer"></span><button class="btn btn-ghost btn-sm" data-copy="#curlBox">Copy</button></div>'
+       +'<div class="pbody"><pre class="slab" style="margin:0" id="curlBox">'+esc(curl)+'</pre></div>'
+       +'<div class="legend"><i>'+(p.live?'Any machine on the LAN can call this now.':'Publish and deploy this project before the URL answers.')+'</i></div></section>'
+   +'</aside></div>';
+}
+function viewVersions(){
+  var p=proj();
+  var rows=p.live?[['v3','pricing-fields-added','2026-11-03 21:40',p.routes.length,caseCount(p),true],
+    ['v2','before-the-pricing-change','2026-10-28 18:02',6,9,false],
+    ['v1','first-cut','2026-10-21 11:15',4,6,false]]:[];
+  return '<div class="shell wide">'+railHTML()+'<main class="editor"><section class="card">'
+   +'<div class="phead"><h3>Versions</h3><span class="spacer"></span>'
+     +(rows.length>1?'<button class="btn btn-ghost btn-sm" data-act="diff">Compare v2 &#8594; v3</button>':'')
+     +'<button class="btn btn-primary btn-sm" data-act="publish">Publish</button></div>'
+   +(rows.length?'<div class="tablewrap"><table><thead><tr><th>Version</th><th>Label</th><th>Published</th><th>Routes</th><th>Cases</th><th>State</th><th></th></tr></thead><tbody>'
+     +rows.map(function(r){
+       return '<tr><td class="num" style="font-weight:600">'+r[0]+'</td><td class="mono muted" style="font-size:12.5px">'+r[1]+'</td>'
+        +'<td class="num muted">'+r[2]+'</td><td class="num">'+r[3]+'</td><td class="num">'+r[4]+'</td>'
+        +'<td>'+(r[5]?'<span class="livepill"><span class="dot"></span>LIVE</span>':'<span class="muted">published</span>')+'</td>'
+        +'<td style="text-align:right">'+(r[5]?'':'<button class="btn btn-ghost btn-sm" data-act="deploy">Deploy</button>')+'</td></tr>';
+     }).join('')+'</tbody></table></div>'
+    :'<div class="note" style="padding-top:15px">Nothing published yet. Publishing freezes every route and case into a snapshot; deploying points the URL at it.</div>')
+   +(rows.length?'<div class="note" style="padding-top:14px">Editing routes never changes what callers see. Only a deploy does, and a rollback is the same action pointed at an older version.</div>':'')
+   +'</section></main></div>';
+}
+function viewLogs(){
+  var p=proj();
+  var L=p.live?[
+   ['22:41:08','GET','/invoices/42','Found',200,3,'192.168.1.31'],
+   ['22:41:08','GET','/invoices','List',200,2,'192.168.1.31'],
+   ['22:40:52','GET','/invoices/9001','Not found',404,2,'192.168.1.31'],
+   ['22:40:11','POST','/invoices','Validation failed',422,4,'192.168.1.18'],
+   ['22:39:47','PATCH','/invoices/42','Updated',200,3,'192.168.1.18'],
+   ['22:38:02','GET','/customers/7/branches','Branch list',200,2,'192.168.1.44'],
+   ['22:37:30','DELETE','/invoices/42','Deleted',204,1,'192.168.1.44'],
+   ['22:36:59','GET','/invoices/42','Server error',500,912,'192.168.1.31'],
+   ['22:35:12','GET','/payments','—',404,1,'192.168.1.22']]:[];
+  return '<div class="shell wide">'+railHTML()+'<main class="editor"><section class="card">'
+   +'<div class="phead"><h3>Request log</h3><span class="muted" style="font-size:12.5px">last 128 requests &middot; pruned after 7 days</span></div>'
+   +(L.length?'<div class="tablewrap"><table><thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Case</th><th>Status</th><th>ms</th><th>From</th></tr></thead><tbody>'
+     +L.map(function(l){
+       return '<tr><td class="num muted">'+l[0]+'</td><td><span class="meth" style="color:var(--m-'+l[1]+');background:color-mix(in srgb,var(--m-'+l[1]+') 13%,transparent)">'+l[1]+'</span></td>'
+        +'<td class="mono">'+esc(l[2])+'</td><td class="muted">'+esc(l[3])+'</td><td><span class="sc '+scClass(l[4])+'">'+l[4]+'</span></td>'
+        +'<td class="num muted">'+l[5]+'</td><td class="num muted">'+l[6]+'</td></tr>';
+     }).join('')+'</tbody></table></div>'
+     +'<div class="note" style="padding-top:14px">The last row is a 404 from the mock server itself, not a mocked 404 — those carry <span class="mono">X-Mock-Error: true</span>.</div>'
+    :'<div class="note" style="padding-top:15px">No requests yet. The log starts filling once this project is deployed.</div>')
+   +'</section></main></div>';
+}
+function viewSettings(){
+  var p=proj();
+  function opt(group,val,cur,t,d){
+    return '<label class="opt" data-on="'+(val===cur?1:0)+'"><input type="radio" name="'+group+'" value="'+val+'"'+(val===cur?' checked':'')+'>'
+      +'<span><span class="t">'+t+'</span><br><span class="d">'+d+'</span></span></label>';
+  }
+  var sample=gen(O(null,[A('users',O(null,[A('tags',N(null,'string'),2)]),2)]),null,1,'',{});
+  return '<div class="shell wide">'+railHTML()+'<main class="editor"><section class="card">'
+   +'<div class="phead"><h3>Project settings</h3><span class="spacer"></span><span class="mono muted" style="font-size:12.5px">'+esc(p.slug)+'</span></div>'
+   +'<div class="setgrid">'
+     +'<div><div class="eyebrow" style="margin-bottom:8px">Generation mode</div>'
+       +opt('mode','deterministic',p.mode,'Deterministic','Values come from the key and position. Baked at publish, so responses never shift under a test suite.')
+       +opt('mode','seeded',p.mode,'Seeded faker','Realistic-looking output, stable because the seed comes from the field path. Still baked.')
+       +opt('mode','random',p.mode,'Random','Fresh output per request. Disables baking and makes consumer assertions flaky.')+'</div>'
+     +'<div><div class="eyebrow" style="margin-bottom:8px">Array indexing</div>'
+       +opt('ix','local',p.indexing,'Local','A nested array restarts at 1. Shorter values.')
+       +opt('ix','path',p.indexing,'Path-qualified','Ancestor positions prefix the value, so every value in the payload is unique.')
+       +'<div class="note" style="padding:10px 0 0">users[2].tags &#8594; <span class="mono">'+esc(JSON.stringify(sample.users[1].tags))+'</span></div></div>'
+     +'<div><div class="eyebrow" style="margin-bottom:8px">Presets</div>'
+       +'<label class="opt" data-on="'+(p.presetOn?1:0)+'"><input type="checkbox" id="presetOn"'+(p.presetOn?' checked':'')+'>'
+       +'<span><span class="t">'+PRESET.name+'</span><br><span class="d">'+PRESET.rules.map(function(r){return r.key;}).join(', ')+'</span></span></label>'
+       +'<div class="note" style="padding:10px 0 0">A preset replaces generated values by field name, so a mock reads like your domain without editing every field.</div></div>'
+     +'<div><div class="eyebrow" style="margin-bottom:8px">Access</div>'
+       +'<div class="note" style="padding:0">The mock URL takes no authentication. Anyone who can reach <span class="mono">'+esc(HOST)+'</span> can call every published project on this server. That is the intended threat model: a trusted private network.</div></div>'
+   +'</div></section></main></div>';
+}
+
+function render(){
+  var html;
+  if(S.view==='login'){document.getElementById('app').innerHTML=viewLogin();return;}
+  if(S.view==='projects')html=viewProjects();
+  else if(S.view==='versions')html=viewVersions();
+  else if(S.view==='logs')html=viewLogs();
+  else if(S.view==='settings')html=viewSettings();
+  else html=viewRoutes();
+  document.getElementById('app').innerHTML=topbarHTML()+html;
+}
+function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on');},2200);}
+function selectText(el){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);toast('Selected — press Ctrl/Cmd+C');}
+
+function openProject(id){
+  S.projId=id;var p=proj();S.routeId=p.routes[0].id;S.caseId=p.routes[0].cases[0].id;
+  S.view='routes';S.filter='';S.collapsed={};S.dd=null;render();
+}
+
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-dd],[data-pickws],[data-pickproj],[data-openproj],[data-act],[data-view],[data-route],[data-case],[data-tab],[data-twist],[data-add],[data-del],[data-copy]');
+  if(!t){if(S.dd){S.dd=null;render();}return;}
+  if(t.dataset.dd!==undefined){S.dd=(S.dd===t.dataset.dd)?null:t.dataset.dd;render();return;}
+  S.dd=null;
+  if(t.dataset.pickws){S.wsId=t.dataset.pickws;var first=wsProjects()[0];if(first)openProject(first.id);else{S.view='projects';render();}return;}
+  if(t.dataset.pickproj){openProject(t.dataset.pickproj);return;}
+  if(t.dataset.openproj){openProject(t.dataset.openproj);return;}
+  if(t.dataset.view){S.view=t.dataset.view;render();return;}
+  if(t.dataset.route){S.routeId=t.dataset.route;S.caseId=route().cases[0].id;S.view='routes';render();return;}
+  if(t.dataset.case){S.caseId=t.dataset.case;render();return;}
+  if(t.dataset.tab){S.tab=t.dataset.tab;render();return;}
+  if(t.dataset.twist){S.collapsed[t.dataset.twist]=!S.collapsed[t.dataset.twist];render();return;}
+  if(t.dataset.add){var par=findNode(kase().schema,t.dataset.add);if(par){par.children.push(N('new_field','string'));S.collapsed[par.id]=false;render();}return;}
+  if(t.dataset.del){var root=kase().schema,pp=findParent(root,t.dataset.del);if(pp){pp.children=pp.children.filter(function(c){return c.id!==t.dataset.del;});render();}return;}
+  if(t.dataset.copy){
+    var el=$(t.dataset.copy);if(!el)return;
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(el.textContent).then(function(){toast('Copied');},function(){selectText(el);});
+    else selectText(el);
+    return;
+  }
+  var a=t.dataset.act;
+  if(a==='signin'){S.view='projects';render();return;}
+  if(a==='signout'){S.view='login';render();return;}
+  if(a==='allprojects'){S.view='projects';render();return;}
+  if(a==='publish'){var p1=proj();p1.version=p1.live?('v'+(parseInt(p1.version.slice(1),10)+1)):'v1';p1.live=true;render();toast('Published and deployed '+p1.version);return;}
+  if(a==='deploy'){toast('Deployed v2 — rollback complete');return;}
+  if(a==='diff'){toast('2 routes changed, 1 case added');return;}
+  if(a==='dup'){toast('Route duplicated as a draft');return;}
+  if(a==='newws'){toast('New workspace — not wired up in this prototype');return;}
+  if(a==='newproj'){toast('New project — not wired up in this prototype');return;}
+  if(a==='addcase'){
+    var r2=route(),k2=C('Rate limited',429,O(null,[F('error','string','rate_limited'),N('retry_after','integer')]));
+    r2.cases.push(k2);S.caseId=k2.id;render();toast('Case added');return;
+  }
+  if(a==='newroute'){
+    var p2=proj(),nr=R('GET','/new-route','Describe what this route returns.',[C('OK',200,O(null,[N('id','uuid'),N('name','string')]))]);
+    p2.routes.push(nr);S.routeId=nr.id;S.caseId=nr.cases[0].id;S.view='routes';render();toast('Route created');return;
+  }
+});
+
+document.addEventListener('input',function(e){
+  var el=e.target;
+  if(el.id==='routeSearch'){S.filter=el.value;var l=$('.routelist');if(l){var p=proj(),q=S.filter.toLowerCase();
+    var list=p.routes.filter(function(r){return !q||(r.method+' '+r.path).toLowerCase().indexOf(q)>-1;});
+    l.innerHTML=list.length?list.map(function(r){
+      return '<button class="routeitem" data-route="'+r.id+'" aria-current="'+(r.id===route().id&&S.view==='routes')+'">'
+        +'<span class="meth" style="color:var(--m-'+r.method+');background:color-mix(in srgb,var(--m-'+r.method+') 13%,transparent)">'+r.method+'</span>'
+        +'<span class="p">'+esc(r.path)+'</span></button>';}).join(''):'<div style="padding:10px;color:var(--ink-3);font-size:12.5px">No route matches.</div>';
+    }return;}
+  if(S.view!=='routes')return;
+  if(el.id==='pathIn'){route().path=el.value;refreshResp();return;}
+  if(el.id==='delayIn'){kase().delay=Math.max(0,+el.value||0);refreshResp();return;}
+  var root=kase().schema,n;
+  if(el.dataset.key){n=findNode(root,el.dataset.key);if(n){n.key=el.value.trim();refreshResp();}return;}
+  if(el.dataset.count){n=findNode(root,el.dataset.count);if(n){n.count=Math.max(0,Math.min(50,+el.value||0));refreshResp();}return;}
+  if(el.dataset.vals){n=findNode(root,el.dataset.vals);if(n){n.values=el.value.split(',').map(function(s){return s.trim();}).filter(Boolean);refreshResp();}return;}
+  if(el.dataset.fixed){n=findNode(root,el.dataset.fixed);if(n){n.fixed=el.value;el.classList.toggle('pinned',!!el.value);refreshResp();}return;}
+});
+
+function refreshResp(){
+  var p=proj(),r=route(),c=kase(),meta={},pre=document.querySelectorAll('.resp .slab');
+  if(!pre.length)return;
+  if(!c.noBody)pre[0].innerHTML=renderVal(gen(c.schema,null,1,'',meta),'',meta,0);
+  var path=r.path.replace(/:(\w+)/g,function(_,k){return k==='id'?'42':'7';});
+  if(pre[1])pre[1].textContent='curl -i '+base(p)+path+(r.method!=='GET'?" \\\n  -X "+r.method:'')+(c.def?'':" \\\n  -H 'X-Mock-Case: "+c.name+"'");
+}
+
+document.addEventListener('change',function(e){
+  var el=e.target,p=proj();
+  if(el.id==='methSel'){route().method=el.value;render();return;}
+  if(el.id==='scSel'){kase().status=+el.value;render();return;}
+  if(el.name==='mode'){p.mode=el.value;render();return;}
+  if(el.name==='ix'){p.indexing=el.value;render();return;}
+  if(el.id==='presetOn'){p.presetOn=el.checked;render();return;}
+  if(el.dataset.type){
+    var n=findNode(kase().schema,el.dataset.type);
+    if(n){
+      n.type=el.value;
+      if(n.type==='object'&&!n.children.length)n.children=[N('field_a','string')];
+      if(n.type==='array'&&(n.children.length!==1||n.children[0].key!==null))n.children=[N(null,'string')];
+      if(n.type!=='object'&&n.type!=='array')n.children=[];
+      if(n.type==='enum'&&!n.values.length)n.values=['one','two','three'];
+      render();
+    }
+    return;
+  }
+});
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&S.dd){S.dd=null;render();}
+  if(e.key==='Enter'&&S.view==='login'){S.view='projects';render();}
+});
+
+S.projId='p1';S.routeId=PROJECTS[0].routes[1].id;S.caseId=PROJECTS[0].routes[1].cases[0].id;
+render();
+})();
+</script>
+
+</body></html>
