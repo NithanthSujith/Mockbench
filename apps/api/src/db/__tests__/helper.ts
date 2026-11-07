@@ -1,29 +1,17 @@
-// Local test helper for FND-08. FND-09 owns the official harness (withTestDb) and will replace this.
-// Each call creates a throwaway database, applies every migration with drizzle-orm's programmatic
-// migrator (never the drizzle-kit CLI, ADR 0002), and drops the database afterwards.
+// Row factories + SQLSTATE helpers for the FND-08 constraint tests, built on the official FND-09
+// harness (withTestDb). FND-11 will supersede the factories with the shared ones.
 import { randomBytes } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { migrate } from 'drizzle-orm/node-postgres/migrator'
-import pg from 'pg'
+import type pg from 'pg'
+import { withTestDb } from '../testing'
 
-const ADMIN_URL = process.env.TEST_DATABASE_URL ?? 'postgres://mock:mock@127.0.0.1:55432/postgres'
 export const migrationsFolder = fileURLToPath(new URL('../migrations', import.meta.url))
 
-export type TestDb = Awaited<ReturnType<typeof createTestDb>>
+export type TestDb = Awaited<ReturnType<typeof testDb>>
 
-export async function createTestDb(opts: { migrate?: boolean } = {}) {
-  const name = `mb_test_${randomBytes(6).toString('hex')}`
-  const admin = new pg.Client({ connectionString: ADMIN_URL })
-  await admin.connect()
-  await admin.query(`CREATE DATABASE ${name}`)
-  await admin.end()
-
-  const url = new URL(ADMIN_URL)
-  url.pathname = `/${name}`
-  const pool = new pg.Pool({ connectionString: url.toString(), max: 4 })
-  const db = drizzle(pool)
-  if (opts.migrate !== false) await migrate(db, { migrationsFolder })
+export async function testDb(opts: { migrate?: boolean } = {}) {
+  const base = await withTestDb(opts)
+  const { name, url, db, pool } = base
 
   let n = 0
   const uniq = (p: string) => `${p}${++n}${randomBytes(2).toString('hex')}`
@@ -106,23 +94,7 @@ export async function createTestDb(opts: { migrate?: boolean } = {}) {
     },
   }
 
-  return {
-    name,
-    url: url.toString(),
-    db,
-    pool,
-    q,
-    one,
-    make,
-    uniq,
-    async drop() {
-      await pool.end()
-      const a = new pg.Client({ connectionString: ADMIN_URL })
-      await a.connect()
-      await a.query(`DROP DATABASE IF EXISTS ${name} WITH (FORCE)`)
-      await a.end()
-    },
-  }
+  return { name, url, db, pool, q, one, make, uniq, drop: base.drop }
 }
 
 /** Resolves with the Postgres error code (SQLSTATE) the promise rejects with; fails if it resolves. */

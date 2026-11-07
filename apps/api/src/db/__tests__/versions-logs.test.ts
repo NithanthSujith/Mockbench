@@ -1,19 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import {
-  FK_VIOLATION,
-  RESTRICT_VIOLATION,
-  UNIQUE_VIOLATION,
-  createTestDb,
-  pgErrorCode,
-} from './helper'
+import { FK_VIOLATION, RESTRICT_VIOLATION, UNIQUE_VIOLATION, testDb, pgErrorCode } from './helper'
 import type { TestDb } from './helper'
 
 describe('versions, deployments and request_logs', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   const count = async (table: string, where: string, params: unknown[]) =>
     Number(

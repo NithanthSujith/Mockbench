@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { createTestDb } from './helper'
+import { testDb } from './helper'
 import type { TestDb } from './helper'
 import { schemaDrift } from './introspect'
 
 describe('drift: Drizzle schema vs migrated database', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('reports no differences after migrating from empty (columns, indexes, checks, foreign keys)', async () => {
     expect(await schemaDrift(t.pool)).toEqual([])

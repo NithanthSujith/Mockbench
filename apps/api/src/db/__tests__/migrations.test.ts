@@ -1,15 +1,15 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { allTables } from '../schema'
-import { createTestDb, migrationsFolder } from './helper'
+import { testDb, migrationsFolder } from './helper'
 import type { TestDb } from './helper'
 
 describe('migrations apply from an empty database', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb({ migrate: false })
+    t = await testDb({ migrate: false })
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('applies every migration to an empty database, and a second run is a no-op', async () => {
     await migrate(t.db, { migrationsFolder })

@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { CHECK_VIOLATION, UNIQUE_VIOLATION, createTestDb, pgErrorCode } from './helper'
+import { CHECK_VIOLATION, UNIQUE_VIOLATION, testDb, pgErrorCode } from './helper'
 import type { TestDb } from './helper'
 
 describe('users and sessions', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('users.email uniqueness is case-insensitive (A@x.io conflicts with a@x.io)', async () => {
     await t.make.user({ email: 'a@x.io' })

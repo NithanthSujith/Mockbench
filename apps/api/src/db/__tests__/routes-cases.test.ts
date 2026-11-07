@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { CHECK_VIOLATION, UNIQUE_VIOLATION, createTestDb, pgErrorCode } from './helper'
+import { CHECK_VIOLATION, UNIQUE_VIOLATION, testDb, pgErrorCode } from './helper'
 import type { TestDb } from './helper'
 
 describe('routes', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('stores normalized_path = /users/{}/orders/{} for /Users/:id/orders/:oid', async () => {
     const id = await t.make.route({ path: '/Users/:id/orders/:oid' })
@@ -75,9 +75,9 @@ describe('routes', () => {
 describe('response_cases', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('rejects a second is_default = true case in the same route (23505)', async () => {
     const route = await t.make.route()

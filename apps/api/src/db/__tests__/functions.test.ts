@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { createTestDb } from './helper'
+import { testDb } from './helper'
 import type { TestDb } from './helper'
 
 describe('uuid_v7()', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   it('produces version-7, variant-10 UUIDs', async () => {
     const r = await t.pool.query<{ id: string }>(
@@ -50,9 +50,9 @@ describe('uuid_v7()', () => {
 describe('set_updated_at()', () => {
   let t: TestDb
   beforeAll(async () => {
-    t = await createTestDb()
+    t = await testDb()
   })
-  afterAll(() => t.drop())
+  afterAll(() => t?.drop())
 
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
