@@ -20,7 +20,7 @@ The Docker entrypoint script (FND-14), query code, factories (FND-11).
 ```ts
 createDb(url: string): { db: Db; pool: Pool; close(): Promise<void> }
 runMigrations(db: Db, opts?: { lockId?: bigint; retryMs?: number; timeoutMs?: number }): Promise<{ applied: number }>
-withTestDb(): Promise<{ db: Db; url: string; drop(): Promise<void> }>     // env TEST_DATABASE_URL, else testcontainers
+withTestDb(): Promise<{ db: Db; url: string; drop(): Promise<void> }>     // env TEST_DATABASE_URL (default postgres://mock:mock@127.0.0.1:55432/postgres); NO testcontainers dependency
 ```
 `bin/migrate`: exit 0 on success, non-zero with a one-line message on failure; honours `DATABASE_URL`. Lock id is a fixed constant documented in code.
 
@@ -30,10 +30,11 @@ withTestDb(): Promise<{ db: Db; url: string; drop(): Promise<void> }>     // env
 - [ ] `runMigrations` against an unreachable host retries for `timeoutMs` (default 30 s) and then rejects with an error whose message names the host, rather than hanging or exiting 0.
 - [ ] `bin/migrate` with a bad `DATABASE_URL` exits non-zero in under `timeoutMs + 2 s`; with a good one exits 0 and prints the number applied.
 - [ ] The runtime dependency list of `apps/api` contains no `drizzle-kit` (dev only), asserted by a test over `package.json`.
+- [ ] If Postgres is unreachable, `withTestDb()` rejects with a message that names the URL and the exact `docker run` command to start a matching container (never a downstream `undefined` error), and `drop()` is safe to call on a failed setup.
 - [ ] Two parallel test files each calling `withTestDb()` see isolated data (a row inserted in one is invisible in the other).
 
 ## Tests
 Concurrency test (two migrators), kill test (child process), unreachable-host test, harness isolation test.
 
 ## Open questions
-- Testcontainers versus a CI Postgres service as the default harness (both supported; which is the default locally?).
+- Resolved 2026-11-07: no testcontainers. Local runs use a plain `postgres:16-alpine` container on 55432 (documented in the error message); CI uses a service container (ci.yml sets `TEST_DATABASE_URL`).
