@@ -357,7 +357,7 @@ Retention (env `LOG_RETENTION_DAYS`=7, `LOG_RETENTION_ROWS`=1000 per project; wh
 | `id` | Endpoint | Auth | Request | Response | Errors |
 | --- | --- | --- | --- | --- | --- |
 | `projects.export` | `GET /projects/:projectId/export` | viewer | — | `200 ProjectExport` with `Content-Disposition: attachment; filename="<slug>.mockbench.json"`. Key order is fixed (as declared in §2); routes in `sortOrder`, cases in `sortOrder`. Contains the **draft** and presets, never versions or ids | — |
-| `projects.import` | `POST /projects/import` | editor of `workspaceId` | `{ workspaceId, document: ProjectExport, slug?, name? }` — `slug`/`name` override the document's. Creates the project, presets, routes and cases in one transaction, minting new ids | `409 slug_taken` · `422 import_invalid` — details: `ValidationIssue[]` (schema failures and route-collision issues; nothing is created) · `422 slug_reserved` |
+| `projects.import` | `POST /projects/import` | editor of `workspaceId` | `{ workspaceId, document: ProjectExport, slug?, name? }` — `slug`/`name` override the document's. Creates the project, presets, routes and cases in one transaction, minting new ids | `201 Project` | `409 slug_taken` · `422 import_invalid` — details: `ValidationIssue[]` (schema failures and route-collision issues; nothing is created) · `422 slug_reserved` |
 
 `POST /projects/import` is registered before `POST /projects/:projectId/...` routes; `import` is not a UUID so it never collides with `:projectId`.
 

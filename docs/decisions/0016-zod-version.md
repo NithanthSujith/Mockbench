@@ -5,7 +5,7 @@ Status: accepted      Date: 2026-11-05
 DESIGN.md names "Zod 3". PLAN decision D1 left it open: use Zod 4 if the OpenAPI generator and TanStack Form integrations support it. The whole contract package and `schema-core` are Zod, so switching later would touch every schema.
 
 ## Decision
-**Zod 4.** The OpenAPI generator we need (`@asteasolutions/zod-to-openapi` 9.x) declares `zod ^4.0.0` as its peer, so Zod 3 would lock us out of the maintained generator. TanStack Form validates through the Standard Schema interface, which Zod 4 implements. Pin the exact Zod version in `packages/schema-core` and `packages/api-contract`.
+**Zod 4.** The OpenAPI generator we need (`@asteasolutions/zod-to-openapi` 9.x) declares `zod ^4.0.0` as its peer, so Zod 3 would lock us out of the maintained generator. TanStack Form validates through the Standard Schema interface, which Zod 4 implements. Pin the exact Zod version in `packages/schema-core` and `packages/api-contract`. Versions in use (FND-06): zod 4.6.7, @asteasolutions/zod-to-openapi 9.1.0, @apidevtools/swagger-parser 13.1.0 (dev).
 
 ## Consequences
 - Use Zod 4 APIs (`z.strictObject`, `z.looseObject`, `.meta()`, `z.toJSONSchema`) — do not write Zod 3 idioms.
