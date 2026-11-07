@@ -1,0 +1,38 @@
+{
+  "s": "s-1",
+  "n": 1,
+  "i": 1,
+  "b": true,
+  "z": null,
+  "e": "e-1@example.com",
+  "u": "4719813b-8bdc-5d46-88a3-5e9cfd91a2e3",
+  "l": "https://example.com/l-1",
+  "p": "+91 90000 00001",
+  "d": "2026-01-02",
+  "dt": "2026-01-02T00:00:00+05:30",
+  "en": "a",
+  "src": "src-1",
+  "pin_zero": 0,
+  "pin_empty": "",
+  "pin_false": false,
+  "pin_null": null,
+  "200": "200-1",
+  "1": "1-1",
+  "tags": [
+    "tags-1",
+    "tags-2",
+    "tags-3"
+  ],
+  "rows": [
+    {
+      "id": "d7338cc1-4493-5d12-b4cb-d0152b9bb292"
+    },
+    {
+      "id": "270c1850-0edd-5910-b337-8dc5e91c921c"
+    }
+  ],
+  "home": {
+    "city": "Ahmedabad",
+    "pincode": 100000
+  }
+}

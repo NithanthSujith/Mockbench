@@ -13,3 +13,21 @@ export type {
 } from './types'
 export { emptySchema, validateSchema } from './validate'
 export { fieldEntryZod, mockNodeZod, mockSchemaZod } from './zod'
+export {
+  GENERATOR_VERSION,
+  GenerationLimitError,
+  SchemaInvalidError,
+  UUID_NAMESPACE,
+  generate,
+  generateValue,
+} from './generate'
+export type {
+  GenContext,
+  GenerateResult,
+  PresetHit,
+  PresetQuery,
+  PresetResolver,
+  Provenance,
+} from './generate'
+export { applyPattern } from './pattern'
+export { formatUuid, sha1, uuidv5 } from './sha1'

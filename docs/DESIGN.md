@@ -224,8 +224,8 @@ Note what `orders` does: the ordinal increments per element and flows down into 
 | `string` | `<key>-<n>` |
 | `email` | `<key>-<n>@example.com` |
 | `url` | `https://example.com/<key>-<n>` |
-| `integer` | `n`, clamped into `[min, max]` when set |
-| `number` | `n + 0.5` |
+| `integer` | starts at `min` (default 1) and counts up with the ordinal, stopping at `max` |
+| `number` | `n + 0.5`, offset from `min` when set |
 | `boolean` | `n` is odd |
 | `enum` | `values[(n - 1) mod values.length]` |
 | `uuid` | UUID v5 over `projectId + JSON pointer + n` — stable across restarts and rebuilds |

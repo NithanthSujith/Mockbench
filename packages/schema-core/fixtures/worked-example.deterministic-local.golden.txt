@@ -1,0 +1,26 @@
+{
+  "id": "5a1f2cbf-a8ac-597f-b245-e7773884f1e6",
+  "name": "name-1",
+  "email": "email-1@example.com",
+  "role": "role-1",
+  "is_active": true,
+  "branch_list": [
+    "branch_list-1",
+    "branch_list-2",
+    "branch_list-3"
+  ],
+  "address": {
+    "city": "city-1",
+    "pincode": 1
+  },
+  "orders": [
+    {
+      "order_id": "7d64a79c-0b29-5501-b7e1-7d4bbb86fef1",
+      "total": 1.5
+    },
+    {
+      "order_id": "bbd00d9b-bf2b-5504-b471-c2099ab53eb5",
+      "total": 2.5
+    }
+  ]
+}

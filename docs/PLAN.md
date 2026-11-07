@@ -197,7 +197,7 @@ Mocks are served at `/mock/...` on the same host and port as the SPA, and a case
 
 **C2 — The data model has holes that would force schema changes after the freeze.**
 - DESIGN says "ten tables" but specifies a *Deployment* object, a deploy history and `GET /deployments` with **no table** (D10).
-- `ref` components "live at the project level" but there is no column, and the envelope also carries its own `components` — two homes for one thing. (Proposed: `projects.components`; envelope `components` are local overrides; project components are resolved at publish and frozen into the snapshot.)
+- `ref` components "live at the project level" but there is no column, and the envelope also carries its own `components` — two homes for one thing. (Proposed: `projects.components`; the envelope `components` are defaults that project components override (as FND-02 implements); both are resolved at publish and frozen into the snapshot.)
 - `versions.baked` is `jsonb` in the table and "a string, not jsonb" in the prose. A `jsonb` of escaped strings must be parsed at load and defeats the purpose.
 - "Every table carries `updated_at`" contradicts `versions` being immutable and append-only logs. Immutability is claimed as "no UPDATE grant" but the app uses one DB role: it needs a trigger (FND-08), not a grant.
 - `request_logs.matched_route_id` as an FK would break when a route is deleted; it must be a plain column with denormalised `route_pattern`/`case_name`. Logs for unknown slugs have no `project_id`, so they cannot be logged.
