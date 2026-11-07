@@ -1,1 +1,5 @@
-{ "extends": "@mockbench/tsconfig/web.json", "include": ["src"] }
+{
+  "extends": "@mockbench/tsconfig/web.json",
+  "compilerOptions": { "types": ["vite/client", "@testing-library/jest-dom/vitest"] },
+  "include": ["src"]
+}

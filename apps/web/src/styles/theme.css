@@ -1,0 +1,92 @@
+/*
+ * Mockbench design tokens (FND-12) - the ONLY place colour literals may live.
+ * Extracted from design-reference/prototype.html :root. Dark mode only.
+ * Deviation from the prototype: --color-ink-3 is #7C8794 (prototype #69737F) so small hint text passes AA.
+ */
+@theme {
+  /* Reset Tailwind's default palette/scales so only Mockbench tokens exist. */
+  --color-*: initial;
+  --radius-*: initial;
+  --breakpoint-*: initial;
+  --text-*: initial;
+  --font-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  /* Surfaces */
+  --color-bg: #0c0f13;
+  --color-panel: #14181e;
+  --color-panel-2: #1a1f27;
+  --color-panel-3: #222935;
+  --color-slab: #0e1217;
+
+  /* Ink */
+  --color-ink: #e8ecf2;
+  --color-ink-2: #99a3b1;
+  --color-ink-3: #7c8794;
+
+  /* Lines */
+  --color-line: #242b35;
+  --color-line-strong: #39424e;
+  --color-slab-line: #20262f;
+
+  /* Primary action */
+  --color-btn: #e8ecf2;
+  --color-btn-ink: #14171c;
+
+  /* Accent */
+  --color-signal: #e0b152;
+  --color-signal-soft: #312513;
+  --color-signal-line: #6b5422;
+
+  /* Status */
+  --color-good: #4ade80;
+  --color-warn: #e0b152;
+  --color-bad: #fb7185;
+  --color-info: #7ca0ff;
+
+  /* HTTP methods */
+  --color-m-get: #7ca0ff;
+  --color-m-post: #5dd08a;
+  --color-m-put: #b79bff;
+  --color-m-patch: #56c7d8;
+  --color-m-delete: #fb7185;
+
+  /* JSON syntax */
+  --color-t-key: #9bb4ff;
+  --color-t-str: #8ed8a8;
+  --color-t-num: #e8b37a;
+  --color-t-bool: #c9a2ff;
+  --color-t-null: #7b8696;
+  --color-t-punc: #5f6b7c;
+
+  /* Radii (px) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 7px;
+  --radius-lg: 9px;
+  --radius-xl: 11px;
+  --radius-full: 9999px;
+
+  /* Breakpoints: used as max-narrow: / max-wide: (the prototype is desktop-first) */
+  --breakpoint-narrow: 860px;
+  --breakpoint-wide: 1240px;
+
+  /* Type */
+  --font-sans: 'Archivo', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-micro: 10px;
+  --text-eyebrow: 10.5px;
+  --text-tiny: 11.5px;
+  --text-small: 12px;
+  --text-compact: 12.5px;
+  --text-control: 13px;
+  --text-body: 14px;
+  --text-lead: 15px;
+  --text-title: 19px;
+
+  /* Shadows */
+  --shadow-menu: 0 14px 34px -14px rgb(0 0 0 / 0.85);
+  --shadow-toast: 0 10px 30px -10px rgb(0 0 0 / 0.7);
+}
