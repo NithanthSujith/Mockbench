@@ -1,6 +1,6 @@
 # FND-12 — Design tokens and component vocabulary
 
-Status: in progress
+Status: done
 Phase: 1   Team: Core
 Depends on: FND-01
 Size: L
@@ -26,7 +26,7 @@ Components (`apps/web/src/components/ui/`): `Button` (primary, ghost, dashed; sm
 - [x] In the gallery, an element with the `mono` utility computes `font-family` starting with `"IBM Plex Mono"`, body text starts with `"Archivo"`, and every network request on page load is same-origin (Playwright asserts no request to any other host, including `fonts.googleapis.com`).
 - [x] Measured contrast: `ink` on `bg` ≥ 7:1; `ink-2` on `panel` ≥ 4.5:1; `bad`, `good`, `warn`, `info` on `panel` ≥ 4.5:1; `ink-3` (now `#7C8794`) on `panel` ≥ 4.5:1.
 - [x] The gallery renders every component in every variant and state (default, focus-visible, disabled, error; hover is live) and every method badge and status class (asserted by tests).
-- [ ] A reviewer's side-by-side of the gallery with the prototype (topbar controls, case tabs, table rows, the Slab) is approved by the user. *(Screenshots at 1440/1000/390 px are in `apps/web/gallery-screenshots/`, git-ignored; regenerate with `pnpm --filter @mockbench/web test:e2e`.)*
+- [x] A reviewer's side-by-side of the gallery with the prototype (topbar controls, case tabs, table rows, the Slab) is approved by the user. *(Screenshots at 1440/1000/390 px are in `apps/web/gallery-screenshots/`, git-ignored; regenerate with `pnpm --filter @mockbench/web test:e2e`.)* *(Approved by the owner 2026-11-07.)*
 - [x] Keyboard: every interactive component is reachable by Tab and shows the `signal` focus ring; `DropdownMenu` and `Dialog` trap and restore focus and close on Escape.
 - [x] `JsonView` given a value and a provenance map renders `generated` leaves with the dashed signal underline and `fixed`/`preset` leaves with the soft signal fill (the prototype's `.gen`/`.fix`).
 
