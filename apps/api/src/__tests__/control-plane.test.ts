@@ -401,7 +401,11 @@ describe('rate limiting', () => {
   })
 
   it('unauthenticated requests are limited per client IP (X-Forwarded-For with TRUST_PROXY=1)', async () => {
-    const limited = await makeApp({ env: { CONTROL_RATE_LIMIT: '2', TRUST_PROXY: '1' } })
+    // No bound handlers: the request must reach 501 (not 401) however many teams have merged.
+    const limited = await makeApp({
+      env: { CONTROL_RATE_LIMIT: '2', TRUST_PROXY: '1' },
+      modules: {},
+    })
     try {
       const hit = (ip: string) =>
         request(limited.app).get('/api/v1/workspaces').set('X-Forwarded-For', ip)

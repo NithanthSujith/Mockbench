@@ -3,7 +3,9 @@
 # The SPA never has a host name compiled in: it calls relative /api/v1/... URLs and derives the mock
 # base URL from window.location at runtime, so one image works behind any address.
 
-FROM node:22-alpine AS build
+# The bundle is plain static files, so the build runs on the builder's own CPU (no QEMU emulation) even
+# when the image is built for another architecture.
+FROM --platform=$BUILDPLATFORM node:22-alpine AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable

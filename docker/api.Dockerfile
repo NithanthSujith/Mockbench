@@ -8,9 +8,13 @@
 #   runtime  node:22-alpine + that node_modules + dist, running as the non-root `node` user
 #
 # The runtime image therefore contains no TypeScript sources, no drizzle-kit and no dev dependencies.
-# Builds for linux/amd64 and linux/arm64 (nothing here needs a compiler: pure-JS dependencies only).
+# Builds for linux/amd64 and linux/arm64 WITHOUT emulating pnpm: the build stage always runs on the builder's
+# own CPU ($BUILDPLATFORM). Running `pnpm deploy` under QEMU crashed with SIGILL on a cold cache, and the
+# bundle is plain JS anyway. The one native dependency (@node-rs/argon2) ships prebuilt binaries, so pnpm is
+# told to fetch the linux/musl binaries for BOTH x64 and arm64; the runtime picks the right one. The runtime
+# stage below only copies files, so it needs no emulation either.
 
-FROM node:22-alpine AS build
+FROM --platform=$BUILDPLATFORM node:22-alpine AS build
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
@@ -19,6 +23,9 @@ WORKDIR /repo
 # 1. Manifests only, so the dependency layer is cached until a package.json or the lockfile changes.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY scripts/check-node.mjs scripts/check-node.mjs
+# Fetch prebuilt native packages for every architecture we ship, whatever machine builds the image
+# (appended after the COPY above so it is not overwritten by the repository's own pnpm-workspace.yaml).
+RUN printf 'supportedArchitectures:\n  os: [linux]\n  cpu: [x64, arm64]\n  libc: [musl]\n' >> pnpm-workspace.yaml
 COPY apps/api/package.json apps/api/package.json
 COPY packages/api-contract/package.json packages/api-contract/package.json
 COPY packages/schema-core/package.json packages/schema-core/package.json
