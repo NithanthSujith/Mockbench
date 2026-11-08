@@ -16,7 +16,8 @@ import {
 } from './dropdown-menu'
 import { Field } from './field'
 import { IconButton } from './icon-button'
-import { Input, Select, Textarea } from './input'
+import { Input, Textarea } from './input'
+import { Select, SelectItem, SelectLabel, SelectSeparator, SelectGroup } from './select'
 import { JsonView, type Provenance } from './json-view'
 import { EmptyState, Eyebrow, OptionCard, Slab, Spinner } from './misc'
 import { Table, TBody, Td, Th, THead, Tr } from './table'
@@ -137,16 +138,33 @@ export function Gallery() {
           <Field label="Status code">
             <Select mono defaultValue="200">
               {[200, 201, 202, 204, 400, 401, 403, 404, 409, 422, 429, 500, 502, 503].map((s) => (
-                <option key={s}>{s}</option>
+                <SelectItem key={s} value={String(s)}>
+                  {s}
+                </SelectItem>
               ))}
             </Select>
           </Field>
           <Field label="Description">
             <Textarea placeholder="Describe what this route returns." />
           </Field>
+          <Field label="Select (placeholder, grouped)">
+            <Select placeholder="Choose a method">
+              <SelectGroup>
+                <SelectLabel>Read</SelectLabel>
+                <SelectItem value="GET">GET</SelectItem>
+              </SelectGroup>
+              <SelectSeparator />
+              <SelectGroup>
+                <SelectLabel>Write</SelectLabel>
+                <SelectItem value="POST">POST</SelectItem>
+                <SelectItem value="PUT">PUT</SelectItem>
+                <SelectItem value="DELETE">DELETE</SelectItem>
+              </SelectGroup>
+            </Select>
+          </Field>
           <Field label="Select (disabled)">
             <Select disabled defaultValue="GET">
-              <option>GET</option>
+              <SelectItem value="GET">GET</SelectItem>
             </Select>
           </Field>
         </div>

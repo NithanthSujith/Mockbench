@@ -115,4 +115,55 @@ test.describe('design system in a real browser', () => {
     )
     expect(overflow).toBeLessThanOrEqual(0)
   })
+  test('the open Select list is a themed dark panel, not the operating system popup', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 1000 })
+    await page.goto('/')
+    const trigger = page.getByRole('combobox', { name: 'Status code' })
+    await trigger.scrollIntoViewIfNeeded()
+    // Radix hides the rest of the page from assistive tech while open, so measure the trigger first.
+    const tb = await trigger.boundingBox()
+    await trigger.click()
+    const list = page.getByRole('listbox')
+    await expect(list).toBeVisible()
+
+    const surface = await list.evaluate((el) => {
+      const cs = getComputedStyle(el)
+      return {
+        background: cs.backgroundColor,
+        border: cs.borderTopColor,
+        radius: cs.borderTopLeftRadius,
+        shadow: cs.boxShadow,
+      }
+    })
+    expect(surface.background).toBe('rgb(20, 24, 30)') // --color-panel
+    expect(surface.border).toBe('rgb(57, 66, 78)') // --color-line-strong
+    expect(surface.radius).not.toBe('0px')
+    expect(surface.shadow).not.toBe('none')
+
+    // The list is at least as wide as its trigger and sits just below it.
+    const lb = await list.boundingBox()
+    expect(lb!.width).toBeGreaterThanOrEqual(tb!.width - 1)
+    expect(lb!.y).toBeGreaterThanOrEqual(tb!.y + tb!.height - 1)
+
+    // The selected option is marked; hover highlights with panel-2; options are mono.
+    const selected = list.getByRole('option', { name: '200' })
+    await expect(selected).toHaveAttribute('aria-selected', 'true')
+    const other = list.getByRole('option', { name: '404' })
+    await other.hover()
+    await expect
+      .poll(() => other.evaluate((el) => getComputedStyle(el).backgroundColor))
+      .toBe('rgb(26, 31, 39)') // --color-panel-2
+    expect(await other.evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
+
+    await page.screenshot({ path: 'gallery-screenshots/select-open.png' })
+
+    // Keyboard: arrows move, Enter chooses, the trigger shows the choice and keeps focus.
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(list).toBeHidden()
+    await expect(trigger).toBeFocused()
+    await expect(trigger).not.toHaveText('200')
+  })
 })

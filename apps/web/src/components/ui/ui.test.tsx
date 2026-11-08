@@ -25,6 +25,7 @@ import {
   OptionCard,
   Segmented,
   Select,
+  SelectItem,
   Spinner,
   StatusCode,
   Textarea,
@@ -146,7 +147,7 @@ describe('Field', () => {
         </Field>
         <Field label="Method" error="Pick one">
           <Select>
-            <option>GET</option>
+            <SelectItem value="GET">GET</SelectItem>
           </Select>
         </Field>
       </>,
@@ -332,7 +333,7 @@ describe('keyboard reachability', () => {
         <Input aria-label="input" />
         <Textarea aria-label="textarea" />
         <Select aria-label="select">
-          <option>a</option>
+          <SelectItem value="a">a</SelectItem>
         </Select>
         <Segmented
           label="seg"

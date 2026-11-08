@@ -2,7 +2,15 @@ export { cn } from './cn'
 export { Button, buttonVariants, type ButtonProps } from './button'
 export { IconButton, type IconButtonProps } from './icon-button'
 export { Field, useFieldControlProps } from './field'
-export { Input, Textarea, Select, type InputProps } from './input'
+export { Input, Textarea, type InputProps } from './input'
+export {
+  Select,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  type SelectProps,
+} from './select'
 export { Card, PanelHead, PanelBody } from './card'
 export { Table, THead, TBody, Tr, Th, Td } from './table'
 export { MethodBadge, StatusCode, LivePill, statusClass, type StatusClass } from './badges'
