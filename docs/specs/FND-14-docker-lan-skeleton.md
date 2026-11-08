@@ -1,6 +1,6 @@
 # FND-14 — Docker and LAN skeleton
 
-Status: in progress
+Status: done
 Phase: 1   Team: Core
 Depends on: FND-10, FND-13
 Size: L
@@ -34,7 +34,7 @@ The release/GHCR workflow (REL-02). Real features: the stack serves the skeleton
 - [x] The SPA is served at `http://mockbench.lan.test:8080` (host-resolver mapped to the runner), its assets load with relative URLs from that origin, `GET /api/v1/instance` through nginx returns the instance JSON, and no request leaves that host (Playwright). *(Amended 2026-11-08: the topbar base-URL text needs a signed-in project page, so that assertion moves to XC-01, which already contains it.)* *(Local, Playwright at `mockbench.lan.test:18080`.)*
 - [x] *Moved to XC-01 (2026-11-08):* the session cookie attributes (`HttpOnly; SameSite=Lax; Path=/`, no `Secure`, no `Domain`; `Secure` only with `COOKIE_SECURE=true`) need a real sign-in, so XC-01 asserts them against this stack. This unit proves only that `COOKIE_SECURE` reaches the container environment and defaults to false.
 - [x] Starting two `api` containers at once (`docker compose up --scale api=2`) against an empty `pgdata` applies each migration exactly once and both become healthy. *(Local: 3 migrations, applied once between the two containers; both healthy.)*
-- [ ] `docker buildx build --platform linux/amd64,linux/arm64` succeeds for both images in CI (no push), and the runtime image runs as a non-root user (`id -u` ≠ 0). *(Local: both images built for `linux/amd64` and `linux/arm64` on a temporary docker-container builder, 4 m 41 s (web) and 2 m 22 s (api); runtime user is `node` (uid 1000), verified on amd64. **Pending CI:** the `multiarch-build` job has not run yet; tick after its first green run.)*
+- [x] `docker buildx build --platform linux/amd64,linux/arm64` succeeds for both images in CI (no push), and the runtime image runs as a non-root user (`id -u` ≠ 0). *(Local: both images built for `linux/amd64` and `linux/arm64` on a temporary docker-container builder, 4 m 41 s (web) and 2 m 22 s (api); runtime user is `node` (uid 1000), verified on amd64. **Pending CI:** the `multiarch-build` job has not run yet; tick after its first green run.)* *(CI evidence: run 42474229187 - multiarch-build (api) and (web) both succeeded for linux/amd64 and linux/arm64, and lan-smoke passed, on 2026-11-08.)*
 - [x] The api image contains no `drizzle-kit` and the entrypoint migrates via the programmatic migrator. *(Local: also no `esbuild`, `tsx`, `typescript` or `@mockbench/*` sources; node_modules is 39.7 MB.)*
 - [x] The README contains a "Run it on your LAN" section that names the URL form `http://<this-machine's-LAN-IP>:8080`, shows how to find the IP on macOS, Linux and Windows, and tells the user they may need to allow the port through the host firewall (and notes Docker Desktop may show a gateway IP in logs).
 
