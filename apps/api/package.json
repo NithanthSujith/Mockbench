@@ -9,8 +9,10 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/dev.ts",
+    "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit",
+    "build": "node build.mjs",
     "test": "vitest run --passWithNoTests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
