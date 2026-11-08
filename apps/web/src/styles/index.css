@@ -34,7 +34,7 @@
 }
 /* Forces the focus-visible look (used by the gallery to show the state without keyboard input). */
 @utility demo-focus {
-  outline: 2px solid var(--color-signal);
+  outline: 2px solid var(--color-focus);
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }
@@ -73,7 +73,7 @@
     cursor: not-allowed;
   }
   :focus-visible {
-    outline: 2px solid var(--color-signal);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
     border-radius: var(--radius-xs);
   }

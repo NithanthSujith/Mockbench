@@ -71,7 +71,7 @@ test.describe('design system in a real browser', () => {
     await context.close()
   })
 
-  test('keyboard focus shows the signal ring on every kind of control', async ({ page }) => {
+  test('keyboard focus shows the focus ring on every kind of control', async ({ page }) => {
     await page.goto('/')
     const ring = async () =>
       page.evaluate(() => {
@@ -80,7 +80,7 @@ test.describe('design system in a real browser', () => {
       })
 
     await page.keyboard.press('Tab')
-    expect(await ring()).toEqual({ style: 'solid', width: '2px', color: 'rgb(224, 177, 82)' })
+    expect(await ring()).toEqual({ style: 'solid', width: '2px', color: 'rgb(124, 160, 255)' })
 
     // Tab through the first twenty stops: each focused element must show the same ring.
     for (let i = 0; i < 20; i++) {
@@ -88,7 +88,7 @@ test.describe('design system in a real browser', () => {
       const r = await ring()
       expect(r.style).toBe('solid')
       expect(r.width).toBe('2px')
-      expect(r.color).toBe('rgb(224, 177, 82)')
+      expect(r.color).toBe('rgb(124, 160, 255)')
     }
   })
 

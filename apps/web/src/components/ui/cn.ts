@@ -22,6 +22,7 @@ const twMerge = extendTailwindMerge({
         'signal',
         'signal-soft',
         'signal-line',
+        'focus',
         'good',
         'warn',
         'bad',

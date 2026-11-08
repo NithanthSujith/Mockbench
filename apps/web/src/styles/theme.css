@@ -39,6 +39,7 @@
   --color-signal: #e0b152;
   --color-signal-soft: #312513;
   --color-signal-line: #6b5422;
+  --color-focus: #7ca0ff; /* keyboard focus ring: blue, distinct from the amber used for pins/defaults */
 
   /* Status */
   --color-good: #4ade80;

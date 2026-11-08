@@ -49,6 +49,7 @@ describe('theme tokens (extracted from the prototype)', () => {
       signal: '#e0b152',
       'signal-soft': '#312513',
       'signal-line': '#6b5422',
+      focus: '#7ca0ff',
       good: '#4ade80',
       warn: '#e0b152',
       bad: '#fb7185',
@@ -81,7 +82,7 @@ describe('theme tokens (extracted from the prototype)', () => {
     expect(contrast(t['ink-3']!, t.bg!)).toBeGreaterThanOrEqual(4.5)
     expect(contrast(t['ink-3']!, t['panel-2']!)).toBeGreaterThanOrEqual(4.5)
   })
-  for (const name of ['good', 'warn', 'bad', 'info'] as const) {
+  for (const name of ['good', 'warn', 'bad', 'info', 'focus'] as const) {
     it(`${name} on panel is at least 4.5:1`, () => {
       expect(contrast(t[name]!, t.panel!)).toBeGreaterThanOrEqual(4.5)
     })
@@ -97,8 +98,8 @@ describe('dark mode only', () => {
     expect(baseCss + themeCss).not.toMatch(/color-scheme:\s*light/)
     expect(baseCss + themeCss).not.toMatch(/prefers-color-scheme/)
   })
-  it('declares focus-visible with the signal ring', () => {
-    expect(baseCss).toMatch(/:focus-visible\s*{[^}]*outline:\s*2px solid var\(--color-signal\)/)
+  it('declares focus-visible with the focus ring', () => {
+    expect(baseCss).toMatch(/:focus-visible\s*{[^}]*outline:\s*2px solid var\(--color-focus\)/)
   })
   it('honours prefers-reduced-motion', () => {
     expect(baseCss).toMatch(/prefers-reduced-motion:\s*reduce/)
