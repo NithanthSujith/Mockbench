@@ -84,27 +84,29 @@ They ship in the same container (one less thing to run) but live in separate Exp
 
 ## Data model
 
-Ten tables. Every id is a UUID v7 (time-sortable, so it indexes like a sequence but is safe to expose). Every table carries `created_at` and `updated_at` as `timestamptz`.
+Eleven tables (`deployments` added: DESIGN specified a deploy history but gave it no table; PLAN D10). Every id is a UUID v7 (time-sortable, so it indexes like a sequence but is safe to expose); PostgreSQL 16 has no `uuidv7()`, so a `uuid_v7()` SQL function is the column default. Every table carries `created_at` and `updated_at` as `timestamptz` **except** the immutable or append-only tables (`versions`, `deployments`, `request_logs`), which carry `created_at` only.
 
 | Table | Columns beyond id and timestamps | Notes |
 | --- | --- | --- |
 | `users` | email (citext, unique), password\_hash, name, is\_active | Argon2id hash |
-| `sessions` | user\_id, token\_hash, expires\_at, user\_agent, ip | Opaque token; only the hash is stored |
+| `sessions` | user\_id, token\_hash, expires\_at, last\_used\_at, user\_agent, ip | Opaque token; only an HMAC of it (keyed by `SESSION_SECRET`) is stored |
 | `workspaces` | name, slug (unique) |  |
 | `workspace_members` | workspace\_id, user\_id, role (owner / editor / viewer) | Composite unique on (workspace\_id, user\_id) |
-| `projects` | workspace\_id, name, slug (unique globally), description, settings jsonb, active\_version\_id | The global slug uniqueness is what makes `/mock/<slug>` unambiguous |
+| `projects` | workspace\_id, name, slug (unique globally, immutable), description, settings jsonb, components jsonb, version\_seq, active\_version\_id | The global slug uniqueness is what makes `/mock/<slug>` unambiguous |
 | `routes` | project\_id, method, path, normalized\_path, description, sort\_order | Unique on (project\_id, method, normalized\_path) |
-| `response_cases` | route\_id, name, status\_code, schema jsonb, headers jsonb, delay\_ms, is\_default, sort\_order | Partial unique index enforcing exactly one default per route |
+| `response_cases` | route\_id, name, status\_code, schema jsonb, headers jsonb, delay\_ms (nullable: null inherits the project default; 0 to 10000), is\_default, sort\_order | Partial unique index enforcing exactly one default per route; unique on (route\_id, lower(name)) |
 | `data_presets` | project\_id, name, rules jsonb, is\_enabled, priority | Predefined values, see *Generation engine* |
-| `versions` | project\_id, label, snapshot jsonb, baked jsonb, created\_by, notes | Immutable after insert |
-| `request_logs` | project\_id, version\_id, method, path, matched\_route\_id, matched\_case\_id, status\_code, duration\_ms, request\_headers jsonb, query jsonb, ip | Append-only, pruned on a schedule |
+| `versions` | project\_id, seq, label, notes, snapshot jsonb, baked **text** (a JSON map of baked bodies; a string so serving needs no re-serialisation), route\_count, case\_count, snapshot\_bytes, baked\_bytes, created\_by | Immutable after insert; unique on (project\_id, seq) and (project\_id, label) |
+| `deployments` | project\_id, version\_id (set null on version delete), version\_label, deployed\_by | The deploy history; append-only |
+| `request_logs` | project\_id, version\_id (restrict), method, path, matched\_route\_id and matched\_case\_id (plain ids, no foreign key), route\_pattern, case\_name, mock\_error, status\_code, duration\_ms, request\_headers jsonb (sensitive values redacted), query jsonb, ip | Append-only, pruned on a schedule; unknown-slug requests are not logged |
 
 ### Constraints worth writing down
 
 - `projects.active_version_id` is a nullable FK to `versions` with `ON DELETE SET NULL`. A project with no active version returns `503` from the data plane with a message saying it has not been published yet — a far better developer experience than a bare 404.
 - Exactly one default case per route: `CREATE UNIQUE INDEX ON response_cases (route_id) WHERE is_default;`
 - `routes.normalized_path` is a generated/trigger-maintained column: `/users/:id/orders/:oid` becomes `/users/{}/orders/{}`. It is what the uniqueness constraint and the collision check run against.
-- `versions` has no `UPDATE` grant in application code. Changing a published version is the one thing that would quietly break a consumer, so make it structurally impossible rather than a code convention.
+- `versions` cannot be updated: a trigger raises on any `UPDATE`, whatever role issues it. The one permitted change is `created_by` going from a user id to `NULL`, which is what `ON DELETE SET NULL` performs when that user is deleted. Changing a published version is the one thing that would quietly break a consumer, so it is structurally impossible rather than a code convention.
+- `request_logs.version_id` is `ON DELETE RESTRICT`: a version still referenced by retained log rows cannot be deleted, which is exactly the "never delete a referenced version" rule. Deleting a version that was ever deployed keeps its `deployments` rows (`version_id` becomes null, `version_label` remains).
 - `response_cases.status_code` is constrained to a curated list in v1 — 200, 201, 202, 204, 400, 401, 403, 404, 409, 422, 429, 500, 502, 503 — matching your "limit this to a few". Widen it to `CHECK (status_code BETWEEN 100 AND 599)` when someone asks; the UI keeps the curated list as the dropdown and offers an "other" field.
 
 ### Indexes
@@ -141,7 +143,7 @@ It is deliberately *not* JSON Schema. JSON Schema is a validation language with 
 | `array` | `items` (a node), `count` (default 3) | a list |
 | `ref` | `name` | whatever that named component generates |
 
-Every node also accepts `nullable`, `description`, `fixed` (a literal that overrides generation entirely) and `examples[]` (a pool to cycle through by index).
+Every node also accepts `nullable`, `description`, `fixed` (a literal that overrides generation entirely) and `examples[]` (a pool to cycle through by index). `fixed` is detected by the presence of the key, so `""`, `0`, `false` and `null` are valid pins (PLAN D5). `nullable` is documentary in v1: generation never emits `null` because of it; pin `fixed: null` to force one. The root of a schema may be any node type, so a bare array response is valid (PLAN D2).
 
 `array` + `items: { type: "object" }` is your "array of objects" — it needs no special case. `ref` exists so a `User` shape defined once can appear in `GET /users`, `GET /users/:id` and `POST /users` without being retyped; components live at the project level.
 
@@ -182,7 +184,7 @@ The "paste a JSON example" path walks the sample and guesses a node per value. R
 1. `null` → `string` with `nullable: true`, flagged amber in the UI because the real type is unknowable.
 2. A string matching an email, UUID, ISO date, ISO datetime or URL pattern → that semantic type; otherwise `string`.
 3. A number with no fractional part → `integer`; otherwise `number`.
-4. An array → infer from element 0, set `count` to the sample's length. If elements disagree in shape, take the union of keys, mark the differing ones optional, and warn.
+4. An array → infer from element 0, set `count` to the sample's length. If elements disagree in shape, take the union of keys, mark the differing ones `nullable` (MockSchema has no separate optional flag) with an `optional_key` warning, and warn.
 5. An object → recurse, preserving key order.
 
 Inference is a starting point, not an answer — the builder opens on the inferred tree so the user can correct `role` from `string` to `enum` before saving. Say so in the UI; silent wrong guesses are worse than visible ones.
@@ -278,8 +280,8 @@ A project setting, because it changes the performance model:
 | Mode | Behaviour | Baked at publish |
 | --- | --- | --- |
 | `deterministic` (default) | The rules above | Yes — the data plane serves a cached string |
-| `seeded` | Faker, seeded from `projectId + JSON pointer`, so output looks realistic but never changes | Yes |
-| `random` | Faker, fresh on every request | No — generated per request |
+| `seeded` | Values drawn from built-in word and name pools by a PRNG seeded from `projectId + JSON pointer` (not Faker: it is too large for the browser bundle and its output can change between versions; PLAN D4), so output looks realistic but never changes | Yes |
+| `random` | The same pools driven by a fresh random source on every request | No — generated per request |
 
 `random` is the mode that costs you: it disables baking, puts the generator on the hot path, and makes response assertions in a consumer's test suite flaky. Default to `deterministic` and put a one-line warning next to the `random` option.
 
@@ -358,12 +360,13 @@ Publishing does **not** deploy. The two are separate so you can publish from CI 
 ```json
 {
   "schemaVersion": 1,
-  "project": { "slug": "billing-api", "settings": { "indexing": "local", "mode": "deterministic", "cors": "*", "defaultDelayMs": 0 } },
+  "generatorVersion": 1,
+  "project": { "id": "...", "slug": "billing-api", "settings": { "indexing": "local", "mode": "deterministic", "cors": "*", "defaultDelayMs": 0 }, "components": {} },
   "routes": [
     { "id": "...", "method": "GET", "path": "/invoices/:id",
       "cases": [
-        { "id": "...", "name": "Found",     "status": 200, "headers": {}, "delayMs": 0, "isDefault": true,  "schema": { } },
-        { "id": "...", "name": "Not found", "status": 404, "headers": {}, "delayMs": 0, "isDefault": false, "schema": { } }
+        { "id": "...", "name": "Found",     "statusCode": 200, "headers": {}, "delayMs": 0, "isDefault": true,  "schema": { } },
+        { "id": "...", "name": "Not found", "statusCode": 404, "headers": {}, "delayMs": 0, "isDefault": false, "schema": { } }
       ] }
   ],
   "presets": [ ]
@@ -427,13 +430,15 @@ The header route is better than matching on request body for v1 because it is ex
 
 These cost nothing and remove most of the "is it me or the mock?" debugging.
 
+**Hardening (PLAN D9).** Mock content is user-authored and served from the same origin as the editor, so every data-plane response also carries `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox`, and a case cannot set `X-Mock-*`, `Access-Control-*` or hop-by-hop headers. Otherwise an editor could publish a mock that scripts an owner's session.
+
 ### CORS
 
 Permissive by default: `Access-Control-Allow-Origin: *`, all methods, all requested headers, and `OPTIONS` answered before route matching. A mock server that a browser cannot call is useless, and there is nothing here worth protecting. Make it a per-project setting for the rare team that needs to test CORS failures.
 
 ### Cache invalidation
 
-The cache is a `Map<projectId, CompiledVersion>` holding the radix tree and the baked strings. It is invalidated on deploy, on project deletion, and on a settings change. With more than one api replica, publish a Postgres `NOTIFY` on deploy and have every replica `LISTEN` and drop its entry — this is the reason not to reach for Redis.
+The cache is a `Map<projectId, CompiledVersion>` holding the radix tree and the baked strings. It is invalidated on deploy, on project deletion and on a manual flush. Settings are frozen into each version's snapshot, so editing project settings or components changes nothing live until the next publish and deploy (PLAN D7). The cache also holds a slug index with short-lived negative entries, and is bounded by bytes, not entry count. With more than one api replica (optional in v1; PLAN D13 assumes a single instance), publish a Postgres `NOTIFY` on deploy and have every replica `LISTEN` and drop its entry — this is the reason not to reach for Redis.
 
 Also expose `POST /api/v1/projects/:id/cache/flush` for the case where someone edits the database directly, which they will.
 
@@ -447,7 +452,7 @@ Everything under `/api/v1`, JSON in and out, session cookie for auth, and an Ope
 
 | Method and path | Does |
 | --- | --- |
-| `POST /auth/register` | First user becomes owner of a default workspace; after that, registration is gated by `ALLOW_SIGNUP` |
+| `POST /auth/register` | The first user becomes owner of the `Default` workspace (adopting it if the demo seed already created it); later registrants get no workspace until an owner adds them by email. After the first user, registration is gated by `ALLOW_SIGNUP` (PLAN D3) |
 | `POST /auth/login` | Sets the session cookie |
 | `POST /auth/logout` | Revokes the session |
 | `GET /auth/me` | Current user and workspace memberships |
@@ -473,7 +478,9 @@ Everything under `/api/v1`, JSON in and out, session cookie for auth, and an Ope
 | `POST /projects/:id/cache/flush` |  |
 | `GET /projects/:id/requests` | Paginated request log |
 | `GET /projects/:id/export` · `POST /projects/import` | Whole project as one JSON file — how people share mocks and commit them to a repo |
-| `GET /healthz` · `GET /readyz` | Unauthenticated; `readyz` checks the database |
+| `GET /healthz` · `GET /readyz` | Unauthenticated; `readyz` checks the database. Also served under `/api/v1/` because the web container proxies only `/api` and `/mock` |
+
+**Additions to this table (PLAN D11, specified in `docs/API-CONTRACT.md`):** `GET /instance`, `POST /auth/password`, `GET`/`PATCH`/`DELETE /workspaces/:id`, `GET /projects/by-slug/:slug`, the `components` field on `PATCH /projects/:id`, `cases[]` summaries on routes, and a `/w/$wsSlug/members` screen. The CSRF header `X-Mockbench-Client` is required on every non-safe request, and `docs/API-CONTRACT.md` is the authority for every request and response shape.
 
 ### Conventions
 
@@ -748,7 +755,10 @@ Your brief left these open and the design would not be complete without them. Ea
 | **Determinism surprises people** | A user expecting faker-style data sees `name-1` and thinks the tool is broken | Explain it on the preview pane itself, in one sentence, next to the mode toggle |
 | **Adoption** | Five established tools already occupy this space. A technically good project with no distinct position gets 40 stars and no users | The positioning in the previous section is the thin edge: team-shared, versioned, legible. Validate it by showing the README to five developers before writing the code, not after |
 
-### Open questions for you
+### Open questions for you (all resolved 2026-11-05; see `docs/PLAN.md` section 8)
+
+_Resolved: (1) project-level versions, ADR 0004; (2) a single instance in v1, with `NOTIFY` fan-out optional (D13); (3) request-body validation is not in v1 and the Route model does not preclude it; (4) both the request log and the version diff are in the plan, the log first._
+
 
 1. **Did you mean project-level or per-route versions?** The whole *Versioning* section turns on this.
 2. **Single instance or will you run replicas?** If single, drop the `LISTEN`/`NOTIFY` work and the advisory lock from M0.
