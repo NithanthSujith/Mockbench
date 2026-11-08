@@ -31,3 +31,13 @@ export type {
 } from './generate'
 export { applyPattern } from './pattern'
 export { formatUuid, sha1, uuidv5 } from './sha1'
+export {
+  MAX_PRESET_RULES,
+  PresetRuleSchema,
+  PresetRulesSchema,
+  STARTER_PRESETS,
+  buildPresetResolver,
+} from './presets'
+export type { PresetRule, ResolvedPreset, StarterPreset } from './presets'
+export { inferSchema } from './infer'
+export type { InferResult, InferWarning, WarningCode } from './infer'
