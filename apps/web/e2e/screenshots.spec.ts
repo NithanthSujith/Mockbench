@@ -5,7 +5,8 @@ import { test } from '@playwright/test'
 for (const width of [1440, 1000, 390]) {
   test(`gallery screenshot at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 })
-    await page.goto('/')
+    await page.goto('/_dev/ui')
+    await page.getByText('Mockbench UI kit').waitFor()
     await page.evaluate(() => document.fonts.ready)
     await page.screenshot({
       path: `gallery-screenshots/gallery-${width}.png`,

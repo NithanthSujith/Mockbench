@@ -4,3 +4,4 @@ pnpm-lock.yaml
 design-reference
 docs
 apps/api/src/db/migrations
+apps/web/src/routeTree.gen.ts

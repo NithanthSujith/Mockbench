@@ -14,7 +14,9 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "gen:endpoints": "vitest run src/lib/api/endpoint-table.test.ts -u",
+    "dev:mock": "msw init node_modules/.mockbench/mock-public --no-save && vite --mode mock"
   },
   "devDependencies": {
     "@mockbench/tsconfig": "workspace:*",

@@ -1,10 +1,25 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+/** The gallery is lazy-loaded (dev only), so wait until it has actually rendered. */
+async function openGallery(page: Page) {
+  await page.goto('/_dev/ui')
+  await page.getByText('Mockbench UI kit').waitFor()
+}
 
 test.describe('design system in a real browser', () => {
+  // First load of the Vite dev server optimizes dependencies and may reload the page; do that once
+  // up front so no test sees aborted requests.
+  test.beforeAll(async ({ browser, baseURL }) => {
+    const page = await (await browser.newContext({ baseURL })).newPage()
+    await openGallery(page)
+    await page.waitForLoadState('networkidle')
+    await page.context().close()
+  })
+
   test('uses IBM Plex Mono for mono text and Archivo for UI text, both actually loaded', async ({
     page,
   }) => {
-    await page.goto('/')
+    await openGallery(page)
     await expect(page.getByRole('heading', { name: 'Mockbench UI kit' })).toBeVisible()
     await page.evaluate(() => document.fonts.ready)
 
@@ -40,7 +55,7 @@ test.describe('design system in a real browser', () => {
     page.on('request', (r) => requested.push(r.url()))
     page.on('requestfailed', (r) => failed.push(`${r.url()} ${r.failure()?.errorText}`))
 
-    await page.goto('/')
+    await openGallery(page)
     await page.evaluate(() => document.fonts.ready)
     await page.waitForLoadState('networkidle')
 
@@ -57,7 +72,7 @@ test.describe('design system in a real browser', () => {
   }) => {
     const context = await browser.newContext({ baseURL, colorScheme: 'light' })
     const page = await context.newPage()
-    await page.goto('/')
+    await openGallery(page)
     const info = await page.evaluate(() => ({
       scheme: getComputedStyle(document.documentElement).colorScheme,
       bg: getComputedStyle(document.body).backgroundColor,
@@ -72,7 +87,7 @@ test.describe('design system in a real browser', () => {
   })
 
   test('keyboard focus shows the focus ring on every kind of control', async ({ page }) => {
-    await page.goto('/')
+    await openGallery(page)
     const ring = async () =>
       page.evaluate(() => {
         const cs = getComputedStyle(document.activeElement!)
@@ -98,7 +113,7 @@ test.describe('design system in a real browser', () => {
   }) => {
     const context = await browser.newContext({ baseURL, reducedMotion: 'reduce' })
     const page = await context.newPage()
-    await page.goto('/')
+    await openGallery(page)
     const primary = page.getByRole('button', { name: 'Default' }).first()
     await expect(primary).toHaveCSS('opacity', '1')
     await primary.hover()
@@ -109,7 +124,7 @@ test.describe('design system in a real browser', () => {
 
   test('the layout does not scroll horizontally at phone width', async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 })
-    await page.goto('/')
+    await openGallery(page)
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )
@@ -119,7 +134,7 @@ test.describe('design system in a real browser', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 1000 })
-    await page.goto('/')
+    await openGallery(page)
     const trigger = page.getByRole('combobox', { name: 'Status code' })
     await trigger.scrollIntoViewIfNeeded()
     // Radix hides the rest of the page from assistive tech while open, so measure the trigger first.
