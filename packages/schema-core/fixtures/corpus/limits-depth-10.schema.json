@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "level_1",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "level_2",
+              "node": {
+                "type": "object",
+                "fields": [
+                  {
+                    "key": "level_3",
+                    "node": {
+                      "type": "object",
+                      "fields": [
+                        {
+                          "key": "level_4",
+                          "node": {
+                            "type": "object",
+                            "fields": [
+                              {
+                                "key": "level_5",
+                                "node": {
+                                  "type": "object",
+                                  "fields": [
+                                    {
+                                      "key": "level_6",
+                                      "node": {
+                                        "type": "object",
+                                        "fields": [
+                                          {
+                                            "key": "level_7",
+                                            "node": {
+                                              "type": "object",
+                                              "fields": [
+                                                {
+                                                  "key": "level_8",
+                                                  "node": {
+                                                    "type": "object",
+                                                    "fields": [
+                                                      {
+                                                        "key": "level_9",
+                                                        "node": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

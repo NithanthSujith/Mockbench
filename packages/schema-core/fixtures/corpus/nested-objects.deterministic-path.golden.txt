@@ -1,0 +1,15 @@
+{
+  "name": "name-1",
+  "company": {
+    "title": "title-1",
+    "address": {
+      "city": "city-1",
+      "pincode": 1,
+      "geo": {
+        "lat": 1.5,
+        "lng": 1.5
+      }
+    }
+  },
+  "active": true
+}

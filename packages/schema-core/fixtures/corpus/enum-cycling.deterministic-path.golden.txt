@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "status": "draft",
+      "level": 1,
+      "flag": true,
+      "solo": "only"
+    },
+    {
+      "status": "sent",
+      "level": 2,
+      "flag": false,
+      "solo": "only"
+    },
+    {
+      "status": "paid",
+      "level": 1,
+      "flag": "maybe",
+      "solo": "only"
+    },
+    {
+      "status": "draft",
+      "level": 2,
+      "flag": true,
+      "solo": "only"
+    },
+    {
+      "status": "sent",
+      "level": 1,
+      "flag": false,
+      "solo": "only"
+    },
+    {
+      "status": "paid",
+      "level": 2,
+      "flag": "maybe",
+      "solo": "only"
+    },
+    {
+      "status": "draft",
+      "level": 1,
+      "flag": true,
+      "solo": "only"
+    }
+  ]
+}

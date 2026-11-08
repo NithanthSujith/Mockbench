@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "items",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "status",
+                "node": {
+                  "type": "enum",
+                  "values": ["draft", "sent", "paid"]
+                }
+              },
+              {
+                "key": "level",
+                "node": {
+                  "type": "enum",
+                  "values": [1, 2]
+                }
+              },
+              {
+                "key": "flag",
+                "node": {
+                  "type": "enum",
+                  "values": [true, false, "maybe"]
+                }
+              },
+              {
+                "key": "solo",
+                "node": {
+                  "type": "enum",
+                  "values": ["only"]
+                }
+              }
+            ]
+          },
+          "count": 7
+        }
+      }
+    ]
+  }
+}

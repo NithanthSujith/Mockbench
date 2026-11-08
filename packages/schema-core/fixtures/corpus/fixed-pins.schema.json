@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "zero",
+        "node": {
+          "type": "integer",
+          "fixed": 0
+        }
+      },
+      {
+        "key": "empty",
+        "node": {
+          "type": "string",
+          "fixed": ""
+        }
+      },
+      {
+        "key": "no",
+        "node": {
+          "type": "boolean",
+          "fixed": false
+        }
+      },
+      {
+        "key": "nil",
+        "node": {
+          "type": "string",
+          "fixed": null
+        }
+      },
+      {
+        "key": "text",
+        "node": {
+          "type": "string",
+          "fixed": "INR"
+        }
+      },
+      {
+        "key": "whole_object",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "a",
+              "node": {
+                "type": "string"
+              }
+            }
+          ],
+          "fixed": {
+            "pinned": true,
+            "n": 1
+          }
+        }
+      },
+      {
+        "key": "whole_array",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "count": 2,
+          "fixed": [1, "two", null]
+        }
+      },
+      {
+        "key": "rows",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "id",
+                "node": {
+                  "type": "integer"
+                }
+              },
+              {
+                "key": "currency",
+                "node": {
+                  "type": "string",
+                  "fixed": "INR"
+                }
+              },
+              {
+                "key": "score",
+                "node": {
+                  "type": "number",
+                  "fixed": 0
+                }
+              }
+            ]
+          },
+          "count": 3
+        }
+      },
+      {
+        "key": "pin_beats_enum",
+        "node": {
+          "type": "enum",
+          "values": ["a", "b"],
+          "fixed": "z"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "people",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "name",
+                "node": {
+                  "type": "string",
+                  "examples": ["Anaya Shah", "Rohit Mehta", "Priya Nair"]
+                }
+              },
+              {
+                "key": "age",
+                "node": {
+                  "type": "integer",
+                  "examples": [31, 42]
+                }
+              },
+              {
+                "key": "nickname",
+                "node": {
+                  "type": "string",
+                  "examples": []
+                }
+              },
+              {
+                "key": "city",
+                "node": {
+                  "type": "enum",
+                  "values": ["x", "y"],
+                  "examples": ["from-examples"]
+                }
+              }
+            ]
+          },
+          "count": 5
+        }
+      }
+    ]
+  }
+}

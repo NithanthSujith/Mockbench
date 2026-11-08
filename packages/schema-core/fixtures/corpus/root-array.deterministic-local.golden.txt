@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1a7d951a-1fe8-5384-9579-fda0209cad48",
+    "name": "name-1",
+    "tags": [
+      "tags-1",
+      "tags-2"
+    ]
+  },
+  {
+    "id": "6e3c1b88-7d05-50cd-99aa-573bece2fc57",
+    "name": "name-2",
+    "tags": [
+      "tags-1",
+      "tags-2"
+    ]
+  },
+  {
+    "id": "1715ed7f-2c04-5cc2-b324-da452723a3f5",
+    "name": "name-3",
+    "tags": [
+      "tags-1",
+      "tags-2"
+    ]
+  }
+]

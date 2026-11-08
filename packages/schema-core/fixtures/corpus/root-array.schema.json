@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "array",
+    "items": {
+      "type": "object",
+      "fields": [
+        {
+          "key": "id",
+          "node": {
+            "type": "uuid"
+          }
+        },
+        {
+          "key": "name",
+          "node": {
+            "type": "string"
+          }
+        },
+        {
+          "key": "tags",
+          "node": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "count": 2
+          }
+        }
+      ]
+    },
+    "count": 3
+  }
+}

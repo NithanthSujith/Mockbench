@@ -1,0 +1,31 @@
+{
+  "city": "Ahmedabad",
+  "currency": "USD",
+  "user_id": "ID-00001",
+  "order_id": 0,
+  "status": "preset-status",
+  "address": {
+    "city": "PATH-WINS",
+    "pincode": 1
+  },
+  "orders": [
+    {
+      "total": 1.5,
+      "code": "glob-code-01",
+      "city": "O1"
+    },
+    {
+      "total": 2.5,
+      "code": "glob-code-02",
+      "city": "O2"
+    },
+    {
+      "total": 3.5,
+      "code": "glob-code-03",
+      "city": "O1"
+    }
+  ],
+  "note": null,
+  "label": "label-by-type-1",
+  "when": "2030-01-01"
+}

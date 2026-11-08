@@ -1,0 +1,85 @@
+{
+  "users": [
+    {
+      "name": "users-1-name-1",
+      "tags": [
+        "users-1-tags-1",
+        "users-1-tags-2"
+      ],
+      "addresses": [
+        {
+          "city": "users-1-addresses-1-city-1",
+          "codes": [
+            1,
+            2
+          ]
+        },
+        {
+          "city": "users-1-addresses-2-city-2",
+          "codes": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "users-2-name-2",
+      "tags": [
+        "users-2-tags-1",
+        "users-2-tags-2"
+      ],
+      "addresses": [
+        {
+          "city": "users-2-addresses-1-city-1",
+          "codes": [
+            1,
+            2
+          ]
+        },
+        {
+          "city": "users-2-addresses-2-city-2",
+          "codes": [
+            1,
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "users-3-name-3",
+      "tags": [
+        "users-3-tags-1",
+        "users-3-tags-2"
+      ],
+      "addresses": [
+        {
+          "city": "users-3-addresses-1-city-1",
+          "codes": [
+            1,
+            2
+          ]
+        },
+        {
+          "city": "users-3-addresses-2-city-2",
+          "codes": [
+            1,
+            2
+          ]
+        }
+      ]
+    }
+  ],
+  "matrix": [
+    [
+      1,
+      2,
+      3
+    ],
+    [
+      1,
+      2,
+      3
+    ]
+  ]
+}

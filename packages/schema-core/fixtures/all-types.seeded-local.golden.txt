@@ -1,0 +1,38 @@
+{
+  "s": "onyx-764",
+  "n": 68.15,
+  "i": 8,
+  "b": true,
+  "z": null,
+  "e": "delta.indigo@meridian.example.com",
+  "u": "9f9bce70-87f6-4f8a-8306-48bd9915d2fa",
+  "l": "https://anvil.example.com/kestrel",
+  "p": "+91 90000 70782",
+  "d": "2026-01-29",
+  "dt": "2026-03-17T12:40:00+05:30",
+  "en": "a",
+  "src": "quarry-937",
+  "pin_zero": 0,
+  "pin_empty": "",
+  "pin_false": false,
+  "pin_null": null,
+  "200": "lantern-591",
+  "1": "cobalt-950",
+  "tags": [
+    "marble-644",
+    "pennant-291",
+    "hollow-822"
+  ],
+  "rows": [
+    {
+      "id": "cceb710d-adbd-4711-a52e-4af03e126e6b"
+    },
+    {
+      "id": "404f4b98-5fc0-41a5-857d-b57e9fa90cf6"
+    }
+  ],
+  "home": {
+    "city": "Ahmedabad",
+    "pincode": 179847
+  }
+}

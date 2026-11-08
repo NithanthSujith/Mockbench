@@ -1,0 +1,85 @@
+{
+  "users": [
+    {
+      "name": "Karan Malhotra",
+      "tags": [
+        "gable-801",
+        "gable-100"
+      ],
+      "addresses": [
+        {
+          "city": "Vadodara",
+          "codes": [
+            222,
+            1388
+          ]
+        },
+        {
+          "city": "Jaipur",
+          "codes": [
+            2852,
+            3631
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sneha Iyer",
+      "tags": [
+        "delta-649",
+        "granite-486"
+      ],
+      "addresses": [
+        {
+          "city": "Indore",
+          "codes": [
+            1384,
+            2283
+          ]
+        },
+        {
+          "city": "Surat",
+          "codes": [
+            587,
+            2650
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arjun Verma",
+      "tags": [
+        "cinder-574",
+        "cinder-390"
+      ],
+      "addresses": [
+        {
+          "city": "Nashik",
+          "codes": [
+            3620,
+            3933
+          ]
+        },
+        {
+          "city": "Pune",
+          "codes": [
+            779,
+            1679
+          ]
+        }
+      ]
+    }
+  ],
+  "matrix": [
+    [
+      257,
+      884,
+      1654
+    ],
+    [
+      2146,
+      2734,
+      2849
+    ]
+  ]
+}

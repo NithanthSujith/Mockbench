@@ -8,10 +8,14 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "sideEffects": false,
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "test:node": "vitest run --project node",
+    "test:browser-env": "vitest run --project browser-env",
+    "test:update-goldens": "vitest run --project node -u"
   },
   "devDependencies": {
     "@mockbench/tsconfig": "workspace:*",
@@ -21,5 +25,12 @@
   },
   "dependencies": {
     "zod": "4.6.7"
+  },
+  "sizeLimit": {
+    "gzipBytesExcludingZod": 9100,
+    "gzipBytesIncludingZod": 112000,
+    "gzipBytesValidateOnly": 2500,
+    "gzipBytesGenerateOnly": 6100,
+    "gzipBytesPreviewPath": 6600
   }
 }

@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "text",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "ratio",
+        "node": {
+          "type": "number"
+        }
+      },
+      {
+        "key": "count",
+        "node": {
+          "type": "integer"
+        }
+      },
+      {
+        "key": "flag",
+        "node": {
+          "type": "boolean"
+        }
+      },
+      {
+        "key": "nothing",
+        "node": {
+          "type": "null"
+        }
+      },
+      {
+        "key": "contact",
+        "node": {
+          "type": "email"
+        }
+      },
+      {
+        "key": "ident",
+        "node": {
+          "type": "uuid"
+        }
+      },
+      {
+        "key": "site",
+        "node": {
+          "type": "url"
+        }
+      },
+      {
+        "key": "mobile",
+        "node": {
+          "type": "phone"
+        }
+      },
+      {
+        "key": "day",
+        "node": {
+          "type": "date"
+        }
+      },
+      {
+        "key": "moment",
+        "node": {
+          "type": "datetime"
+        }
+      },
+      {
+        "key": "kind",
+        "node": {
+          "type": "enum",
+          "values": ["alpha", "beta", "gamma"]
+        }
+      },
+      {
+        "key": "rows",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "text",
+                "node": {
+                  "type": "string"
+                }
+              },
+              {
+                "key": "ratio",
+                "node": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "count",
+                "node": {
+                  "type": "integer"
+                }
+              },
+              {
+                "key": "flag",
+                "node": {
+                  "type": "boolean"
+                }
+              },
+              {
+                "key": "nothing",
+                "node": {
+                  "type": "null"
+                }
+              },
+              {
+                "key": "contact",
+                "node": {
+                  "type": "email"
+                }
+              },
+              {
+                "key": "ident",
+                "node": {
+                  "type": "uuid"
+                }
+              },
+              {
+                "key": "site",
+                "node": {
+                  "type": "url"
+                }
+              },
+              {
+                "key": "mobile",
+                "node": {
+                  "type": "phone"
+                }
+              },
+              {
+                "key": "day",
+                "node": {
+                  "type": "date"
+                }
+              },
+              {
+                "key": "moment",
+                "node": {
+                  "type": "datetime"
+                }
+              },
+              {
+                "key": "kind",
+                "node": {
+                  "type": "enum",
+                  "values": ["alpha", "beta", "gamma"]
+                }
+              }
+            ]
+          },
+          "count": 3
+        }
+      }
+    ]
+  }
+}

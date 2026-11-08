@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "integer",
+    "min": 7,
+    "max": 9
+  }
+}

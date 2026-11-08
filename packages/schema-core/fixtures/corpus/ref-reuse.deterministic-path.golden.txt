@@ -1,0 +1,50 @@
+{
+  "billing": {
+    "id": "4895b21c-cb43-5c84-9869-bc6150b70256",
+    "city": "city-1",
+    "pincode": 1
+  },
+  "shipping": {
+    "id": "e83846c1-41e9-5d92-abd1-86653e5d77d6",
+    "city": "city-1",
+    "pincode": 1
+  },
+  "contacts": [
+    {
+      "id": "a7c8ec38-f8e5-5f00-b44d-5647b59393e2",
+      "name": "contacts-1-name-1",
+      "home": {
+        "id": "46bd5426-6520-519e-80a5-62efff30802c",
+        "city": "contacts-1-city-1",
+        "pincode": 1
+      }
+    },
+    {
+      "id": "543ce5ea-e746-5480-88df-a2b6a8e96d26",
+      "name": "contacts-2-name-2",
+      "home": {
+        "id": "6d7f3e42-719e-5d7b-9f0a-cf7c0b6e37fc",
+        "city": "contacts-2-city-2",
+        "pincode": 2
+      }
+    },
+    {
+      "id": "e0c3c5eb-737d-5c2f-b396-73bfed9b09bc",
+      "name": "contacts-3-name-3",
+      "home": {
+        "id": "b9151d61-005c-5074-8a60-058f2913a3ec",
+        "city": "contacts-3-city-3",
+        "pincode": 3
+      }
+    }
+  ],
+  "owner": {
+    "id": "c7146617-c68e-5156-919f-1530d15ee166",
+    "name": "name-1",
+    "home": {
+      "id": "4bda7c3d-576d-5278-bf79-002de3163106",
+      "city": "city-1",
+      "pincode": 1
+    }
+  }
+}

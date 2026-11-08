@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "total",
+        "node": {
+          "type": "integer"
+        }
+      },
+      {
+        "key": "orders",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "order_id",
+                "node": {
+                  "type": "uuid"
+                }
+              },
+              {
+                "key": "total",
+                "node": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "placed_on",
+                "node": {
+                  "type": "date"
+                }
+              },
+              {
+                "key": "customer",
+                "node": {
+                  "type": "object",
+                  "fields": [
+                    {
+                      "key": "name",
+                      "node": {
+                        "type": "string"
+                      }
+                    },
+                    {
+                      "key": "email",
+                      "node": {
+                        "type": "email"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "count": 4
+        }
+      }
+    ]
+  }
+}

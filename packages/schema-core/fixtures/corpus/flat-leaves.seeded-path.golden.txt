@@ -1,0 +1,58 @@
+{
+  "text": "jasper-663",
+  "ratio": 696.41,
+  "count": 2297,
+  "flag": false,
+  "nothing": null,
+  "contact": "fjord.thicket@harbour.example.com",
+  "ident": "b046aa5e-ff26-4193-a19b-a7d9de680735",
+  "site": "https://lattice.example.com/cobalt",
+  "mobile": "+91 90000 45436",
+  "day": "2026-02-05",
+  "moment": "2026-01-29T10:54:00+05:30",
+  "kind": "alpha",
+  "rows": [
+    {
+      "text": "jasper-521",
+      "ratio": 165.98,
+      "count": 1361,
+      "flag": true,
+      "nothing": null,
+      "contact": "harbour.quartz@ember.example.com",
+      "ident": "7cd05dbc-e0e0-43ad-8bec-ea738e342f5a",
+      "site": "https://orchard.example.com/lattice",
+      "mobile": "+91 90000 93928",
+      "day": "2026-03-08",
+      "moment": "2026-05-27T14:26:00+05:30",
+      "kind": "alpha"
+    },
+    {
+      "text": "nimbus-493",
+      "ratio": 593.44,
+      "count": 2727,
+      "flag": true,
+      "nothing": null,
+      "contact": "fjord.kestrel@thicket.example.com",
+      "ident": "78a01408-84f7-4ed7-b35d-ae8e2f3b5c27",
+      "site": "https://cobalt.example.com/beacon",
+      "mobile": "+91 90000 36021",
+      "day": "2026-09-19",
+      "moment": "2026-10-09T08:32:00+05:30",
+      "kind": "beta"
+    },
+    {
+      "text": "gable-384",
+      "ratio": 290.95,
+      "count": 35,
+      "flag": true,
+      "nothing": null,
+      "contact": "falcon.prairie@onyx.example.com",
+      "ident": "ae506af0-be40-4dd5-885a-e52fc2c6d28e",
+      "site": "https://prairie.example.com/gable",
+      "mobile": "+91 90000 34631",
+      "day": "2026-09-27",
+      "moment": "2026-01-30T07:45:00+05:30",
+      "kind": "gamma"
+    }
+  ]
+}

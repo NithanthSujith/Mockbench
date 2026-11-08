@@ -1,0 +1,34 @@
+{
+  "people": [
+    {
+      "name": "Anaya Shah",
+      "age": 31,
+      "nickname": "people-1-nickname-1",
+      "city": "from-examples"
+    },
+    {
+      "name": "Rohit Mehta",
+      "age": 42,
+      "nickname": "people-2-nickname-2",
+      "city": "from-examples"
+    },
+    {
+      "name": "Priya Nair",
+      "age": 31,
+      "nickname": "people-3-nickname-3",
+      "city": "from-examples"
+    },
+    {
+      "name": "Anaya Shah",
+      "age": 42,
+      "nickname": "people-4-nickname-4",
+      "city": "from-examples"
+    },
+    {
+      "name": "Rohit Mehta",
+      "age": 31,
+      "nickname": "people-5-nickname-5",
+      "city": "from-examples"
+    }
+  ]
+}

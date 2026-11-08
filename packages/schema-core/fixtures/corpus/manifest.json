@@ -1,0 +1,76 @@
+[
+  {
+    "name": "worked-example",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "all-types",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "flat-leaves",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "nested-objects",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "array-of-objects",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "nested-arrays",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "enum-cycling",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "fixed-pins",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "examples-pool",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "ref-reuse",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "numeric-like-keys",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "root-array",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "root-primitive",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "limits-depth-10",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"]
+  },
+  {
+    "name": "presets-specificity",
+    "combos": ["deterministic-local", "deterministic-path", "seeded-local", "seeded-path"],
+    "presets": true
+  },
+  {
+    "name": "limits-array-1000",
+    "combos": ["deterministic-local", "seeded-local"]
+  },
+  {
+    "name": "limits-nodes-2000",
+    "combos": ["deterministic-local", "seeded-local"]
+  },
+  {
+    "name": "limits-leaves-50000",
+    "combos": ["deterministic-local"],
+    "digest": true
+  }
+]

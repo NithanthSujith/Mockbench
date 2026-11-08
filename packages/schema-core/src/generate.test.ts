@@ -481,5 +481,17 @@ describe('limits and invalid schemas', () => {
 })
 
 describe('browser-like environment', () => {
-  it.todo('goldens are byte-identical under a browser-like environment (FND-05: needs happy-dom)')
+  // vitest.config.ts runs this whole file twice: under node and under happy-dom (FND-05). The assertions
+  // below are therefore the node-versus-browser byte-identity check for the two FND-03 goldens, and the
+  // first one proves the run really happened in the environment it claims.
+  it('both FND-03 goldens are byte-identical in whichever environment runs the suite', ({
+    task,
+  }) => {
+    const env = typeof window === 'undefined' ? 'node' : 'browser-env'
+    expect(env).toBe(task.file.projectName)
+    const render = (schema: unknown) =>
+      generate(schema as MockSchema, ctx(), { indent: 2 }).json + '\n'
+    expect(render(workedExample)).toBe(workedGolden)
+    expect(render(allTypes)).toBe(allTypesGolden)
+  })
 })

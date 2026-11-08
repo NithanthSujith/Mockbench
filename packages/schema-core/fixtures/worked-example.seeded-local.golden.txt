@@ -1,0 +1,26 @@
+{
+  "id": "4aab69c6-d8a5-4f93-95e5-5236cb89b2dc",
+  "name": "Isha Menon",
+  "email": "hollow.gable@juniper.example.com",
+  "role": "fjord-410",
+  "is_active": false,
+  "branch_list": [
+    "lantern-308",
+    "ridge-130",
+    "hollow-456"
+  ],
+  "address": {
+    "city": "Indore",
+    "pincode": 3699
+  },
+  "orders": [
+    {
+      "order_id": "ddd50530-f5dc-41df-9567-db5b0dfacc89",
+      "total": 478.22
+    },
+    {
+      "order_id": "19c2c95c-5890-4cd0-9fe7-bdfe6a2b6f3f",
+      "total": 863.38
+    }
+  ]
+}

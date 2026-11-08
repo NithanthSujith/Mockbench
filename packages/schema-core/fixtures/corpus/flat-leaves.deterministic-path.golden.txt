@@ -1,0 +1,58 @@
+{
+  "text": "text-1",
+  "ratio": 1.5,
+  "count": 1,
+  "flag": true,
+  "nothing": null,
+  "contact": "contact-1@example.com",
+  "ident": "518419ad-b423-57ba-85fa-249ae99a865e",
+  "site": "https://example.com/site-1",
+  "mobile": "+91 90000 00001",
+  "day": "2026-01-02",
+  "moment": "2026-01-02T00:00:00+05:30",
+  "kind": "alpha",
+  "rows": [
+    {
+      "text": "rows-1-text-1",
+      "ratio": 1.5,
+      "count": 1,
+      "flag": true,
+      "nothing": null,
+      "contact": "rows-1-contact-1@example.com",
+      "ident": "b3ad2845-7334-53fc-8416-9d4a249ff1f8",
+      "site": "https://example.com/rows-1-site-1",
+      "mobile": "+91 90000 00001",
+      "day": "2026-01-02",
+      "moment": "2026-01-02T00:00:00+05:30",
+      "kind": "alpha"
+    },
+    {
+      "text": "rows-2-text-2",
+      "ratio": 2.5,
+      "count": 2,
+      "flag": false,
+      "nothing": null,
+      "contact": "rows-2-contact-2@example.com",
+      "ident": "14ca6c6f-aa48-5260-a60d-5b23729e6aa9",
+      "site": "https://example.com/rows-2-site-2",
+      "mobile": "+91 90000 00002",
+      "day": "2026-01-03",
+      "moment": "2026-01-03T00:00:00+05:30",
+      "kind": "beta"
+    },
+    {
+      "text": "rows-3-text-3",
+      "ratio": 3.5,
+      "count": 3,
+      "flag": true,
+      "nothing": null,
+      "contact": "rows-3-contact-3@example.com",
+      "ident": "a6db9414-d3b1-52dc-b8c2-2e3b399e6a3d",
+      "site": "https://example.com/rows-3-site-3",
+      "mobile": "+91 90000 00003",
+      "day": "2026-01-04",
+      "moment": "2026-01-04T00:00:00+05:30",
+      "kind": "gamma"
+    }
+  ]
+}

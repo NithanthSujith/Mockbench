@@ -1,0 +1,9 @@
+{
+  "_comment": "Append-only. Each entry pairs a GENERATOR_VERSION with the hash of every committed golden at that version. See test/guard.ts.",
+  "history": [
+    {
+      "generatorVersion": 1,
+      "goldensHash": "53b80322143cb6be07d23b96016fae0cc5193f18"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "city",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "currency",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "user_id",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "order_id",
+        "node": {
+          "type": "integer"
+        }
+      },
+      {
+        "key": "status",
+        "node": {
+          "type": "enum",
+          "values": ["draft", "sent"]
+        }
+      },
+      {
+        "key": "address",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "city",
+              "node": {
+                "type": "string"
+              }
+            },
+            {
+              "key": "pincode",
+              "node": {
+                "type": "integer"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "orders",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "total",
+                "node": {
+                  "type": "number"
+                }
+              },
+              {
+                "key": "code",
+                "node": {
+                  "type": "string"
+                }
+              },
+              {
+                "key": "city",
+                "node": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "count": 3
+        }
+      },
+      {
+        "key": "note",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "label",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "when",
+        "node": {
+          "type": "date"
+        }
+      }
+    ]
+  }
+}

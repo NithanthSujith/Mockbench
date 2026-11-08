@@ -1,0 +1,85 @@
+[
+  {
+    "priority": 10,
+    "rules": [
+      {
+        "match": {
+          "type": "string"
+        },
+        "pattern": "{key}-by-type-{n}"
+      },
+      {
+        "match": {
+          "key": "c*"
+        },
+        "pattern": "glob-{key}-{n:02}"
+      },
+      {
+        "match": {
+          "key": "city"
+        },
+        "values": ["Ahmedabad", "Mumbai", "Bengaluru"]
+      },
+      {
+        "match": {
+          "path": "$.address.city"
+        },
+        "value": "PATH-WINS"
+      },
+      {
+        "match": {
+          "path": "$.orders[*].city"
+        },
+        "values": ["O1", "O2"]
+      },
+      {
+        "match": {
+          "key": "*_id",
+          "type": "string"
+        },
+        "pattern": "ID-{n:05}"
+      },
+      {
+        "match": {
+          "key": "currency"
+        },
+        "value": "INR"
+      },
+      {
+        "match": {
+          "key": "order_id"
+        },
+        "value": 0
+      },
+      {
+        "match": {
+          "key": "status"
+        },
+        "values": ["preset-status"]
+      },
+      {
+        "match": {
+          "type": "date"
+        },
+        "value": "2030-01-01"
+      }
+    ]
+  },
+  {
+    "priority": 20,
+    "rules": [
+      {
+        "match": {
+          "key": "note"
+        },
+        "value": null
+      },
+      {
+        "match": {
+          "key": "currency"
+        },
+        "value": "USD"
+      }
+    ]
+  }
+]

@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "200",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "ok",
+              "node": {
+                "type": "boolean"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "1",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "b",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "10",
+        "node": {
+          "type": "integer"
+        }
+      },
+      {
+        "key": "-1",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "01",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "2",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "by_code",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "404",
+              "node": {
+                "type": "string"
+              }
+            },
+            {
+              "key": "100",
+              "node": {
+                "type": "string"
+              }
+            },
+            {
+              "key": "x",
+              "node": {
+                "type": "string"
+              }
+            },
+            {
+              "key": "5",
+              "node": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

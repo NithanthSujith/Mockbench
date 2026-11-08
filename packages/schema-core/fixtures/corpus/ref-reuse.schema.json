@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "components": {
+    "Address": {
+      "type": "object",
+      "fields": [
+        {
+          "key": "id",
+          "node": {
+            "type": "uuid"
+          }
+        },
+        {
+          "key": "city",
+          "node": {
+            "type": "string"
+          }
+        },
+        {
+          "key": "pincode",
+          "node": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "Person": {
+      "type": "object",
+      "fields": [
+        {
+          "key": "id",
+          "node": {
+            "type": "uuid"
+          }
+        },
+        {
+          "key": "name",
+          "node": {
+            "type": "string"
+          }
+        },
+        {
+          "key": "home",
+          "node": {
+            "type": "ref",
+            "name": "Address"
+          }
+        }
+      ]
+    }
+  },
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "billing",
+        "node": {
+          "type": "ref",
+          "name": "Address"
+        }
+      },
+      {
+        "key": "shipping",
+        "node": {
+          "type": "ref",
+          "name": "Address"
+        }
+      },
+      {
+        "key": "contacts",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "ref",
+            "name": "Person"
+          },
+          "count": 3
+        }
+      },
+      {
+        "key": "owner",
+        "node": {
+          "type": "ref",
+          "name": "Person"
+        }
+      }
+    ]
+  }
+}

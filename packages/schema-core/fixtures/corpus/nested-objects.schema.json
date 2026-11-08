@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "name",
+        "node": {
+          "type": "string"
+        }
+      },
+      {
+        "key": "company",
+        "node": {
+          "type": "object",
+          "fields": [
+            {
+              "key": "title",
+              "node": {
+                "type": "string"
+              }
+            },
+            {
+              "key": "address",
+              "node": {
+                "type": "object",
+                "fields": [
+                  {
+                    "key": "city",
+                    "node": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "key": "pincode",
+                    "node": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "key": "geo",
+                    "node": {
+                      "type": "object",
+                      "fields": [
+                        {
+                          "key": "lat",
+                          "node": {
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "key": "lng",
+                          "node": {
+                            "type": "number"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "active",
+        "node": {
+          "type": "boolean"
+        }
+      }
+    ]
+  }
+}

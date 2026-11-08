@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "object",
+    "fields": [
+      {
+        "key": "users",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "fields": [
+              {
+                "key": "name",
+                "node": {
+                  "type": "string"
+                }
+              },
+              {
+                "key": "tags",
+                "node": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "count": 2
+                }
+              },
+              {
+                "key": "addresses",
+                "node": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "fields": [
+                      {
+                        "key": "city",
+                        "node": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "key": "codes",
+                        "node": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          },
+                          "count": 2
+                        }
+                      }
+                    ]
+                  },
+                  "count": 2
+                }
+              }
+            ]
+          },
+          "count": 3
+        }
+      },
+      {
+        "key": "matrix",
+        "node": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "count": 3
+          },
+          "count": 2
+        }
+      }
+    ]
+  }
+}

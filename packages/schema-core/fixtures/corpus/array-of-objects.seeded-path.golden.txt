@@ -1,0 +1,41 @@
+{
+  "total": 2732,
+  "orders": [
+    {
+      "order_id": "ddd50530-f5dc-41df-9567-db5b0dfacc89",
+      "total": 478.22,
+      "placed_on": "2026-02-21",
+      "customer": {
+        "name": "Rahul Bose",
+        "email": "granite.ridge@pennant.example.com"
+      }
+    },
+    {
+      "order_id": "19c2c95c-5890-4cd0-9fe7-bdfe6a2b6f3f",
+      "total": 863.38,
+      "placed_on": "2026-02-09",
+      "customer": {
+        "name": "Nisha Das",
+        "email": "thicket.cinder@falcon.example.com"
+      }
+    },
+    {
+      "order_id": "61cd04ea-6302-4e6d-a94b-91b31f062d5c",
+      "total": 442.43,
+      "placed_on": "2026-05-20",
+      "customer": {
+        "name": "Dev Patel",
+        "email": "summit.thicket@indigo.example.com"
+      }
+    },
+    {
+      "order_id": "0a3e9b0c-145c-4d26-ad48-86408f18209c",
+      "total": 540.15,
+      "placed_on": "2026-08-06",
+      "customer": {
+        "name": "Rahul Bose",
+        "email": "thicket.juniper@prairie.example.com"
+      }
+    }
+  ]
+}

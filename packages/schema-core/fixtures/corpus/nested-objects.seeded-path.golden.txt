@@ -1,0 +1,15 @@
+{
+  "name": "Isha Menon",
+  "company": {
+    "title": "Pooja Desai",
+    "address": {
+      "city": "Guwahati",
+      "pincode": 2822,
+      "geo": {
+        "lat": 790.65,
+        "lng": 335.29
+      }
+    }
+  },
+  "active": false
+}

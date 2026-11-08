@@ -1,0 +1,50 @@
+{
+  "billing": {
+    "id": "a9a16909-0cdc-433a-9e5c-57346991921b",
+    "city": "Mysuru",
+    "pincode": 583
+  },
+  "shipping": {
+    "id": "362231ea-6ae7-42c3-9b66-d123f43b47b2",
+    "city": "Mysuru",
+    "pincode": 3841
+  },
+  "contacts": [
+    {
+      "id": "fa26f5a8-bb57-451d-b921-1260219fb09c",
+      "name": "Priya Nair",
+      "home": {
+        "id": "52cab932-f9c3-472e-b6ab-316cd52f0b55",
+        "city": "Nashik",
+        "pincode": 3139
+      }
+    },
+    {
+      "id": "b69362cc-fcb8-4d8c-ab25-40ce255a7219",
+      "name": "Kabir Singh",
+      "home": {
+        "id": "057b8222-953e-43e7-9dcc-a2eaa11223f9",
+        "city": "Indore",
+        "pincode": 1658
+      }
+    },
+    {
+      "id": "1e7c07b8-d031-4aa9-9f5c-c7b394e9630b",
+      "name": "Sameer Gupta",
+      "home": {
+        "id": "a8613d45-2386-4d8f-af00-6b4d7ecb6989",
+        "city": "Pune",
+        "pincode": 2032
+      }
+    }
+  ],
+  "owner": {
+    "id": "e25ef83e-2c27-444e-ae78-3bda2537c38e",
+    "name": "Karan Malhotra",
+    "home": {
+      "id": "180f4e6a-3608-43a5-81fb-0f07a442a54b",
+      "city": "Ahmedabad",
+      "pincode": 976
+    }
+  }
+}

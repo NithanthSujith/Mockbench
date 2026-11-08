@@ -1,0 +1,34 @@
+{
+  "people": [
+    {
+      "name": "Anaya Shah",
+      "age": 31,
+      "nickname": "Sameer Gupta",
+      "city": "from-examples"
+    },
+    {
+      "name": "Rohit Mehta",
+      "age": 42,
+      "nickname": "Yash Trivedi",
+      "city": "from-examples"
+    },
+    {
+      "name": "Priya Nair",
+      "age": 31,
+      "nickname": "Rahul Bose",
+      "city": "from-examples"
+    },
+    {
+      "name": "Anaya Shah",
+      "age": 42,
+      "nickname": "Zoya Ali",
+      "city": "from-examples"
+    },
+    {
+      "name": "Rohit Mehta",
+      "age": 31,
+      "nickname": "Rohit Mehta",
+      "city": "from-examples"
+    }
+  ]
+}

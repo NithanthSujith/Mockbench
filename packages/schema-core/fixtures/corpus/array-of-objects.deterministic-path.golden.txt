@@ -1,0 +1,41 @@
+{
+  "total": 1,
+  "orders": [
+    {
+      "order_id": "7d64a79c-0b29-5501-b7e1-7d4bbb86fef1",
+      "total": 1.5,
+      "placed_on": "2026-01-02",
+      "customer": {
+        "name": "orders-1-name-1",
+        "email": "orders-1-email-1@example.com"
+      }
+    },
+    {
+      "order_id": "bbd00d9b-bf2b-5504-b471-c2099ab53eb5",
+      "total": 2.5,
+      "placed_on": "2026-01-03",
+      "customer": {
+        "name": "orders-2-name-2",
+        "email": "orders-2-email-2@example.com"
+      }
+    },
+    {
+      "order_id": "d3347d85-39d9-511f-b713-04c7c435783e",
+      "total": 3.5,
+      "placed_on": "2026-01-04",
+      "customer": {
+        "name": "orders-3-name-3",
+        "email": "orders-3-email-3@example.com"
+      }
+    },
+    {
+      "order_id": "078552cd-1a15-55a9-9804-db2b1e40a64f",
+      "total": 4.5,
+      "placed_on": "2026-01-05",
+      "customer": {
+        "name": "orders-4-name-4",
+        "email": "orders-4-email-4@example.com"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "components": {},
+  "root": {
+    "type": "array",
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "count": 1000
+    },
+    "count": 50
+  }
+}

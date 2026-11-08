@@ -1,0 +1,34 @@
+{
+  "zero": 0,
+  "empty": "",
+  "no": false,
+  "nil": null,
+  "text": "INR",
+  "whole_object": {
+    "pinned": true,
+    "n": 1
+  },
+  "whole_array": [
+    1,
+    "two",
+    null
+  ],
+  "rows": [
+    {
+      "id": 3188,
+      "currency": "INR",
+      "score": 0
+    },
+    {
+      "id": 1016,
+      "currency": "INR",
+      "score": 0
+    },
+    {
+      "id": 1296,
+      "currency": "INR",
+      "score": 0
+    }
+  ],
+  "pin_beats_enum": "z"
+}
