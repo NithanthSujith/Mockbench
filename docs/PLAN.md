@@ -1,6 +1,6 @@
 # Mockbench — build plan
 
-Status: **approved 2026-11-05; all § 8 recommendations accepted (D1–D13).** Phase 1 in progress.
+Status: **Phase 1 frozen: tag `contracts-v1`, approved 2026-11-08.** All D1-D13 recommendations accepted. Phase 2 (slice teams) in progress.
 
 56 work units, 5 phases, 6 owners (5 slice teams + Core). Every spec is in `docs/specs/<ID>-<slug>.md`, status `draft`.
 
