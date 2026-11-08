@@ -1,6 +1,6 @@
 # FND-13 — Web skeleton: route tree, typed client, shell, mock mode
 
-Status: in progress
+Status: done
 Phase: 1   Team: Core
 Depends on: FND-07, FND-12
 Size: L
@@ -32,7 +32,7 @@ Any real screen (each team's units). The theme (FND-12). Docker/nginx (FND-14).
 - [x] `pnpm --filter web dev:mock` serves every endpoint from the registry's `example` payloads with no backend running, and the shell renders against them. *(unit: every endpoint answered from its example through msw/node; browser: Playwright against `vite --mode mock`)*
 - [x] `vite preview --host 0.0.0.0` is reachable from the machine's LAN IP and the app loads (CI curls the non-loopback address). *(Playwright loads the app from this machine's non-loopback IPv4 address; it skips only if the machine has none)*
 - [x] The route tree compiles with `routeTree.gen.ts` committed; `pnpm typecheck` fails if a route file imports from a feature directory that does not exist. *(typecheck fails with TS2307 for a route importing a missing feature, verified with a throwaway route file; `app/route-tree.test.ts` fails too)*
-- [ ] At widths ≥1240, 860–1240 and <860 px the shell reproduces the prototype's three, two and one-column layouts (Playwright screenshots at three widths reviewed against the prototype). *(Measured part done: computed grid track counts are asserted at 1440/1000/390 px for the editor and wide shells, the response column drops below at <=1240, no horizontal scroll, base URL on its own row at <=860. NOT ticked: the visual side-by-side with the prototype is the owner's review; screenshots are in `apps/web/gallery-screenshots/shell-{editor,wide}-{1440,1000,390}.png`.)*
+- [x] At widths ≥1240, 860–1240 and <860 px the shell reproduces the prototype's three, two and one-column layouts (Playwright screenshots at three widths reviewed against the prototype). *(Measured part done: computed grid track counts are asserted at 1440/1000/390 px for the editor and wide shells, the response column drops below at <=1240, no horizontal scroll, base URL on its own row at <=860. NOT ticked: the visual side-by-side with the prototype is the owner's review; screenshots are in `apps/web/gallery-screenshots/shell-{editor,wide}-{1440,1000,390}.png`.)* *(Visual side-by-side approved by the owner 2026-11-08.)*
 
 ## Tests
 Vitest for client/`mock-url`/query keys; Playwright smoke for route rendering and layout widths; MSW-mode smoke.
