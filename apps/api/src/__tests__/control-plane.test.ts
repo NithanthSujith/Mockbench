@@ -201,8 +201,8 @@ describe('CSRF guard', () => {
 describe('501 not_implemented', () => {
   it('EVERY registry endpoint without a handler answers 501 in the envelope, even session endpoints', async () => {
     const unimplemented = ALL.filter((e) => !e.id.startsWith('system.'))
-    // The real modules bind nothing yet, so use the default app for this sweep.
-    const plain = await makeApp()
+    // An empty module map: no handler is bound, whatever the teams have merged by now.
+    const plain = await makeApp({ modules: {} })
     try {
       expect(unimplemented.length).toBeGreaterThanOrEqual(49)
       for (const e of unimplemented) {
