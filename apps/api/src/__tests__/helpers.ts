@@ -1,50 +1,26 @@
 // Test helpers for the FND-10 suites: a real Postgres (FND-09 harness), a captured pino stream, and
 // a way to create a session cookie. FND-11 supersedes the session helper with the shared factories.
-import { randomBytes } from 'node:crypto'
 import type { EndpointDef } from '@mockbench/api-contract'
 import type { Express } from 'express'
 import type { DestinationStream } from 'pino'
 import { createApp } from '../app'
 import type { AppDeps } from '../app'
-import { hashSessionToken } from '../access/session-token'
-import { loadConfig } from '../config'
 import type { Config } from '../config'
 import { createDb } from '../db/client'
 import type { Db } from '../db/client'
-import { sessions, users } from '../db/schema'
-import { SESSION_COOKIE } from '../http/cookies'
 import { createLogger } from '../http/logger'
 import { withTestDb } from '../db/testing'
 import type { TestDb } from '../db/testing'
 import type { ModuleMap } from '../modules'
+import { TEST_SESSION_SECRET, createTestSession } from '../testing/sessions'
+import { createUser } from '../testing/factories'
+import { logSink, testConfig } from '../testing/test-app'
+import type { LogSink } from '../testing/test-app'
 
-export const TEST_SECRET = 'test-session-secret'
+export { logSink, testConfig }
+export type { LogSink }
 
-export interface LogSink {
-  lines: Record<string, unknown>[]
-  stream: { write(chunk: string): void }
-}
-
-export function logSink(): LogSink {
-  const lines: Record<string, unknown>[] = []
-  return {
-    lines,
-    stream: {
-      write(chunk: string) {
-        for (const l of chunk.split('\n')) if (l.trim()) lines.push(JSON.parse(l))
-      },
-    },
-  }
-}
-
-export function testConfig(databaseUrl: string, env: Record<string, string> = {}): Config {
-  return loadConfig({
-    NODE_ENV: 'test',
-    DATABASE_URL: databaseUrl,
-    SESSION_SECRET: TEST_SECRET,
-    ...env,
-  })
-}
+export const TEST_SECRET = TEST_SESSION_SECRET
 
 export interface TestApp {
   app: Express
@@ -87,22 +63,9 @@ export async function makeApp(
   })
 
   async function session(o: { expired?: boolean; inactive?: boolean } = {}) {
-    const token = randomBytes(32).toString('base64url')
-    const [u] = await t.db
-      .insert(users)
-      .values({
-        email: `u-${randomBytes(4).toString('hex')}@example.test`,
-        passwordHash: 'not-a-real-hash',
-        name: 'Test User',
-        isActive: !o.inactive,
-      })
-      .returning({ id: users.id })
-    const expiresAt = new Date(Date.now() + (o.expired ? -60_000 : 3_600_000))
-    const [s] = await t.db
-      .insert(sessions)
-      .values({ userId: u!.id, tokenHash: hashSessionToken(token, TEST_SECRET), expiresAt })
-      .returning({ id: sessions.id })
-    return { cookie: `${SESSION_COOKIE}=${token}`, userId: u!.id, sessionId: s!.id }
+    const user = await createUser(t.db, { isActive: !o.inactive })
+    const s = await createTestSession(t.db, user.id, { expired: o.expired, secret: TEST_SECRET })
+    return { cookie: s.cookie, userId: s.userId, sessionId: s.sessionId }
   }
 
   return { app, config, db: t.db, url: t.url, logs, session, drop: () => t.drop() }
