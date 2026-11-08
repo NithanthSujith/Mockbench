@@ -14,7 +14,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
-    "@mockbench/tsconfig": "workspace:*"
+    "@mockbench/tsconfig": "workspace:*",
+    "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
+    "happy-dom": "21.0.4"
   },
   "dependencies": {
     "zod": "4.6.7"
