@@ -1,0 +1,71 @@
+# Same stack as docker-compose.yml, but pulls the published images instead of building them:
+#   cp .env.example .env && docker compose -f docker-compose.pull.yml up -d
+# MOCKBENCH_VERSION selects the release (default: latest). Images are multi-arch (amd64 + arm64).
+
+name: mockbench
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mock}
+      POSTGRES_DB: mockserver
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mock -d mockserver']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    image: ghcr.io/nithanthsujith/mockbench-api:${MOCKBENCH_VERSION:-latest}
+    environment:
+      DATABASE_URL: postgres://mock:${POSTGRES_PASSWORD:-mock}@db:5432/mockserver
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env (copy .env.example to .env)}
+      HOST: 0.0.0.0
+      API_PORT: '3000'
+      TRUST_PROXY: '1'
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-7}
+      LOG_RETENTION_ROWS: ${LOG_RETENTION_ROWS:-1000}
+      MOCK_RATE_LIMIT: ${MOCK_RATE_LIMIT:-}
+      MOCK_CACHE_MAX_MB: ${MOCK_CACHE_MAX_MB:-256}
+      CACHE_FANOUT: ${CACHE_FANOUT:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/nithanthsujith/mockbench-web:${MOCKBENCH_VERSION:-latest}
+    ports:
+      - '0.0.0.0:${PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1/ >/dev/null']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -1,0 +1,31 @@
+# Development helper: just the database, published to THIS machine only, for running the api and the
+# web app on the host (pnpm dev). It is a standalone file, not an override.
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#   DATABASE_URL=postgres://mock:mock@127.0.0.1:${DEV_DB_PORT:-5432}/mockserver
+#
+# Loopback only (127.0.0.1): unlike docker-compose.yml, nothing here is reachable from the LAN.
+# State lives in its own volume, so it never mixes with a compose-run instance.
+
+name: mockbench-dev
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mock}
+      POSTGRES_DB: mockserver
+    ports:
+      - '127.0.0.1:${DEV_DB_PORT:-5432}:5432'
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mock -d mockserver']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pgdata_dev:

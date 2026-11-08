@@ -1,0 +1,83 @@
+# Mockbench: database + api + web. `cp .env.example .env && docker compose up`
+#
+# Network rules (FND-14):
+#   - only `web` publishes a port, on EVERY host interface, so anyone on the LAN can reach both the
+#     editor UI and the mock endpoints at http://<this-machine's-LAN-IP>:${PORT:-8080}
+#   - `db` and `api` are never published; they are reachable only inside the compose network
+#   - one named volume (pgdata) holds all state; logs go to stdout; the SPA is baked into its image
+
+name: mockbench
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mock}
+      POSTGRES_DB: mockserver
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U mock -d mockserver']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      DATABASE_URL: postgres://mock:${POSTGRES_PASSWORD:-mock}@db:5432/mockserver
+      # Fails fast, with this message, when SESSION_SECRET is unset or empty. The placeholder in
+      # .env.example is non-empty, so the three-command quickstart works (the api logs a warning).
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env (copy .env.example to .env)}
+      HOST: 0.0.0.0
+      API_PORT: '3000'
+      TRUST_PROXY: '1'
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_TTL_DAYS: ${SESSION_TTL_DAYS:-30}
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-true}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-7}
+      LOG_RETENTION_ROWS: ${LOG_RETENTION_ROWS:-1000}
+      # Empty means "unlimited" (the api treats an empty value as unset).
+      MOCK_RATE_LIMIT: ${MOCK_RATE_LIMIT:-}
+      MOCK_CACHE_MAX_MB: ${MOCK_CACHE_MAX_MB:-256}
+      CACHE_FANOUT: ${CACHE_FANOUT:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # 127.0.0.1, not "localhost": on Alpine localhost can resolve to ::1 while the server binds IPv4.
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/readyz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    ports:
+      - '0.0.0.0:${PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1/ >/dev/null']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:

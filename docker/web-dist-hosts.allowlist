@@ -1,0 +1,10 @@
+# Reviewed exceptions for the "no localhost / 127.0.0.1 in the built web bundle" check in
+# scripts/lan-smoke.sh. The app itself never hardcodes a host: it calls relative /api/v1 URLs and
+# derives the mock base URL from window.location at runtime. A match is allowed only if it contains
+# one of the fragments below (one fixed string per line, '#' starts a comment).
+#
+# Every entry needs a reason; adding one needs a reviewer to confirm it is third-party boilerplate.
+
+# @tanstack/react-router: base URL used to construct a URL object when `window.origin` is the string
+# "null" (sandboxed iframes / opaque origins). It is only a parsing base, never requested.
+window.origin:`http://localhost`

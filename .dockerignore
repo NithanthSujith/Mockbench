@@ -1,0 +1,24 @@
+# Keep the build context small and never bake local state, secrets or build output into an image.
+**/node_modules
+**/dist
+**/coverage
+**/.vite
+**/test-results
+**/playwright-report
+**/*.tsbuildinfo
+apps/web/gallery-screenshots
+
+.git
+.github
+.claude
+.env
+.env.*
+!.env.example
+
+docs
+design-reference
+e2e
+examples
+tooling
+*.md
+!README.md
