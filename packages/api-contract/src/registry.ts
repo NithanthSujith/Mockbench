@@ -1,6 +1,7 @@
 // Endpoint registry machinery (ADR 0015). Concrete endpoints are defined in FND-07.
 // Paths are RELATIVE to the control-plane base `/api/v1` (so `/auth/login`, not `/api/v1/auth/login`).
 import type { z } from 'zod'
+import { normalizePath } from './paths'
 import { AUTH_LEVELS, HTTP_METHODS } from './primitives'
 import type { AuthLevel, HttpMethod } from './primitives'
 
@@ -21,8 +22,13 @@ export interface EndpointDef {
   readonly errors: readonly { readonly status: number; readonly code: string }[]
   readonly example: { readonly request?: unknown; readonly response?: unknown }
   readonly tags: readonly string[]
-  /** Extra relative paths where the same handler is also mounted (e.g. container healthchecks). */
+  /** Extra relative paths where the same handler is also mounted. */
   readonly aliases?: readonly string[]
+  /**
+   * Also reachable at the same path WITHOUT the `/api/v1` prefix (the container healthchecks hit
+   * `/healthz` and `/readyz` on the api directly; the web container only proxies /api and /mock).
+   */
+  readonly alsoAtRoot?: boolean
 }
 
 export class RegistryError extends Error {
@@ -41,16 +47,9 @@ export function pathParamNames(path: string): string[] {
   return [...path.matchAll(PARAM)].map((m) => m[1] as string)
 }
 
-/**
- * Normalisation used ONLY for the load-time uniqueness check: static segments lowercased,
- * every `:name` replaced by `{}`. FND-07 exports the canonical `normalizePath`; this mirrors its rule.
- */
+/** Key for the load-time uniqueness check: method + the canonical normalised path (`normalizePath`). */
 export function uniquenessKey(method: string, path: string): string {
-  const norm = path
-    .split('/')
-    .map((seg) => (seg.startsWith(':') ? '{}' : seg.toLowerCase()))
-    .join('/')
-  return `${method} ${norm}`
+  return `${method} ${normalizePath(path)}`
 }
 
 /** Validates one endpoint definition at module load and returns it with its literal types intact. */

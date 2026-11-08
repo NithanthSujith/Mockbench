@@ -278,7 +278,8 @@ describe('the real docs/API-CONTRACT.md', () => {
 })
 
 describe('pnpm contract:docs CLI (no registry defined yet)', () => {
-  const hasRegistry = /export const registry\b/.test(
+  // The registry is exported either directly or re-exported (`export { registry } from './endpoints'`).
+  const hasRegistry = /export\s*(const\s+registry\b|\{[^}]*\bregistry\b[^}]*\})/.test(
     readFileSync(`${root}packages/api-contract/src/index.ts`, 'utf8'),
   )
   const run = (...args: string[]) =>

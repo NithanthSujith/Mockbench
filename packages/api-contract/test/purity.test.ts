@@ -19,7 +19,7 @@ function specifiers(file: string): string[] {
   const text = readFileSync(file, 'utf8')
   return [
     ...text.matchAll(
-      /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]|import\s*['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)/g,
+      /^(?:import|export)\b[^'"]*?\bfrom\s*['"]([^'"]+)['"]|^import\s*['"]([^'"]+)['"]|\bimport\(\s*['"]([^'"]+)['"]\s*\)/gm,
     ),
   ].map((m) => (m[1] ?? m[2] ?? m[3]) as string)
 }
@@ -54,8 +54,8 @@ describe('main entry (@mockbench/api-contract) is browser-safe', () => {
     expect(offenders).toEqual([])
   })
 
-  it('imports only zod', () => {
-    expect(main.external).toEqual(['zod'])
+  it('imports only zod and the browser-safe schema-core', () => {
+    expect([...main.external].sort()).toEqual(['@mockbench/schema-core', 'zod'])
   })
 
   it('does not reach the OpenAPI generator or its library', () => {

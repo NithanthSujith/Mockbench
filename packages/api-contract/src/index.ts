@@ -3,3 +3,10 @@
 // '@mockbench/api-contract/openapi' so web bundles never include it.
 export * from './primitives'
 export * from './registry'
+export * from './paths'
+export * from './rules'
+export * from './validation'
+export * from './resources'
+export * from './dataplane'
+export * from './examples'
+export { endpoints, registry } from './endpoints'
