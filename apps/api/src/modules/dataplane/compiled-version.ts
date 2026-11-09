@@ -57,7 +57,7 @@ export type SelectResult =
 
 export interface MatchResult {
   route: CompiledRoute
-  /** Decoded parameter values by name. A null-prototype object (a param may be called `__proto__`). */
+  /** Decoded parameter values by name. A param called `__proto__` is an own property, never the prototype. */
   params: Record<string, string>
 }
 
@@ -299,9 +299,22 @@ class Compiled implements CompiledVersion {
     const route = walk(root, segments, 0, values)
     if (!route) return null
 
-    const params: Record<string, string> = Object.create(null) as Record<string, string>
+    // A plain object (fast in V8). A param may legally be called `__proto__`: that one name is
+    // defined as an own data property so it can never reach the prototype.
+    const params: Record<string, string> = {}
     for (let i = 0; i < route.paramNames.length; i++) {
-      params[route.paramNames[i] as string] = values[i] as string
+      const name = route.paramNames[i] as string
+      const value = values[i] as string
+      if (name === '__proto__') {
+        Object.defineProperty(params, name, {
+          value,
+          enumerable: true,
+          writable: true,
+          configurable: true,
+        })
+      } else {
+        params[name] = value
+      }
     }
     return { route, params }
   }

@@ -94,11 +94,15 @@ describe('match: static over param', () => {
     expect(v.match('GET', '/a/9/c')?.route.id).toBe(b.id)
   })
 
-  it('a param called __proto__ is just a key (null-prototype params object)', () => {
-    const v = compile([mkRoute('GET', '/x/:__proto__')])
+  it('a param called __proto__ is an own key and never reaches the prototype', () => {
+    const v = compile([mkRoute('GET', '/x/:__proto__'), mkRoute('GET', '/y/:a/:__proto__')])
     const hit = v.match('GET', '/x/abc')
-    expect(hit?.params.__proto__).toBe('abc')
-    expect(Object.getPrototypeOf(hit?.params)).toBeNull()
+    expect(Object.prototype.hasOwnProperty.call(hit?.params, '__proto__')).toBe(true)
+    expect(Object.getOwnPropertyDescriptor(hit?.params, '__proto__')?.value).toBe('abc')
+    expect(Object.getPrototypeOf(hit?.params)).toBe(Object.prototype) // untouched
+    // Nothing leaked onto Object.prototype or onto fresh objects.
+    expect(({} as Record<string, unknown>).abc).toBeUndefined()
+    expect(Object.keys(v.match('GET', '/y/1/2')?.params ?? {})).toEqual(['a', '__proto__'])
   })
 
   it('the root path "/" can be a route', () => {
@@ -436,28 +440,40 @@ describe('performance budgets (generous)', () => {
     )
   }
 
-  it('compiles a 500-route, 1,500-case snapshot in under 100 ms', () => {
+  // A shared CI runner can stall a single timing for tens of milliseconds (a garbage collection, or the
+  // other test files running in parallel). The budgets guard against an algorithmic regression, so each
+  // is judged on the best of three rounds: noise only ever makes a round slower, never faster.
+  const best = (rounds: number, run: () => number): number =>
+    Math.min(...Array.from({ length: rounds }, run))
+
+  it('compiles a 500-route, 1,500-case snapshot in under 100 ms (best of 3)', () => {
     const snapshot = mkSnapshot(routes)
     const baked = bake(routes)
-    const start = performance.now()
-    const v = compileVersion(snapshot, baked, 'v1')
-    const ms = performance.now() - start
-    expect(v.routes()).toHaveLength(500)
+    let compiled: ReturnType<typeof compileVersion> | undefined
+    const ms = best(3, () => {
+      const start = performance.now()
+      compiled = compileVersion(snapshot, baked, 'v1')
+      return performance.now() - start
+    })
+    expect(compiled?.routes()).toHaveLength(500)
     expect(ms).toBeLessThan(100)
   })
 
-  it('does 100,000 matches in under 150 ms', () => {
+  it('does 100,000 matches in under 150 ms (best of 3)', () => {
     const v = compile(routes)
     const paths = routes.map((r) => r.path.replace('/:id', '/77'))
     // Warm up the JIT, as a long-running server would be.
     for (let i = 0; i < 5_000; i++) v.match('GET', paths[i % paths.length]!)
     let hits = 0
-    const start = performance.now()
-    for (let i = 0; i < 100_000; i++) {
-      const idx = i % paths.length
-      if (v.match(routes[idx]!.method, paths[idx]!)) hits++
-    }
-    const ms = performance.now() - start
+    const ms = best(3, () => {
+      hits = 0
+      const start = performance.now()
+      for (let i = 0; i < 100_000; i++) {
+        const idx = i % paths.length
+        if (v.match(routes[idx]!.method, paths[idx]!)) hits++
+      }
+      return performance.now() - start
+    })
     expect(hits).toBe(100_000)
     expect(ms).toBeLessThan(150)
   })
