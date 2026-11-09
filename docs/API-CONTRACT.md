@@ -276,7 +276,7 @@ Registration rules (D3): the **first** user ever registered becomes `owner` of t
 
 | `id` | Endpoint | Auth | Request | Response | Errors |
 | --- | --- | --- | --- | --- | --- |
-| `projects.list` | `GET /projects?workspaceId=<id>&limit&cursor` | viewer of `workspaceId` | `workspaceId` **required** | `200 { items: Project[], nextCursor }` ordered by `createdAt` **asc** | — |
+| `projects.list` | `GET /projects?workspaceId=<id>&limit&cursor` | viewer of `workspaceId` | `workspaceId` **required** | `200 { items: Project[], nextCursor }` ordered by `createdAt` **asc** | `400 invalid_cursor` |
 | `projects.create` | `POST /projects` | editor of `workspaceId` | `{ workspaceId, name, slug, description?, settings? }` (`settings` partial; defaults fill the rest) | `201 Project` | `409 slug_taken` · `422 slug_reserved` |
 | `projects.getBySlug` ⁺ | `GET /projects/by-slug/:slug` | viewer | — | `200 Project` | — (`404 not_found` also when the caller is not a member of the owning workspace) |
 | `projects.get` | `GET /projects/:projectId` | viewer | — | `200 Project` | — |
@@ -335,13 +335,13 @@ The browser normally calls `schema-core` directly; these endpoints exist for API
 
 | `id` | Endpoint | Auth | Request | Response | Errors |
 | --- | --- | --- | --- | --- | --- |
-| `versions.list` | `GET /projects/:projectId/versions` | viewer | — | `200 { items: VersionSummary[], nextCursor }` ordered by `createdAt` **desc** | — |
+| `versions.list` | `GET /projects/:projectId/versions` | viewer | — | `200 { items: VersionSummary[], nextCursor }` ordered by `createdAt` **desc** | `400 invalid_cursor` |
 | `versions.publish` | `POST /projects/:projectId/versions` | editor | `{ label?, notes? }`. `label` 1–80 chars, free text; default `v<seq>` where `seq` is the project's next sequence number. Publishing does **not** deploy | `201 Version` | `409 label_taken` · `422 empty_project` (no routes) · `422 publish_invalid` — details: `{ routeId, method, path, caseId, caseName, issues: ValidationIssue[] }[]`, one per offending case; no version is created |
 | `versions.get` | `GET /versions/:versionId` | viewer | — | `200 Version` (with `snapshot`) | — |
 | `versions.delete` | `DELETE /versions/:versionId` | editor | — | `204` | `409 version_active` · `409 version_referenced` (a retained request-log row still references it) |
 | `versions.diff` | `GET /versions/:fromId/diff/:toId` | viewer of both (must be the same project) | — | `200 VersionDiff` | `422 versions_different_projects` |
 | `deploy.create` | `POST /projects/:projectId/deploy` | editor | `{ versionId }` | `200 Deployment`. Sets `active_version_id`, appends a `deployments` row, evicts the data-plane cache entry. Rollback is the same call with an older id. Deploying the version that is already active is a no-op: `200` with the latest existing `Deployment`, no new row | `404 version_not_found` (also when it belongs to another project) |
-| `deployments.list` | `GET /projects/:projectId/deployments` | viewer | — | `200 { items: Deployment[], nextCursor }` ordered by `createdAt` **desc** | — |
+| `deployments.list` | `GET /projects/:projectId/deployments` | viewer | — | `200 { items: Deployment[], nextCursor }` ordered by `createdAt` **desc** | `400 invalid_cursor` |
 | `cache.flush` | `POST /projects/:projectId/cache/flush` | editor | none | `204`. Drops the project's cache entry and slug index on this instance | — |
 
 ### 3.10 Request log
