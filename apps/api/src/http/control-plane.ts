@@ -257,7 +257,19 @@ function validate(endpoint: EndpointDef, req: Request, rawBody: unknown) {
   }
   if (endpoint.body) {
     // An absent body is validated as `{}`: all-optional bodies pass, required fields are reported.
-    const r = endpoint.body.safeParse(rawBody ?? {})
+    let r: ReturnType<typeof endpoint.body.safeParse>
+    try {
+      r = endpoint.body.safeParse(rawBody ?? {})
+    } catch (e) {
+      // The registry's recursive schemas (z.json(), MockNode) overflow the stack on a pathologically deep
+      // body. That is a bad request, not a server fault.
+      if (e instanceof RangeError) {
+        throw new HttpError(422, 'validation_failed', 'The request is not valid.', [
+          { path: [], code: 'depth_exceeded', message: 'The request body is nested too deeply.' },
+        ])
+      }
+      throw e
+    }
     if (r.success) body = r.data
     else issues.push(...toValidationIssues(r.error))
   }

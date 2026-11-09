@@ -442,3 +442,20 @@ describe('rate limiting', () => {
     }
   })
 })
+
+describe('pathologically nested request bodies', () => {
+  it('answer 422 depth_exceeded instead of crashing validation with a 500', async () => {
+    const depth = 3000
+    const deep = '['.repeat(depth) + ']'.repeat(depth)
+    for (const body of [`{"sample":${deep}}`]) {
+      const res = await authed()
+        .post('/api/v1/schema/infer')
+        .set(CSRF)
+        .set('Content-Type', 'application/json')
+        .send(body)
+      expect(res.status).toBe(422)
+      expect(res.body.error).toBe('validation_failed')
+      expect(res.body.details[0]).toMatchObject({ code: 'depth_exceeded' })
+    }
+  })
+})
