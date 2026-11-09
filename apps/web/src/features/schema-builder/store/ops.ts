@@ -190,13 +190,14 @@ export function addField(
   if (init.type !== undefined && !TYPE_SET.has(init.type)) return { state, id: null }
   const id = `n${state.nextId}`
   const key = init.key ?? uniqueKey(state, parent, DEFAULT_FIELD_KEY)
+  const at = Math.max(0, Math.min(init.index ?? parent.childIds.length, parent.childIds.length))
+  const childIds = parent.childIds.slice() // plain array, not a draft: see moveNode
+  childIds.splice(at, 0, id)
   let next = produce(state, (d) => {
-    const p = d.nodes[parentId] as BuilderNode
     d.nodes[id] = newLeaf(id, 'string', key, parentId)
     d.nextId++
-    const at = Math.max(0, Math.min(init.index ?? p.childIds.length, p.childIds.length))
-    p.childIds.splice(at, 0, id)
-    d.expanded.add(parentId)
+    ;(d.nodes[parentId] as BuilderNode).childIds = childIds
+    if (!state.expanded.has(parentId)) d.expanded.add(parentId)
   })
   if (init.type !== undefined && init.type !== 'string') next = setType(next, id, init.type)
   return { state: next, id }
@@ -212,9 +213,9 @@ export function removeNode(state: BuilderState, id: NodeId): BuilderState {
   const parent = state.nodes[node.parentId]
   if (!parent || parent.type === 'array') return state
   const gone = [id, ...descendantsOf(state, id)]
+  const remaining = parent.childIds.filter((c) => c !== id) // plain array, not a draft: see moveNode
   return produce(state, (d) => {
-    const p = d.nodes[node.parentId as NodeId] as BuilderNode
-    p.childIds = p.childIds.filter((c) => c !== id)
+    ;(d.nodes[node.parentId as NodeId] as BuilderNode).childIds = remaining
     for (const g of gone) {
       delete d.nodes[g]
       d.expanded.delete(g)
@@ -250,14 +251,22 @@ export function moveNode(
   const sameParent = oldParentId === newParentId
   const remaining = sameParent ? target.childIds.length - 1 : target.childIds.length
   const at = Math.max(0, Math.min(Math.trunc(index), remaining))
+  const oldParent = state.nodes[oldParentId] as BuilderNode
   if (sameParent && target.childIds.indexOf(id) === at) return state
+  // The new child lists are built as plain arrays and assigned, never spliced through the Immer draft:
+  // a splice on a draft array turns every shifted element into a proxy trap (O(n) and slow for 2,000 fields).
+  const without = oldParent.childIds.filter((c) => c !== id)
+  const into = (sameParent ? without : target.childIds).slice()
+  into.splice(at, 0, id)
   return produce(state, (d) => {
-    const from = d.nodes[oldParentId] as BuilderNode
-    from.childIds.splice(from.childIds.indexOf(id), 1)
-    const to = d.nodes[newParentId] as BuilderNode
-    to.childIds.splice(at, 0, id)
-    ;(d.nodes[id] as BuilderNode).parentId = newParentId
-    d.expanded.add(newParentId)
+    if (sameParent) {
+      ;(d.nodes[oldParentId] as BuilderNode).childIds = into
+    } else {
+      ;(d.nodes[oldParentId] as BuilderNode).childIds = without
+      ;(d.nodes[newParentId] as BuilderNode).childIds = into
+      ;(d.nodes[id] as BuilderNode).parentId = newParentId
+    }
+    if (!state.expanded.has(newParentId)) d.expanded.add(newParentId)
   })
 }
 

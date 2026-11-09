@@ -57,7 +57,9 @@ Files: `apps/web/src/features/schema-builder/store/{types,json,convert,ops,rows,
 - **Coalescing:** consecutive `setKey` calls on the same node less than 500 ms apart (measured from the previous keystroke, by an injectable clock) are one undo step; any other edit, another node, or an undo/redo ends the burst. This resolves the spec's open question as assumed.
 - **One repair on load:** an array with no `items` gets a string item (an array always has exactly one item node); everything else about invalid input is left as is for the validator to report.
 
-**Performance (2,000-node schema, 1,999 sibling fields):** setKey and moveNode each far under the 20 ms median budget on the test machine (budget asserted in `perf.test.ts`); a setKey changes exactly one node object, and `expanded` and `envelope` keep their identity.
+**Performance (2,000-node schema, 1,999 sibling fields), measured:** on a Windows laptop `setKey` has a median of about 1.1 to 1.6 ms and `moveNode` about 2.3 ms (`fromSchema` about 4 ms, `toSchema` about 11 to 13 ms); the 20 ms median budget is asserted in `perf.test.ts`. A setKey changes exactly one node object, and `expanded` and `envelope` keep their identity.
+
+**Performance bug found by CI and fixed:** the first version of `moveNode` spliced the 1,999-element child list through Immer's draft proxy, which turns every shifted element into a proxy trap. It measured a 7.5 ms median locally and 20.16 ms on the CI runner, just over the budget. `moveNode`, `removeNode` and `addField` now build the new child list as a plain array and assign it (3x faster: 2.3 ms locally). Keep that rule when adding operations: never splice, push into or filter a draft array that can be long.
 
 ## Questions for the owner
 - None blocking. For BLD-07: `rows()` does not return the root; read `state.nodes[state.rootId]` for the root's type.
