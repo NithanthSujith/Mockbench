@@ -6,7 +6,7 @@ Last updated: 2026-11-10. This file is the hand-off: read it first in a new sess
 
 **Phase 1 (freeze) is complete and tagged `contracts-v1`** (commit `2e47a99`). All 14 FND units are `done`; CI is green on `main`. The HTTP contract (53 endpoints), the 11-table database schema, `schema-core`, the design tokens, the API/web skeletons and the Docker/LAN stack are frozen. A change to any of them goes through the main session and updates `docs/API-CONTRACT.md`, `docs/DESIGN.md` and the registry together.
 
-**Phase 2: eight units built, eight PRs open, none merged.** Seven have every CI job green; #8 (BLD-06) was being fixed when this was written. Merging is left to the owner (the permission system blocks the assistant from merging).
+**Phase 2: eight units built, eight PRs open, all with every CI job green, none merged.** Merging is left to the owner (the permission system blocks the assistant from merging).
 
 | PR | Unit | Team | Branch | Notes |
 | --- | --- | --- | --- | --- |
@@ -17,11 +17,11 @@ Last updated: 2026-11-10. This file is the hand-off: read it first in a new sess
 | #5 | PRJ-01 projects API | Projects | `team/projects/PRJ-01` | 10/10, 36 tests. CI green |
 | #6 | RUN-04 compiled version + matcher | Runtime | `team/runtime/RUN-04` | 11/11, 40 tests. CI green after a timing-test fix. RUN-06 must pass `versions.label` as the 3rd arg of `compileVersion` and treat `CompileError` as a non-cached load failure |
 | #7 | BLD-03 stateless schema endpoints | Builder | `team/builder/BLD-03` | 8/8, 26 tests. CI green. Enable its `it.todo` for deep nesting (fixed on main) |
-| #8 | BLD-06 schema builder store (headless) | Builder | `team/builder/BLD-06` | One CI job failed after the first push; the agent pushed a fix (`bdcbd7f`) and was re-checking. Verify CI before merging |
+| #8 | BLD-06 schema builder store (headless) | Builder | `team/builder/BLD-06` | 10/10, 85 tests. CI green after a perf fix (moveNode median over budget on CI) and a rebase |
 
 Recommended merge order: #1, #2, #3, #4, #5, #6, #7, #8 (Squash and merge). They touch disjoint directories. After merging, flip each spec's `Status:` to `done` (the PR branches leave it `in progress`/`done` per their own report; check `docs/specs/<ID>-*.md`).
 
-Fixes made on `main` while the PRs were open (all PR branches were rebased onto them): the 501-sweep and per-IP rate-limit tests now use an empty module map (`6c1fb2f`, `1f0a948`); the Docker images build on the native platform because `pnpm deploy` crashed under QEMU on arm64 (`1f0a948`; arm64 Argon2 verified inside the image); `invalid_cursor` declared on all paginated lists (`29e0279`); pathologically nested request bodies now answer 422 `depth_exceeded` instead of 500 (`43e6892`).
+Fixes made on `main` while the PRs were open (all PR branches were rebased onto them): the 501-sweep and per-IP rate-limit tests now use an empty module map (`6c1fb2f`, `1f0a948`); the Docker images build on the native platform because `pnpm deploy` crashed under QEMU on arm64 (`1f0a948`; arm64 Argon2 verified inside the image); `invalid_cursor` declared on all paginated lists (`29e0279`); pathologically nested request bodies now answer 422 `depth_exceeded` instead of 500 (`43e6892`); the CI ownership job now diffs against the CURRENT base branch (`c46bd85`; it used the PR frozen base sha and failed every open team PR whenever main moved). Note: GitHub only refreshes a PR merge ref on a new push, so an old PR needs a rebase+push (not a re-run) to pick up workflow changes from main.
 
 ## Do these next, in order
 
