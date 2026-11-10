@@ -98,14 +98,19 @@ describe('schema.infer', () => {
     expect(res.body.details[0]).toMatchObject({ path: ['sample'], code: 'depth_exceeded' })
   })
 
-  // Found while building BLD-03, not fixable inside this module: the generic body validation in
-  // apps/api/src/http/control-plane.ts runs the registry's recursive z.json() schema, which overflows
-  // the stack somewhere between 500 and 1,500 levels of nesting, and the RangeError becomes a 500.
-  // The fix (a shared file, Core) is proposed in the PR description; when it lands, make this a real test:
-  // a sample 3,000 levels deep must answer 4xx with the envelope, never 500.
-  it.todo(
-    'a sample nested thousands of levels deep answers 4xx, never 500 (needs the shared http fix)',
-  )
+  it('a sample nested thousands of levels deep answers 422 depth_exceeded, never 500', async () => {
+    // Found while building BLD-03; the generic body validation in http/control-plane.ts now turns the
+    // stack overflow into a 422 (fixed on main in 43e6892).
+    const deep = '['.repeat(3000) + ']'.repeat(3000)
+    const res = await t
+      .as(me)
+      .post(INFER)
+      .set('Content-Type', 'application/json')
+      .send(`{"sample":${deep}}`)
+    expect(res.status).toBe(422)
+    expect(res.body.error).toBe('validation_failed')
+    expect(res.body.details[0]).toMatchObject({ code: 'depth_exceeded' })
+  })
 
   it('an array longer than the limit -> 422 array_count_exceeded; too many nodes -> node_limit_exceeded', async () => {
     const longArray = await t

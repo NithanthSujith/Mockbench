@@ -1,6 +1,6 @@
 # WS-01 — Workspaces API
 
-Status: in progress
+Status: done
 Phase: 2   Team: Workspaces
 Depends on: FND-11
 Size: M

@@ -1,6 +1,6 @@
 # AUTH-01 — Session core and middleware
 
-Status: in progress
+Status: done
 Phase: 2   Team: Auth
 Depends on: FND-11
 Size: M

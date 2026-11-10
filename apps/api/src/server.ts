@@ -12,6 +12,7 @@ import type { Config } from './config'
 import { createDb } from './db/client'
 import { createLogger } from './http/logger'
 import type { Logger } from './http/logger'
+import { createSessionService, startSessionSweeper } from './modules/auth/sessions'
 
 export interface ShutdownOptions {
   server: Server
@@ -76,6 +77,11 @@ export async function start(
     onError: (err) => logger.error({ err }, 'database pool error'),
   })
   const app = createApp({ config, db: handle.db, pool: handle.pool, logger, ...appOverrides })
+  // Expired sessions are deleted at start-up and then hourly (AUTH-01); the timer is stopped on shutdown.
+  const stopSweeper = startSessionSweeper({
+    service: createSessionService({ db: handle.db, config }),
+    logger,
+  })
 
   const server = await new Promise<Server>((resolve, reject) => {
     const s = app.listen(config.port, config.host, () => resolve(s))
@@ -83,7 +89,14 @@ export async function start(
   })
   logger.info({ host: config.host, port: config.port }, 'api listening')
 
-  const shutdown = createShutdown({ server, closeDb: () => handle.close(), logger })
+  const shutdown = createShutdown({
+    server,
+    closeDb: async () => {
+      stopSweeper()
+      await handle.close()
+    },
+    logger,
+  })
   return { config, logger, server, shutdown }
 }
 

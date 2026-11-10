@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SESSION_SECRET_PLACEHOLDER } from '../config'
 import { withTestDb } from '../db/testing'
 import { createShutdown, start } from '../server'
+import { createTestSession } from '../testing'
 import { logSink } from './helpers'
 
 const quiet = { info: () => {}, warn: () => {} }
@@ -123,6 +124,37 @@ describe('start() against a real port and database', () => {
       await db.drop()
     }
     await expect(fetch(`http://127.0.0.1:${port}/healthz`)).rejects.toThrow()
+  })
+
+  it('starts the session sweeper (AUTH-01): an expired session is deleted at start-up, a live one is kept', async () => {
+    const db = await withTestDb()
+    const expired = await createTestSession(db.db, undefined, { expired: true })
+    const live = await createTestSession(db.db)
+    const port = await freePort()
+    const started = await start(
+      {
+        NODE_ENV: 'test',
+        DATABASE_URL: db.url,
+        SESSION_SECRET: 'a-real-secret',
+        HOST: '127.0.0.1',
+        API_PORT: String(port),
+      },
+      { logDestination: logSink().stream as never },
+    )
+    try {
+      const ids = async () =>
+        (await db.pool.query('select id from sessions')).rows.map((r: { id: string }) => r.id)
+      const deadline = Date.now() + 5000
+      while ((await ids()).includes(expired.sessionId) && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 50))
+      }
+      const remaining = await ids()
+      expect(remaining).not.toContain(expired.sessionId)
+      expect(remaining).toContain(live.sessionId)
+    } finally {
+      await started.shutdown() // also stops the sweeper timer
+      await db.drop()
+    }
   })
 
   it('SESSION_SECRET equal to the .env.example placeholder: starts, and logs exactly ONE warn line naming it', async () => {
