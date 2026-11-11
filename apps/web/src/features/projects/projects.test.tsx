@@ -39,6 +39,9 @@ const server = setupServer(
     if (existing.has(slug)) return HttpResponse.json({ ...exampleProject, slug })
     return HttpResponse.json({ error: 'not_found', message: 'nope', details: [] }, { status: 404 })
   }),
+  http.get('/api/v1/projects/:projectId/routes', () =>
+    HttpResponse.json({ items: [], nextCursor: null }),
+  ),
   http.get('/api/v1/projects', ({ request }) => {
     const cursor = new URL(request.url).searchParams.get('cursor')
     listCalls.push(cursor)

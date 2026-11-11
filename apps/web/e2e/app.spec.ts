@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+﻿import { expect, test, type Page } from '@playwright/test'
 
 // Runs against `vite --mode mock`: the whole app with every /api/v1 call answered by MSW from the
 // contract examples, no backend at all.
@@ -34,7 +34,8 @@ test.describe('mock mode (dev:mock)', () => {
 
   const ROUTES: [string, string][] = [
     ['/w/alps/members', 'workspaces/MembersScreen'],
-    ['/p/billing-api', 'routes/ProjectHomeScreen'],
+    // Lands on the first route (the example project has one), so the editor is what renders.
+    ['/p/billing-api', 'routes/RouteEditorScreen'],
     ['/p/billing-api/routes/r1', 'routes/RouteEditorScreen'],
     ['/p/billing-api/routes/r1/cases/c1', 'routes/RouteEditorScreen'],
     ['/p/billing-api/versions', 'versions/VersionsScreen'],
@@ -127,5 +128,25 @@ test.describe('mock mode (dev:mock)', () => {
       page.locator('[data-slot="base-url"]').boundingBox(),
     ])
     expect(url!.width).toBeGreaterThan(bar!.width - 40)
+  })
+})
+
+test.describe('project shell and route rail (mock mode)', () => {
+  test('a project the user cannot see shows not-found and no rail', async ({ page }) => {
+    await page.goto('/p/missing')
+    await expect(screenOf(page)).toHaveAttribute('data-screen', 'shell/NotFound')
+    await expect(page.getByRole('navigation', { name: 'Project' })).toHaveCount(0)
+  })
+
+  test('creating a colliding route shows the collision message with a link to the route', async ({
+    page,
+  }) => {
+    await page.goto('/p/billing-api')
+    await page.getByRole('button', { name: 'New route' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('Path').fill('/orders')
+    await dialog.getByRole('button', { name: 'Create route' }).click()
+    await expect(dialog.getByText('A GET route with this path already exists')).toBeVisible()
+    await expect(dialog.getByRole('link', { name: 'Open it' })).toBeVisible()
   })
 })
