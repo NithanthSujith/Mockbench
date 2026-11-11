@@ -51,6 +51,8 @@ beforeEach(() => {
   vi.spyOn(api.projects, 'getBySlug').mockResolvedValue(exampleProject)
   vi.spyOn(api.routes, 'list').mockResolvedValue({ items: [], nextCursor: null })
   vi.spyOn(api.projects, 'list').mockResolvedValue({ items: [], nextCursor: null })
+  // The topbar reads the session through api.auth.me (the guard uses the mocked getSession).
+  vi.spyOn(api.auth, 'me').mockResolvedValue(SESSION as never)
 })
 afterEach(() => {
   vi.restoreAllMocks()
