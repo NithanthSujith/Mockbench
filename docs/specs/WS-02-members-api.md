@@ -25,7 +25,7 @@ Endpoints per API-CONTRACT Â§3.3 (`members.*`). Tables: `workspace_members`, `
 - [x] `GET â€¦/members` as viewer returns every member with `email`, `name`, `role`, ordered by `createdAt`.
 - [x] `PATCH â€¦/members/:memberId {role:"viewer"}` as owner â†’ `200`; demoting the only owner â†’ `409 last_owner` and the role is unchanged; demoting one of two owners succeeds.
 - [x] `DELETE â€¦/members/:memberId` as owner removes anyone except the last owner (`409 last_owner`); an editor deleting **their own** membership â†’ `204`; an editor deleting someone else's â†’ `403`; the last owner deleting themselves â†’ `409 last_owner`.
-- [x] Two concurrent requests that each demote/remove a *different* owner of a two-owner workspace â†’ exactly one succeeds and the other returns `409 last_owner` (race test, 20 iterations).
+- [x] Two concurrent requests that each demote/remove a *different* owner of a two-owner workspace â†’ exactly one succeeds and the other returns `409 last_owner`, `403` or `404` (ADR 0017) (race test, 20 iterations).
 - [x] A `memberId` from another workspace in the path â†’ `404 not_found`.
 
 ## Tests
