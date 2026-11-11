@@ -379,11 +379,3 @@ describe('workspaces.delete  DELETE /workspaces/:workspaceId  (owner)', () => {
     expect(await t.db.select().from(workspaces).where(eq(workspaces.id, ws.id))).toHaveLength(1)
   })
 })
-
-describe('the workspaces module binds only its own endpoints', () => {
-  it('members.* stays unimplemented until WS-02', async () => {
-    const { ws, session } = await memberOf('owner')
-    const res = await t.as(session).get(`/api/v1/workspaces/${ws.id}/members`)
-    expect(res.status).toBe(501)
-  })
-})
