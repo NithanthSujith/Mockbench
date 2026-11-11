@@ -1,6 +1,6 @@
 # PRJ-02 — Presets API
 
-Status: approved
+Status: done
 Phase: 2   Team: Projects
 Depends on: PRJ-01
 Size: S
@@ -18,12 +18,12 @@ Applying presets (generation; FND-04), the screen (PRJ-03), shipping starter pac
 Endpoints per API-CONTRACT §3.5. Table: `data_presets`. Rule shape from `@mockbench/schema-core` (`PresetRuleSchema`).
 
 ## Acceptance criteria
-- [ ] `POST /projects/:id/presets {name, rules:[…]}` as editor → `201` with `isEnabled:true`, `priority:0` defaults; as viewer → `403`; non-member → `404`.
-- [ ] A rule with two of `value|values|pattern`, with none, or with an empty `match` → `422` whose `details[].path` points into `rules[i]`.
-- [ ] `PATCH {rules:[…]}` replaces the whole rule list; `{isEnabled:false}` leaves rules untouched; `{name:null}` → `422`.
-- [ ] `GET …/presets` orders by `priority` desc then `createdAt` asc, returns all, and `nextCursor` is `null`.
-- [ ] `DELETE /presets/:id` as editor → `204`; a preset id belonging to another workspace's project → `404`.
-- [ ] More than 500 rules in one preset → `422` (limit documented in the schema).
+- [x] `POST /projects/:id/presets {name, rules:[…]}` as editor → `201` with `isEnabled:true`, `priority:0` defaults; as viewer → `403`; non-member → `404`.
+- [x] A rule with two of `value|values|pattern`, with none, or with an empty `match` → `422` whose `details[].path` points into `rules[i]`.
+- [x] `PATCH {rules:[…]}` replaces the whole rule list; `{isEnabled:false}` leaves rules untouched; `{name:null}` → `422`.
+- [x] `GET …/presets` orders by `priority` desc then `createdAt` asc, returns all, and `nextCursor` is `null`.
+- [x] `DELETE /presets/:id` as editor → `204`; a preset id belonging to another workspace's project → `404`.
+- [x] More than 500 rules in one preset → `422` (limit documented in the schema).
 
 ## Tests
 Role matrix; rule validation table; ordering test.
