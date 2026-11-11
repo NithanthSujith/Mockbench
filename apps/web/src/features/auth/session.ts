@@ -1,5 +1,4 @@
-// STUB (FND-13). AUTH-03 owns this file: it fills in the real session handling.
-// The router guard (src/lib/auth-guard.ts) calls ONLY the two functions exported here.
+// The guard's data source (src/lib/auth-guard.ts calls ONLY getSession and getLandingPath).
 import type { QueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api/client'
 import { isApiError } from '../../lib/api/errors'
@@ -26,8 +25,12 @@ export async function getSession(queryClient: QueryClient): Promise<Session | nu
   }
 }
 
-/** Where `/` and a fresh sign-in land. Stub: the sign-in screen until AUTH-03 decides. */
+/**
+ * Where `/` and a fresh sign-in land: the first workspace. A user with no workspace has no
+ * workspace page to land on; the route for that empty state is an open question (AUTH-03), so
+ * they stay on /login for now.
+ */
 export function getLandingPath(session: Session | null): string {
-  void session
-  return '/login'
+  const first = session?.workspaces[0]
+  return first ? `/w/${encodeURIComponent(first.slug)}` : '/login'
 }
