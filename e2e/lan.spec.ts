@@ -30,7 +30,11 @@ test.describe('the stack served at a LAN-style host name', () => {
       ),
     )
     expect(assetRefs.length).toBeGreaterThan(0)
-    for (const ref of assetRefs) expect(ref, `asset ref ${ref}`).not.toMatch(/^(https?:)?\/\//)
+    for (const ref of assetRefs) {
+      // Vite's preload helper writes a lazy chunk's href as an absolute URL on this same origin.
+      const external = /^(https?:)?\/\//.test(ref) && new URL(ref, origin).origin !== origin
+      expect(external, `asset ref ${ref}`).toBe(false)
+    }
 
     // A relative API call made from the page reaches the api through nginx.
     const instance = await page.evaluate(async () => {
