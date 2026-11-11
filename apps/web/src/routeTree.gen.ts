@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as AuthedWelcomeRouteImport } from './routes/_authed.welcome'
 import { Route as DevUiRouteImport } from './routes/[_]dev.ui'
 import { Route as AuthedPProjectSlugRouteImport } from './routes/_authed.p.$projectSlug'
 import { Route as AuthedWWsSlugRouteImport } from './routes/_authed.w.$wsSlug'
@@ -44,6 +45,11 @@ const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedWelcomeRoute = AuthedWelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => AuthedRoute,
 } as any)
 const DevUiRoute = DevUiRouteImport.update({
   id: '/_dev/ui',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/welcome': typeof AuthedWelcomeRoute
   '/_dev/ui': typeof DevUiRoute
   '/p/$projectSlug': typeof AuthedPProjectSlugRouteWithChildren
   '/w/$wsSlug': typeof AuthedWWsSlugRouteWithChildren
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/welcome': typeof AuthedWelcomeRoute
   '/_dev/ui': typeof DevUiRoute
   '/p/$projectSlug/logs': typeof AuthedPProjectSlugLogsRoute
   '/p/$projectSlug/presets': typeof AuthedPProjectSlugPresetsRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/_authed/welcome': typeof AuthedWelcomeRoute
   '/_dev/ui': typeof DevUiRoute
   '/_authed/p/$projectSlug': typeof AuthedPProjectSlugRouteWithChildren
   '/_authed/w/$wsSlug': typeof AuthedWWsSlugRouteWithChildren
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/welcome'
     | '/_dev/ui'
     | '/p/$projectSlug'
     | '/w/$wsSlug'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/register'
+    | '/welcome'
     | '/_dev/ui'
     | '/p/$projectSlug/logs'
     | '/p/$projectSlug/presets'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/_authed'
     | '/login'
     | '/register'
+    | '/_authed/welcome'
     | '/_dev/ui'
     | '/_authed/p/$projectSlug'
     | '/_authed/w/$wsSlug'
@@ -252,6 +264,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authed/welcome': {
+      id: '/_authed/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof AuthedWelcomeRouteImport
+      parentRoute: typeof AuthedRoute
     }
     '/_dev/ui': {
       id: '/_dev/ui'
@@ -392,11 +411,13 @@ const AuthedWWsSlugRouteWithChildren = AuthedWWsSlugRoute._addFileChildren(
 )
 
 interface AuthedRouteChildren {
+  AuthedWelcomeRoute: typeof AuthedWelcomeRoute
   AuthedPProjectSlugRoute: typeof AuthedPProjectSlugRouteWithChildren
   AuthedWWsSlugRoute: typeof AuthedWWsSlugRouteWithChildren
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedWelcomeRoute: AuthedWelcomeRoute,
   AuthedPProjectSlugRoute: AuthedPProjectSlugRouteWithChildren,
   AuthedWWsSlugRoute: AuthedWWsSlugRouteWithChildren,
 }
