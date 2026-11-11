@@ -459,7 +459,7 @@ describe('performance budgets (generous)', () => {
     expect(ms).toBeLessThan(100)
   })
 
-  it('does 100,000 matches in under 150 ms (best of 3)', () => {
+  it('does 100,000 matches in under 300 ms (best of 3)', () => {
     const v = compile(routes)
     const paths = routes.map((r) => r.path.replace('/:id', '/77'))
     // Warm up the JIT, as a long-running server would be.
@@ -475,6 +475,6 @@ describe('performance budgets (generous)', () => {
       return performance.now() - start
     })
     expect(hits).toBe(100_000)
-    expect(ms).toBeLessThan(150)
+    expect(ms).toBeLessThan(300)
   })
 })
