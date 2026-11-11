@@ -17,7 +17,19 @@ vi.mock('../features/auth/session', () => ({
   getLandingPath: vi.fn(() => '/w/alps'),
 }))
 
-const SESSION = { user: { id: 'u1', email: 'a@b.co', name: 'A', createdAt: '' }, workspaces: [] }
+const SESSION = {
+  user: { id: 'u1', email: 'a@b.co', name: 'A', createdAt: '' },
+  workspaces: [
+    {
+      id: exampleProject.workspaceId,
+      name: 'Alps',
+      slug: 'alps',
+      role: 'owner',
+      createdAt: '',
+      updatedAt: '',
+    },
+  ],
+}
 
 function mount(path: string) {
   const queryClient = createQueryClient()
@@ -38,6 +50,7 @@ beforeEach(() => {
   // The project loader reads the project and its (empty) route list.
   vi.spyOn(api.projects, 'getBySlug').mockResolvedValue(exampleProject)
   vi.spyOn(api.routes, 'list').mockResolvedValue({ items: [], nextCursor: null })
+  vi.spyOn(api.projects, 'list').mockResolvedValue({ items: [], nextCursor: null })
 })
 afterEach(() => {
   vi.restoreAllMocks()
