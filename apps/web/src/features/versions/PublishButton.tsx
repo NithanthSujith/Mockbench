@@ -1,14 +1,28 @@
 import { useParams } from '@tanstack/react-router'
+import { useState } from 'react'
 import { Button } from '../../components/ui'
+import { useCurrentWorkspace } from '../projects/queries'
+import { PublishDialog } from './PublishDialog'
+import { useProjectForVersions } from './queries'
 
-// STUB (FND-13) for the topbar Publish slot: replaced by RUN-09 (which opens the publish dialog).
-// Keep the export name.
+/** Topbar slot: opens the publish dialog. Hidden for viewers and outside a project. */
 export function PublishButton() {
   const { projectSlug } = useParams({ strict: false })
-  if (!projectSlug) return null
+  const project = useProjectForVersions(projectSlug).data
+  const { canCreate } = useCurrentWorkspace()
+  const [open, setOpen] = useState(false)
+  if (!projectSlug || !project || !canCreate) return null
   return (
-    <Button disabled data-slot="publish">
-      Publish
-    </Button>
+    <>
+      <Button data-slot="publish" onClick={() => setOpen(true)}>
+        Publish
+      </Button>
+      <PublishDialog
+        open={open}
+        onOpenChange={setOpen}
+        projectId={project.id}
+        projectSlug={projectSlug}
+      />
+    </>
   )
 }
