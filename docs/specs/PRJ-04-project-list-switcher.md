@@ -1,6 +1,6 @@
 # PRJ-04 — Project list, new-project dialog, project switcher
 
-Status: approved
+Status: in progress
 Phase: 3   Team: Projects
 Depends on: PRJ-01, AUTH-03
 Size: M
@@ -21,13 +21,13 @@ Endpoints `projects.list`, `projects.create`, `projects.getBySlug`. UI route `/w
 
 ## Acceptance criteria
 - [ ] The Base URL column shows `http://<current host:port>/mock/<slug>` taken from `window.location` — opened at `http://192.168.1.24:8080` it shows that host, never `localhost` (Playwright with a mapped hostname).
-- [ ] The list pages with "Load more" when `nextCursor` is non-null; counts and the LIVE pill (`v3`) come from the response; a project with no active version shows "—".
-- [ ] Typing a name derives the slug; typing `api` shows "api is reserved" before submit; `Billing` shows the format rule; submit is disabled while the slug is invalid.
-- [ ] Submitting a slug already taken (`409 slug_taken`) shows "That URL slug is already used by another project on this server" under the field, keeps the dialog open and the typed values.
-- [ ] The dialog states "The slug is the URL prefix and cannot be changed later" and shows the resulting `…/mock/<slug>` URL live.
-- [ ] Creating a project navigates to `/p/<slug>`.
-- [ ] A workspace with no projects shows an empty state with "New project"; viewers do not see "New project".
-- [ ] The switcher lists the workspace's projects (name + mono slug, tick on current), "All projects" and "+ New project"; selecting navigates and updates the topbar slug label.
+- [x] The list pages with "Load more" when `nextCursor` is non-null; counts and the LIVE pill (`v3`) come from the response; a project with no active version shows "—".
+- [x] Typing a name derives the slug; typing `api` shows "api is reserved" before submit; `Billing` shows the format rule; submit is disabled while the slug is invalid.
+- [x] Submitting a slug already taken (`409 slug_taken`) shows "That URL slug is already used by another project on this server" under the field, keeps the dialog open and the typed values.
+- [x] The dialog states "The slug is the URL prefix and cannot be changed later" and shows the resulting `…/mock/<slug>` URL live.
+- [x] Creating a project navigates to `/p/<slug>`.
+- [x] A workspace with no projects shows an empty state with "New project"; viewers do not see "New project".
+- [x] The switcher lists the workspace's projects (name + mono slug, tick on current), "All projects" and "+ New project"; selecting navigates and updates the topbar slug label.
 - [ ] Layout holds at 360 px (table scrolls inside its card).
 
 ## Tests
@@ -35,3 +35,9 @@ Testing Library for dialog validation states and role gating; Playwright for the
 
 ## Open questions
 - Page size on the list (50 assumed) and whether to add client-side search (not in the prototype).
+
+## Implementation notes (2026-11-11)
+- Not `done`: AUTH-03 (and AUTH-02) are not merged, so nothing was run against a real sign-in. Two criteria are unticked: the Playwright base-URL check (`e2e/` and `playwright.config.ts` are Core-owned; Vitest asserts the cell equals `getMockBaseUrl(slug)`) and the 360 px check (not run in a browser).
+- "Availability on blur" has no dedicated endpoint; the dialog calls `projects.getBySlug` (200 = in use, 404 = free). A project in a workspace the caller cannot see also answers 404, so the `409 slug_taken` on submit remains the authority.
+- The reserved-slug list and slug format are repeated in `features/projects/slug.ts` (web code does not import the contract runtime); `slug.test.ts` checks them against the contract.
+- The switcher shows the first page (50) of the workspace's projects.
