@@ -7,9 +7,12 @@
 import express from 'express'
 import type { Router } from 'express'
 import type { Logger } from 'pino'
+import type { VersionCache } from './version-cache'
 
 export interface DataPlaneDeps {
   logger: Logger
+  /** RUN-06: created in app.ts; RUN-05 resolves `/mock/:slug` through it. */
+  cache: VersionCache
 }
 
 export function createDataPlaneRouter(deps: DataPlaneDeps): Router {

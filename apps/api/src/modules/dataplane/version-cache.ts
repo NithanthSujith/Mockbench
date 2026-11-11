@@ -197,8 +197,8 @@ function toLookup(entry: Entry): VersionLookup {
     : { status: 'unpublished', projectId: entry.projectId }
 }
 
-// One cache per Hooks object (i.e. per app instance). The versions module creates it in `init`
-// (registering the listeners); the cache.flush handler and the RUN-05 handler look it up.
+// One cache per Hooks object (i.e. per app instance). app.ts creates it (registering the listeners) and
+// hands it to the data plane router; the control plane only emits hooks and never imports this file.
 const caches = new WeakMap<Hooks, VersionCache>()
 
 export function registerVersionCache(
@@ -208,6 +208,7 @@ export function registerVersionCache(
   const cache = new VersionCache({ ...o, maxBytes: o.maxMb * 1024 * 1024 })
   hooks.onVersionDeployed.on((id) => cache.invalidateProject(id))
   hooks.onProjectDeleted.on((id) => cache.forgetProject(id))
+  hooks.onCacheFlushRequested.on((id) => cache.flushProject(id))
   caches.set(hooks, cache)
   return cache
 }

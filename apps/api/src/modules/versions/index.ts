@@ -2,21 +2,11 @@
 // RUN-03 binds `deploy.create` and `deployments.list`; cache stays unbound. The TYPE only admits ids of these areas.
 import { loadProjectForUser, loadVersionForUser } from '../../access'
 import { authOf } from '../../http/auth'
-import type { ModuleDefinition, ModuleHandlers } from '../../http/types'
-import { registerVersionCache, versionCacheOf } from '../dataplane/version-cache'
+import type { ModuleHandlers } from '../../http/types'
 import { deployVersion, listDeployments } from './deploy'
 import { deleteVersion, fetchVersion, listVersions, publishVersion } from './service'
 
 export const areas = ['versions', 'deploy', 'deployments', 'cache'] as const
-
-// RUN-06: create the data plane's version cache and subscribe it to the deploy / delete hooks.
-export const init: ModuleDefinition['init'] = ({ db, config, hooks, log }) => {
-  registerVersionCache(hooks, {
-    db,
-    maxMb: config.mockCacheMaxMb,
-    log: log.child({ plane: 'data' }),
-  })
-}
 
 export const handlers: ModuleHandlers<'versions' | 'deploy' | 'deployments' | 'cache'> = {
   'versions.list': async (ctx, { params, query }) => {
@@ -60,7 +50,7 @@ export const handlers: ModuleHandlers<'versions' | 'deploy' | 'deployments' | 'c
 
   'cache.flush': async (ctx, { params }) => {
     await loadProjectForUser(ctx.db, authOf(ctx).userId, params.projectId, 'editor')
-    versionCacheOf(ctx.hooks).flushProject(params.projectId)
+    await ctx.hooks.onCacheFlushRequested.emit(params.projectId)
     return { status: 204 }
   },
 
