@@ -8,7 +8,6 @@ import { setUnauthenticatedHandler } from '../../lib/api/unauthenticated'
 import { createQueryClient } from '../../lib/query-client'
 import { qk } from '../../lib/query-keys'
 import { getLandingPath } from './session'
-import { NoWorkspaceState } from './NoWorkspaceState'
 
 // The real router, guard, session probe and screens. Only `fetch` is faked (a tiny in-memory server).
 const USER = {
@@ -78,6 +77,11 @@ beforeEach(() => {
     if (key === 'POST /api/v1/auth/logout') {
       server.signedIn = false
       return json(204)
+    }
+    if (key === 'POST /api/v1/workspaces') {
+      const ws = { ...WS, id: 'w2', name: 'Team Rocket', slug: 'team-rocket' }
+      server.state = { ...STATE, workspaces: [ws] }
+      return json(201, ws)
     }
     if (url.startsWith('/api/v1/')) return json(200, { items: [], nextCursor: null })
     return json(404, { error: 'not_found', message: 'nope', details: [] })
@@ -274,12 +278,18 @@ describe('landing path and empty state', () => {
     expect(getLandingPath(STATE as never)).toBe('/w/alps')
   })
 
-  it('shows the no-workspace copy and a Create workspace action', async () => {
-    const onCreate = vi.fn()
-    render(<NoWorkspaceState onCreate={onCreate} />)
+  it('a user with no workspace lands on /welcome and can create one', async () => {
+    server.state = { ...STATE, workspaces: [] }
+    expect(getLandingPath(server.state as never)).toBe('/welcome')
+    const { router } = mount('/login')
+    await signIn()
+    await waitFor(() => expect(router.state.location.pathname).toBe('/welcome'))
     expect(screen.getByText("You aren't in any workspace yet")).toBeInTheDocument()
     expect(screen.getByText('or ask an owner to add your email')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Create workspace' }))
-    expect(onCreate).toHaveBeenCalled()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Create workspace' }))
+    await user.type(await screen.findByLabelText('Name'), 'Team Rocket')
+    await user.keyboard('{Enter}')
+    await waitFor(() => expect(router.state.location.pathname).toBe('/w/team-rocket'))
   })
 })

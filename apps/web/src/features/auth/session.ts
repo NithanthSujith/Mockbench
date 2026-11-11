@@ -25,12 +25,9 @@ export async function getSession(queryClient: QueryClient): Promise<Session | nu
   }
 }
 
-/**
- * Where `/` and a fresh sign-in land: the first workspace. A user with no workspace has no
- * workspace page to land on; the route for that empty state is an open question (AUTH-03), so
- * they stay on /login for now.
- */
+/** Where `/` and a fresh sign-in land: the first workspace, or /welcome when there is none. */
 export function getLandingPath(session: Session | null): string {
-  const first = session?.workspaces[0]
-  return first ? `/w/${encodeURIComponent(first.slug)}` : '/login'
+  if (!session) return '/login'
+  const first = session.workspaces[0]
+  return first ? `/w/${encodeURIComponent(first.slug)}` : '/welcome'
 }

@@ -1,6 +1,13 @@
-import { ScreenStub } from '../../../shell/screen-stub'
+import { NoWorkspaceState } from '../NoWorkspaceState'
 
-// STUB: replaced by AUTH-03 (the zero-workspace empty state). Keep the export name; the route file imports it.
+/** /welcome: where a signed-in user with no workspace lands. */
 export function WelcomeScreen() {
-  return <ScreenStub area="auth" name="WelcomeScreen" unit="AUTH-03" centered />
+  return (
+    <div
+      data-screen="auth/WelcomeScreen"
+      className="mx-auto grid min-h-[60vh] place-items-center px-4"
+    >
+      <NoWorkspaceState />
+    </div>
+  )
 }
