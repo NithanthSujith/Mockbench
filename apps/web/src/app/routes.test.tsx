@@ -109,6 +109,8 @@ describe('every route renders its stub from the owning feature, inside the shell
   it('the top bar slots are filled by the feature stubs and show the mock address of the open project', async () => {
     mount('/p/billing-api/versions')
     await waitFor(() => expect(currentScreen()).toBe('versions/VersionsScreen'))
+    // Publish appears once the session and project resolve the caller's role.
+    await waitFor(() => expect(document.querySelector('[data-slot="publish"]')).not.toBeNull())
     for (const slot of [
       'workspace-switcher',
       'project-switcher',
