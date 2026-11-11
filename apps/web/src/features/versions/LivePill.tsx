@@ -1,13 +1,22 @@
 import { useParams } from '@tanstack/react-router'
+import { LivePill as LivePillBadge } from '../../components/ui'
+import { useProjectForVersions } from './queries'
 
-// STUB (FND-13) for the topbar "LIVE vN" slot: replaced by RUN-09. Keep the export name.
-// The real one renders the LivePill component when the project has an active version.
+/** Topbar slot: "LIVE <label>" for the active version, or "not published". */
 export function LivePill() {
   const { projectSlug } = useParams({ strict: false })
-  if (!projectSlug) return null
+  const project = useProjectForVersions(projectSlug).data
+  if (!projectSlug || !project) return null
+  if (!project.activeVersion) {
+    return (
+      <span data-slot="live-pill" className="text-small text-ink-2">
+        not published
+      </span>
+    )
+  }
   return (
-    <span data-slot="live-pill" className="text-small text-ink-2">
-      not published
-    </span>
+    <LivePillBadge data-slot="live-pill">
+      LIVE <span className="mono">{project.activeVersion.label}</span>
+    </LivePillBadge>
   )
 }
