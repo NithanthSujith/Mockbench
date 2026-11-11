@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -287,7 +287,12 @@ describe('landing path and empty state', () => {
     expect(screen.getByText("You aren't in any workspace yet")).toBeInTheDocument()
     expect(screen.getByText('or ask an owner to add your email')).toBeInTheDocument()
     const user = userEvent.setup()
-    await user.click(screen.getByRole('button', { name: 'Create workspace' }))
+    await user.click(
+      within(document.querySelector('[data-screen="auth/WelcomeScreen"]') as HTMLElement).getByRole(
+        'button',
+        { name: 'Create workspace' },
+      ),
+    )
     await user.type(await screen.findByLabelText('Name'), 'Team Rocket')
     await user.keyboard('{Enter}')
     await waitFor(() => expect(router.state.location.pathname).toBe('/w/team-rocket'))

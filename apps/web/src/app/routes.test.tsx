@@ -17,7 +17,19 @@ vi.mock('../features/auth/session', () => ({
   getLandingPath: vi.fn(() => '/w/alps'),
 }))
 
-const SESSION = { user: { id: 'u1', email: 'a@b.co', name: 'A', createdAt: '' }, workspaces: [] }
+const SESSION = {
+  user: { id: 'u1', email: 'a@b.co', name: 'A', createdAt: '' },
+  workspaces: [
+    {
+      id: exampleProject.workspaceId,
+      name: 'Alps',
+      slug: 'alps',
+      role: 'owner',
+      createdAt: '',
+      updatedAt: '',
+    },
+  ],
+}
 
 function mount(path: string) {
   const queryClient = createQueryClient()
@@ -38,6 +50,9 @@ beforeEach(() => {
   // The project loader reads the project and its (empty) route list.
   vi.spyOn(api.projects, 'getBySlug').mockResolvedValue(exampleProject)
   vi.spyOn(api.routes, 'list').mockResolvedValue({ items: [], nextCursor: null })
+  vi.spyOn(api.projects, 'list').mockResolvedValue({ items: [], nextCursor: null })
+  // The topbar reads the session through api.auth.me (the guard uses the mocked getSession).
+  vi.spyOn(api.auth, 'me').mockResolvedValue(SESSION as never)
 })
 afterEach(() => {
   vi.restoreAllMocks()
@@ -94,6 +109,8 @@ describe('every route renders its stub from the owning feature, inside the shell
   it('the top bar slots are filled by the feature stubs and show the mock address of the open project', async () => {
     mount('/p/billing-api/versions')
     await waitFor(() => expect(currentScreen()).toBe('versions/VersionsScreen'))
+    // Publish appears once the session and project resolve the caller's role.
+    await waitFor(() => expect(document.querySelector('[data-slot="publish"]')).not.toBeNull())
     for (const slot of [
       'workspace-switcher',
       'project-switcher',
