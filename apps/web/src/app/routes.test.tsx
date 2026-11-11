@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getLandingPath, getSession } from '../features/auth/session'
+import { exampleProject } from '@mockbench/api-contract'
 import { api } from '../lib/api/client'
 import { setUnauthenticatedHandler } from '../lib/api/unauthenticated'
 import { safeRedirectTarget } from '../lib/auth-guard'
@@ -34,6 +35,9 @@ beforeEach(() => {
   window.scrollTo = vi.fn()
   vi.mocked(getSession).mockResolvedValue(SESSION as never)
   vi.mocked(getLandingPath).mockReturnValue('/w/alps')
+  // The project loader reads the project and its (empty) route list.
+  vi.spyOn(api.projects, 'getBySlug').mockResolvedValue(exampleProject)
+  vi.spyOn(api.routes, 'list').mockResolvedValue({ items: [], nextCursor: null })
 })
 afterEach(() => {
   vi.restoreAllMocks()
