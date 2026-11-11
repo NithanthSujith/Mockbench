@@ -376,7 +376,7 @@ describe('registry-driven routing details', () => {
 
 describe('rate limiting', () => {
   it('with CONTROL_RATE_LIMIT=3 the 4th request from one session is 429 rate_limited with a numeric Retry-After; another session is unaffected', async () => {
-    const limited = await makeApp({ env: { CONTROL_RATE_LIMIT: '3' } })
+    const limited = await makeApp({ modules: {}, env: { CONTROL_RATE_LIMIT: '3' } })
     try {
       const a = await limited.session()
       const b = await limited.session()
