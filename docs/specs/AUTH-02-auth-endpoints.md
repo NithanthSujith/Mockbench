@@ -37,7 +37,7 @@ Endpoints `auth.register`, `auth.login`, `auth.logout`, `auth.me`, `auth.changeP
 Handler tests via `testApp()` for each criterion; a concurrency test for the first-user race; a timing-equality smoke test (loose bound) for unknown email vs wrong password.
 
 ## Open questions
-- Argon2 parameters (m/t/p) — placeholder `m=19 MiB, t=2, p=1` (OWASP minimum); confirm.
+- Argon2 parameters (m/t/p) — placeholder `m=19 MiB, t=2, p=1` (OWASP minimum); confirmed in ADR 0017.
 - Whether login limiter should also key on email (PLAN concern on shared Docker-Desktop IPs).
 
 ## Implementation notes (AUTH-02)
