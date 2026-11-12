@@ -10,7 +10,7 @@ import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ToastProvider } from '../../components/ui'
-import { buildCurl } from './snippet'
+import { buildCurl } from './try-it-snippet'
 import { TryItPanel } from './TryItPanel'
 
 const O = window.location.origin

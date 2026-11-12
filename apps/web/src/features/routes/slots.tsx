@@ -3,7 +3,7 @@ import type { MockSchema } from '@mockbench/schema-core'
 import { Card, PanelHead } from '../../components/ui'
 import { ResponsePreview } from '../preview/ResponsePreview'
 import { SchemaEditor } from '../schema-builder/SchemaEditor'
-import { TryItPanel } from '../try-it/TryItPanel'
+import { TryItPanel } from '../preview/TryItPanel'
 
 // Mounting points owned by this unit and implemented by later ones. The editor passes everything
 // they need; they replace these bodies without touching the editor.

@@ -12,8 +12,8 @@ import {
 } from '../../components/ui'
 import { sendMockRequest, type MockResponse } from '../../lib/api/mock-request'
 import { copyText } from '../../lib/copy'
-import { usePreviewProject } from '../preview/queries'
-import { buildCurl, caseHeader, mockRequestPath } from './snippet'
+import { usePreviewProject } from './queries'
+import { buildCurl, caseHeader, mockRequestPath } from './try-it-snippet'
 
 type Sent =
   | { kind: 'idle' }
@@ -69,7 +69,7 @@ export function TryItPanel({ case: caseItem, route }: { case: ResponseCase; rout
   }
 
   return (
-    <Card data-screen="try-it/TryItPanel" data-case-id={caseItem.id}>
+    <Card data-screen="preview/TryItPanel" data-case-id={caseItem.id}>
       <PanelHead>
         <h3>Try it</h3>
         <span className="ml-auto text-small text-ink-3">
