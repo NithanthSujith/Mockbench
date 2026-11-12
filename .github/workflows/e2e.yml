@@ -1,0 +1,48 @@
+name: e2e
+
+# XC-01: the first-release gate. The real docker compose stack, driven by Chromium at a LAN-style host
+# name (mockbench.lan.test:8080), plus plain HTTP calls from outside the browser.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mockbench/web exec playwright install --with-deps chromium
+      # e2e/run.sh builds the images, starts SEED_DEMO=false, runs the loop specs, removes the stack
+      # and its volume, then does the same with SEED_DEMO=true for the seed spec.
+      - name: Run the suite
+        run: pnpm e2e
+      - name: Upload traces and report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-traces
+          path: |
+            e2e/test-results
+            apps/web/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: No containers left running
+        if: always()
+        run: |
+          left="$(docker ps -a --filter label=com.docker.compose.project=mockbench-e2e -q)"
+          test -z "$left" || { echo "containers left behind: $left"; exit 1; }
