@@ -43,7 +43,7 @@ AUTH-03 guard and redirect (including an open-redirect target and sign-out), BLD
 3. **Try-it curl.** BLD-12 is not in `Depends on` and is not merged, so there is no curl snippet. Add BLD-12 to `Depends on` (and make this criterion check it) or move the clause to BLD-12.
 4. **Demo seed.** The `demo` project comes from RUN-11, also not in `Depends on` and not merged. Same remedy.
 5. **Port and host.** The port is `E2E_PORT` (default 8080). Node-side requests resolve `mockbench.lan.test` through a `dns.lookup` and `dns.promises.lookup` shim in `e2e/support/lan.ts`, the counterpart of Chromium's `--host-resolver-rules`.
-6. **Product bug (BLD-05).** After "+ Case" or selecting another case tab, the previous case's settings bar stays in the DOM under the new one (two "Case name" fields) until reload. Tracked by a `test.fixme` in `e2e/first-release.spec.ts`; the page objects select a bar by its case name so the rest of the suite is unaffected.
+6. **Product bug (BLD-05), fixed.** After "+ Case" or selecting another case tab, the previous case's settings bar stayed in the DOM under the new one. Root cause in `RouteEditorScreen`: `CaseBar` and `SchemaEditorSlot` were siblings with the same `key={selected.id}`; duplicate sibling keys make React's reconciler lose one old child, so the old bar was never removed. Fixed with distinct key prefixes; the `test.fixme` is now a live test.
 7. **Rate limits shape the suite.** The control plane allows 100 requests a minute per session, and the SPA is chatty enough that one session for the whole run hits `429`. The suite shares a session across three tests at a time (sign-in is 10 a minute per IP).
 
 ## Open questions

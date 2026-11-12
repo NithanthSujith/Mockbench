@@ -51,8 +51,8 @@ export class ProjectPage {
   }
 
   /**
-   * The settings bar of the case with this name. (Filtered by the name input rather than taken as
-   * the only bar: see the fixme in first-release.spec.ts, the previous case's bar is not removed.)
+   * The settings bar of the case with this name (filtered by its name input, which also asserts
+   * that the bar belongs to the selected case).
    */
   caseBar(name: string) {
     return this.page.locator('[data-screen="routes/CaseBar"]').filter({

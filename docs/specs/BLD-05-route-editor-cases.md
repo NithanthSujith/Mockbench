@@ -36,3 +36,6 @@ Testing Library for each control and optimistic rollback; Playwright for URL syn
 
 ## Open questions
 - Whether concurrent edits by two users should surface a "changed by someone else" banner (v1 is last-write-wins; reserved for `If-Match`).
+
+## Notes
+- Fixed: after "+ Case" or switching case tabs the previous case's settings bar stayed mounted (two "Case name" fields). Cause: `CaseBar` and `SchemaEditorSlot` were adjacent siblings both keyed `selected.id`; duplicate sibling keys make React's child reconciliation drop one old child instead of deleting it. Keys are now `case-bar:<id>` and `schema:<id>`. Regression tests in `route-editor.test.tsx`; the XC-01 e2e fixme is live.
