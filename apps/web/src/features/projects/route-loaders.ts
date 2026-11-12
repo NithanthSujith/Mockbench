@@ -1,4 +1,6 @@
 import { getSession } from '../auth/session'
+import { api } from '../../lib/api/client'
+import { qk } from '../../lib/query-keys'
 import type { RouteLoader } from '../../lib/route-loader'
 import { projectsInfiniteOptions } from './queries'
 
@@ -13,5 +15,16 @@ export const workspaceProjectsLoader: RouteLoader = async ({ queryClient, params
   }
 }
 
-// STUB (FND-13): PRJ-05 fills this in.
-export const settingsLoader: RouteLoader = () => {}
+/** Warm the project for the settings screen. Never blocks or fails the navigation. */
+export const settingsLoader: RouteLoader = async ({ queryClient, params }) => {
+  const slug = params.projectSlug
+  if (!slug) return
+  try {
+    await queryClient.prefetchQuery({
+      queryKey: qk.projectBySlug(slug),
+      queryFn: ({ signal }) => api.projects.getBySlug({ params: { slug } }, { signal }),
+    })
+  } catch {
+    // The screen shows its own error state.
+  }
+}
