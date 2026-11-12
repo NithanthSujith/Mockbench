@@ -3,6 +3,7 @@ import type { MockSchema } from '@mockbench/schema-core'
 import { Card, PanelHead } from '../../components/ui'
 import { ResponsePreview } from '../preview/ResponsePreview'
 import { SchemaEditor } from '../schema-builder/SchemaEditor'
+import { TryItPanel } from '../try-it/TryItPanel'
 
 // Mounting points owned by this unit and implemented by later ones. The editor passes everything
 // they need; they replace these bodies without touching the editor.
@@ -34,7 +35,12 @@ export function SchemaEditorSlot({
   )
 }
 
-/** BLD-11 fills this with the live preview; BLD-12 adds the try-it card below it. */
+/** The live preview (BLD-11) with the try-it card (BLD-12) below it. */
 export function PreviewSlot(props: { case: ResponseCase; route: Route }) {
-  return <ResponsePreview case={props.case} route={props.route} />
+  return (
+    <div className="flex min-w-0 flex-col gap-3.5">
+      <ResponsePreview case={props.case} route={props.route} />
+      <TryItPanel key={props.case.id} case={props.case} route={props.route} />
+    </div>
+  )
 }

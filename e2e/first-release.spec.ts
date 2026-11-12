@@ -237,9 +237,21 @@ test.fixme('switching case leaves exactly one case settings bar', async ({ page,
   await expect(page.getByLabel('Case name')).toHaveCount(1)
 })
 
-// BLD-12 (the Try-it panel) is not merged: the route editor has no curl snippet to scan. The criterion
-// is "the topbar base URL and the Try-it curl both contain mockbench.lan.test:8080".
-test.fixme('the Try-it curl contains the LAN host (BLD-12 Try-it panel is not built yet)', async () => {})
+test('the Try-it curl carries the LAN host, and Send answers from the deployed version', async ({
+  page,
+  context,
+}) => {
+  await signIn(context)
+  await page.goto(state.productsRouteUrl!)
+  const port = new URL(ORIGIN).port
+  const curl = page.getByLabel('curl command', { exact: true })
+  await expect(curl).toContainText(
+    `curl -i http://mockbench.lan.test:${port}/mock/${SLUG}/products/42`,
+  )
+  expect((await curl.innerText()).toLowerCase()).not.toContain('localhost')
+  await page.getByRole('button', { name: 'Send' }).click()
+  await expect(page.locator('dl[aria-label="Response headers"]')).toContainText('X-Mock-Version')
+})
 
 test('error paths: unknown slug, unmatched path, unknown case, unpublished project', async ({
   context,
