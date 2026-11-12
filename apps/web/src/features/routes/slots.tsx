@@ -1,6 +1,7 @@
 import type { MockSchemaEnvelope, ResponseCase, Route } from '@mockbench/api-contract'
 import type { MockSchema } from '@mockbench/schema-core'
-import { Card, PanelBody, PanelHead } from '../../components/ui'
+import { Card, PanelHead } from '../../components/ui'
+import { ResponsePreview } from '../preview/ResponsePreview'
 import { SchemaBuilder } from '../schema-builder/SchemaBuilder'
 
 // Mounting points owned by this unit and implemented by later ones. The editor passes everything
@@ -33,16 +34,7 @@ export function SchemaEditorSlot({
   )
 }
 
-/** BLD-11 (preview) and BLD-12 (try-it) replace this. */
+/** BLD-11 fills this with the live preview; BLD-12 adds the try-it card below it. */
 export function PreviewSlot(props: { case: ResponseCase; route: Route }) {
-  return (
-    <Card data-screen="preview/ResponsePreview" data-case-id={props.case.id}>
-      <PanelHead>
-        <h3>Response</h3>
-      </PanelHead>
-      <PanelBody className="text-control text-ink-2">
-        Preview column stub (BLD-11, BLD-12).
-      </PanelBody>
-    </Card>
-  )
+  return <ResponsePreview case={props.case} route={props.route} />
 }
