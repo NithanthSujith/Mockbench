@@ -16,6 +16,7 @@ import type { Logger } from './http/logger'
 import type { Handler, ModuleDefinition } from './http/types'
 import { createSessionAuth } from './modules/auth/session-middleware'
 import { createDataPlaneRouter, registerVersionCache } from './modules/dataplane'
+import type { RequestLog } from './modules/dataplane'
 import { modules as defaultModules } from './modules'
 import type { ModuleMap } from './modules'
 
@@ -32,6 +33,8 @@ export interface AppDeps {
   /** Called with each control-plane middleware step name as it runs (tests). */
   trace?: (step: string) => void
   now?: () => number
+  /** RUN-07: the request-log writer (server.ts creates it). Default: discards entries. */
+  requestLog?: RequestLog
 }
 
 /** Merges every module's handlers, refusing any handler outside the module's own areas. */
@@ -84,7 +87,10 @@ export function createApp(deps: AppDeps): Express {
   app.set('trust proxy', config.trustProxy)
 
   // Data plane FIRST: nothing from the control plane may run for /mock/*.
-  app.use('/mock', createDataPlaneRouter({ logger, cache: versionCache }))
+  app.use(
+    '/mock',
+    createDataPlaneRouter({ logger, cache: versionCache, requestLog: deps.requestLog }),
+  )
 
   app.use(
     createControlPlane({

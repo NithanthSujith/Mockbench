@@ -63,6 +63,8 @@ export interface MatchResult {
 
 export interface CompiledVersion {
   label: string
+  /** `versions.id`, for the request log (RUN-07); null when the caller did not pass it. */
+  versionId: string | null
   projectId: string
   slug: string
   settings: ProjectSettings
@@ -81,6 +83,8 @@ export interface CompiledVersion {
 export interface CompileOptions {
   /** `versions.snapshot_bytes`, when the caller knows it: added to the size estimate. */
   snapshotBytes?: number
+  /** `versions.id` (RUN-07: recorded on each request-log row). */
+  versionId?: string
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -107,6 +111,7 @@ const METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
 class Compiled implements CompiledVersion {
   readonly label: string
+  readonly versionId: string | null
   readonly projectId: string
   readonly slug: string
   readonly settings: ProjectSettings
@@ -126,6 +131,7 @@ class Compiled implements CompiledVersion {
     options: CompileOptions,
   ) {
     this.label = label
+    this.versionId = options.versionId ?? null
     this.projectId = snapshot.project.id
     this.slug = snapshot.project.slug
     this.settings = snapshot.project.settings

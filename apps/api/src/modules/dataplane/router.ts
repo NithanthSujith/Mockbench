@@ -19,7 +19,7 @@ export interface DataPlaneDeps {
   logger: Logger
   /** RUN-06: created in app.ts; resolves `/mock/:slug`. */
   cache: VersionCache
-  /** RUN-07 seam (no-op until it merges). */
+  /** RUN-07: the request-log writer (default: discards). */
   requestLog?: RequestLog
   /** Delay implementation (tests inject a recorder). */
   sleep?: (ms: number) => Promise<void>
@@ -40,7 +40,10 @@ type CorsMode = '*' | 'off'
 interface Ctx {
   cors: CorsMode
   projectId: string | null
+  versionId: string | null
   versionLabel: string | null
+  matchedRouteId: string | null
+  matchedCaseId: string | null
   routePattern: string | null
   caseName: string | null
   mockError: string | null
@@ -49,7 +52,10 @@ interface Ctx {
 const newCtx = (): Ctx => ({
   cors: '*',
   projectId: null,
+  versionId: null,
   versionLabel: null,
+  matchedRouteId: null,
+  matchedCaseId: null,
   routePattern: null,
   caseName: null,
   mockError: null,
@@ -221,7 +227,9 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
           durationMs: Math.round(Number(process.hrtime.bigint() - started) / 1e6),
           routePattern: ctx.routePattern,
           caseName: ctx.caseName,
-          versionId: null,
+          versionId: ctx.versionId,
+          matchedRouteId: ctx.matchedRouteId,
+          matchedCaseId: ctx.matchedCaseId,
           versionLabel: ctx.versionLabel,
           mockError: ctx.mockError,
           requestHeaders: redactedHeaders(req),
@@ -254,6 +262,7 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
     if (lookup.status !== 'unknown') ctx.projectId = lookup.projectId
     if (lookup.status === 'live') {
       ctx.cors = lookup.version.settings.cors === 'off' ? 'off' : '*'
+      ctx.versionId = lookup.version.versionId
       ctx.versionLabel = lookup.version.label
     }
 
@@ -317,6 +326,8 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
       return
     }
     ctx.caseName = selected.case.name
+    ctx.matchedRouteId = matched.route.id
+    ctx.matchedCaseId = selected.case.id
 
     // 6. Delay.
     const delay = selected.case.delayMs ?? version.settings.defaultDelayMs
