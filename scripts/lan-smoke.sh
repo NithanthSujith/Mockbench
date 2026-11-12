@@ -142,9 +142,10 @@ cmd_check() {
   # --- OPTIONS must reach the api untouched
   curl -s -i -X OPTIONS -H 'Origin: http://x.test' -H 'Access-Control-Request-Method: POST' --max-time 10 \
     "${base}/mock/anything/at/all" > "$WORK/options.txt"
-  if grep -qi '^x-mock-error: true' "$WORK/options.txt" && ! grep -qi 'text/html' "$WORK/options.txt" \
-     && ! head -1 "$WORK/options.txt" | grep -q ' 405 '; then
-    pass "OPTIONS /mock/... is answered by the api (X-Mock-Error: true), not nginx or index.html"
+  # RUN-05: the data plane answers OPTIONS itself with 204 + permissive CORS (no X-Mock-Error).
+  if head -1 "$WORK/options.txt" | grep -q ' 204 ' && grep -qi '^access-control-allow-origin: \*' "$WORK/options.txt" \
+     && grep -qi '^access-control-max-age: 600' "$WORK/options.txt" && ! grep -qi 'text/html' "$WORK/options.txt"; then
+    pass "OPTIONS /mock/... is answered by the api (204 + CORS), not nginx or index.html"
   else fail "OPTIONS /mock/... was not answered by the api: $(head -3 "$WORK/options.txt" | tr '\r\n' '  ')"; fi
 
   # --- network exposure and compose shape
