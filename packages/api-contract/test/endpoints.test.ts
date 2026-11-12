@@ -340,10 +340,11 @@ describe('data-plane constants', () => {
   })
   it('MockErrorBody accepts each documented error and rejects missing extra fields', () => {
     const base = { message: 'm', hint: 'h' }
-    expect(MOCK_ERROR_CODES).toHaveLength(6)
+    expect(MOCK_ERROR_CODES).toHaveLength(7)
     for (const body of [
       { error: 'project_not_found', slug: 's', ...base },
       { error: 'project_not_published', slug: 's', ...base },
+      { error: 'mock_unavailable', slug: 's', ...base },
       { error: 'route_not_found', routes: [{ method: 'GET', path: '/x' }], ...base },
       {
         error: 'case_not_found',

@@ -398,7 +398,7 @@ A mock endpoint is `http://<host>:8080/mock/<project-slug>/<path>` and answers a
 ### Request lifecycle
 
 1. **Resolve the project** from the first path segment after `/mock/`. Unknown slug → `404` with a body naming the slug.
-2. **Load the live version** from the in-process cache, keyed by project id. On a miss, read it from Postgres once and cache it. No active version → `503` with `{ "error": "project_not_published" }`.
+2. **Load the live version** from the in-process cache, keyed by project id. On a miss, read it from Postgres once and cache it. No active version → `503` with `{ "error": "project_not_published" }`. If the load itself fails (database unreachable, snapshot that does not compile) → `503` with `{ "error": "mock_unavailable" }`, nothing cached, next request retries.
 3. **Match the route** by method plus path against a radix tree built when the version was cached. Static segments beat params: `/users/me` wins over `/users/:id`. No match → `404` listing the routes that do exist in this project, which turns the most common mistake into a self-service fix.
 4. **Select the case** (below).
 5. **Wait** for the case delay, or the project default when the case has none.
