@@ -85,18 +85,19 @@ describe('health, readiness, instance and openapi', () => {
 })
 
 describe('data plane isolation (ADR 0011)', () => {
-  it('GET /mock/x/y runs NONE of the control-plane steps and answers 501 with X-Mock-Error: true', async () => {
+  it('GET /mock/x/y runs NONE of the control-plane steps and answers its own 404 mock error with X-Mock-Error: true', async () => {
     const steps: string[] = []
     const t = await makeApp({ trace: (s) => steps.push(s) })
     try {
       const res = await request(t.app).get('/mock/x/y').set('Cookie', 'mockbench_session=whatever')
       expect(steps).toEqual([]) // no request-id, csrf, cookies, session, rate-limit, json-body
-      expect(res.status).toBe(501)
+      expect(res.status).toBe(404)
       expect(res.headers['x-mock-error']).toBe('true')
       expect(res.body).toEqual({
-        error: 'not_implemented',
+        error: 'project_not_found',
         message: expect.any(String),
         hint: expect.any(String),
+        slug: 'x',
       })
       // not the control-plane envelope and no control-plane artefacts
       expect(res.body.details).toBeUndefined()
@@ -116,10 +117,10 @@ describe('data plane isolation (ADR 0011)', () => {
         const res = await call('/mock/demo/things')
           .set('Content-Type', 'application/json')
           .send('{not json')
-        expect(res.status, method).toBe(501) // not 400 invalid_json, not 403 csrf_rejected
+        expect(res.status, method).toBe(404) // not 400 invalid_json, not 403 csrf_rejected
         expect(res.headers['x-mock-error']).toBe('true')
       }
-      expect((await request(t.app).options('/mock/demo/things')).status).toBe(501)
+      expect((await request(t.app).options('/mock/demo/things')).status).toBe(204)
       expect(steps).toEqual([])
     } finally {
       await t.drop()
