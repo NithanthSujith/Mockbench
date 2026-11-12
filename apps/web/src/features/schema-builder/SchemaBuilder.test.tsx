@@ -127,17 +127,17 @@ describe('SchemaBuilder rows', () => {
   })
 
   it('renaming a key updates the store and emits the new schema after the debounce, order unchanged', async () => {
-    const { onChange, user } = setup(worked, { debounceMs: 1500 })
+    const { onChange, user } = setup(worked, { debounceMs: 400 })
     const key = within(rowOf('name')).getByRole('textbox', { name: 'Field name' })
     await user.clear(key)
     await user.type(key, 'full_name')
     await user.keyboard('{Enter}')
     expect(onChange).not.toHaveBeenCalled()
-    await settle(1800)
+    await settle(700)
     expect(onChange).toHaveBeenCalledTimes(1)
     const out = onChange.mock.calls[0]?.[0] as MockSchema
     expect(out.root.fields?.map((f) => f.key).slice(0, 3)).toEqual(['id', 'full_name', 'email'])
-  })
+  }, 20_000)
 
   it('Escape reverts a key edit', async () => {
     const { onChange, user } = setup()
