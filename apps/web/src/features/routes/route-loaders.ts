@@ -1,7 +1,12 @@
 import { notFound } from '@tanstack/react-router'
 import { isApiError } from '../../lib/api/errors'
 import type { RouteLoader } from '../../lib/route-loader'
-import { projectBySlugOptions, projectRoutesOptions } from './queries'
+import {
+  projectBySlugOptions,
+  projectRoutesOptions,
+  routeCasesOptions,
+  routeDetailOptions,
+} from './queries'
 
 /**
  * Loads the project into the Query cache. A project the caller cannot see answers 404 (or 403), and
@@ -23,5 +28,19 @@ export const projectLoader: RouteLoader = async ({ queryClient, params }) => {
   }
 }
 
-// STUB (FND-13): BLD-05 fills this in.
-export const routeEditorLoader: RouteLoader = () => {}
+/** Loads the route and its cases; a route that does not exist (or is not visible) is not-found. */
+export const routeEditorLoader: RouteLoader = async ({ queryClient, params }) => {
+  try {
+    const project = await queryClient.ensureQueryData(
+      projectBySlugOptions(params.projectSlug ?? ''),
+    )
+    const routeId = params.routeId ?? ''
+    await Promise.all([
+      queryClient.ensureQueryData(routeDetailOptions(project.id, routeId)),
+      queryClient.ensureQueryData(routeCasesOptions(project.id, routeId)),
+    ])
+  } catch (error) {
+    if (isApiError(error) && (error.status === 404 || error.status === 403)) throw notFound()
+    throw error
+  }
+}

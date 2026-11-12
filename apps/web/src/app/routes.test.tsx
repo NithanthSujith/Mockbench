@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getLandingPath, getSession } from '../features/auth/session'
-import { exampleProject } from '@mockbench/api-contract'
+import { exampleCase, exampleProject, exampleRoute } from '@mockbench/api-contract'
 import { api } from '../lib/api/client'
 import { setUnauthenticatedHandler } from '../lib/api/unauthenticated'
 import { safeRedirectTarget } from '../lib/auth-guard'
@@ -41,7 +41,11 @@ function mount(path: string) {
   return { router, queryClient }
 }
 
-const currentScreen = () => document.querySelector('[data-screen]')?.getAttribute('data-screen')
+// Feature sub-components (RouteHeader, ...) also carry data-screen; the screen is the first Screen or NotFound.
+const currentScreen = () =>
+  [...document.querySelectorAll('[data-screen]')]
+    .map((el) => el.getAttribute('data-screen'))
+    .find((name) => /(Screen|NotFound)$/.test(name ?? ''))
 
 beforeEach(() => {
   window.scrollTo = vi.fn()
@@ -50,6 +54,18 @@ beforeEach(() => {
   // The project loader reads the project and its (empty) route list.
   vi.spyOn(api.projects, 'getBySlug').mockResolvedValue(exampleProject)
   vi.spyOn(api.routes, 'list').mockResolvedValue({ items: [], nextCursor: null })
+  // The route editor loads one route and its cases (ids here are plain strings on purpose).
+  vi.spyOn(api.routes, 'get').mockImplementation(async (req) => ({
+    ...exampleRoute,
+    id: req.params.routeId,
+  }))
+  vi.spyOn(api.cases, 'list').mockImplementation(async (req) => {
+    const routeId = req.params.routeId
+    return {
+      items: ['c1', 'c2'].map((id, i) => ({ ...exampleCase, id, routeId, isDefault: i === 0 })),
+      nextCursor: null,
+    }
+  })
   vi.spyOn(api.projects, 'list').mockResolvedValue({ items: [], nextCursor: null })
   // The topbar reads the session through api.auth.me (the guard uses the mocked getSession).
   vi.spyOn(api.auth, 'me').mockResolvedValue(SESSION as never)
