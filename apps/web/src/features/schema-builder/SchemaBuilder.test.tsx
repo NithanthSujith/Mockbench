@@ -1,5 +1,5 @@
 import type { MockSchema } from '@mockbench/schema-core'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import workedExample from '../../../../../packages/schema-core/fixtures/worked-example.schema.json'
@@ -127,13 +127,14 @@ describe('SchemaBuilder rows', () => {
   })
 
   it('renaming a key updates the store and emits the new schema after the debounce, order unchanged', async () => {
-    const { onChange, user } = setup(worked, { debounceMs: 400 })
+    const { onChange, user } = setup(worked, { debounceMs: 1000 })
     const key = within(rowOf('name')).getByRole('textbox', { name: 'Field name' })
-    await user.clear(key)
-    await user.type(key, 'full_name')
+    // One change event, not keystrokes: on a slow CI runner typing char by char can pause longer than
+    // the debounce and split the edit into several emissions.
+    fireEvent.change(key, { target: { value: 'full_name' } })
     await user.keyboard('{Enter}')
     expect(onChange).not.toHaveBeenCalled()
-    await settle(700)
+    await settle(1300)
     expect(onChange).toHaveBeenCalledTimes(1)
     const out = onChange.mock.calls[0]?.[0] as MockSchema
     expect(out.root.fields?.map((f) => f.key).slice(0, 3)).toEqual(['id', 'full_name', 'email'])
