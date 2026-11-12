@@ -252,7 +252,7 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
       sendMockError(
         res,
         503,
-        'project_not_published',
+        'mock_unavailable',
         `The mock for "${slug}" could not be loaded right now.`,
         'Try again in a moment; check the api logs if it persists.',
         { slug },

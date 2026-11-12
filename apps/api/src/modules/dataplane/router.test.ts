@@ -185,6 +185,20 @@ describe('data plane: case selection', () => {
 })
 
 describe('data plane: mock-server errors', () => {
+  it('a failed version load answers 503 mock_unavailable (not project_not_published) and recovers', async () => {
+    const { slug } = await publish()
+    const spy = vi.spyOn(t.pool, 'query').mockRejectedValue(new Error('connection refused'))
+    const down = await get(`/mock/${slug}/users`)
+    expect(down.status).toBe(503)
+    expect(down.body).toMatchObject({ error: 'mock_unavailable', slug })
+    expect(down.headers['x-mock-error']).toBe('true')
+    const pre = await request(t.app).options(`/mock/${slug}/users`)
+    expect(pre.status).toBe(204)
+    expect(pre.headers['access-control-allow-origin']).toBe('*')
+    spy.mockRestore()
+    expect((await get(`/mock/${slug}/users`)).status).toBe(200)
+  })
+
   it('unknown slug, unpublished, unmatched path', async () => {
     const unknown = await get('/mock/no-such-project-zz/users')
     expect(unknown.status).toBe(404)

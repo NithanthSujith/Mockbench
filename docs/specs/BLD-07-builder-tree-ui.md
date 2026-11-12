@@ -28,7 +28,7 @@ Component `features/schema-builder/SchemaBuilder`; consumes the BLD-06 store; mo
 - [x] Two sibling keys with the same name both show an amber "duplicate key" marker and the case cannot be saved until fixed (the editor shows the validator's `duplicate_key`).
 - [x] The root row for a root-array schema shows `[ item ]` rows directly; an empty object root shows "This case returns an empty body." with "+ Add field".
 - [x] Keyboard: Tab order is twist → key → type → extra → actions per row; Enter in a key input commits; Escape reverts the field; every control has an accessible name.
-- [x] In `readOnly` mode no control is enabled and nothing emits `onChange`.
+- [x] In `readOnly` mode no edit control is enabled and nothing emits `onChange`. The collapse/expand twists stay usable so a viewer can browse a large tree (ADR 0018).
 - [x] Collapsing/expanding a node persists for the session of the editor (not in the URL) and survives a case switch back.
 - [x] All colours via tokens; row hover reveals actions at full opacity, with them visible at 30 % otherwise and always visible below 860 px.
 
