@@ -1,6 +1,6 @@
 # BLD-09 — Schema builder JSON tab and paste-JSON inference
 
-Status: approved
+Status: done
 Phase: 3   Team: Builder
 Depends on: BLD-06, BLD-05, BLD-03
 Size: M
@@ -20,18 +20,18 @@ The tree UI (BLD-07), autosave (BLD-05 owns it), server-side inference use.
 `schema-core`: `validateSchema`, `inferSchema`. Store: `replaceAll`, `toSchema`. Component `features/schema-builder/JsonTab`; mounted in `SchemaEditorSlot`.
 
 ## Acceptance criteria
-- [ ] Editing a value in the JSON tab and blurring updates the Builder tab and the emitted `onChange` with the new schema; switching tabs preserves unsaved JSON text until blur.
-- [ ] Malformed JSON on blur shows "Unexpected token … at line 4, column 7", highlights the position, keeps the previous schema in the store and blocks autosave; fixing and blurring clears the error.
-- [ ] Well-formed JSON that fails `validateSchema` (unknown type, duplicate key, over a limit) shows each issue as `path — message`, does not replace the store, and does not save.
-- [ ] A schema containing `"source": {"from":"path","name":"id"}` and an unknown key survives Builder→JSON→Builder unchanged (byte-compare of `JSON.stringify(toSchema)`).
-- [ ] Builder→JSON→Builder round-trip is lossless for the entire schema-core fixture corpus.
-- [ ] Pasting `{"role":"admin","tags":["a","b"],"meta":null}` in Infer mode produces `role:string`, `tags: array count 2 of string`, `meta:string nullable` marked amber with "Real type unknown (was null)"; the notice is visible; accepting opens the Builder tab.
-- [ ] Inferring a sample larger than the node limit shows the `limits_exceeded` warning and does not replace the current schema.
-- [ ] A 2,000-node schema loads into the JSON editor and parses on blur in under 200 ms.
-- [ ] The editor uses the mono font and token colours (a custom CodeMirror theme from the `t-*` tokens); no network request is made for editor assets.
+- [x] Editing a value in the JSON tab and blurring updates the Builder tab and the emitted `onChange` with the new schema; switching tabs preserves unsaved JSON text until blur.
+- [x] Malformed JSON on blur shows "Unexpected token … at line 4, column 7", highlights the position, keeps the previous schema in the store and blocks autosave; fixing and blurring clears the error.
+- [x] Well-formed JSON that fails `validateSchema` (unknown type, duplicate key, over a limit) shows each issue as `path — message`, does not replace the store, and does not save.
+- [x] A schema containing `"source": {"from":"path","name":"id"}` and an unknown key survives Builder→JSON→Builder unchanged (byte-compare of `JSON.stringify(toSchema)`).
+- [x] Builder→JSON→Builder round-trip is lossless for the entire schema-core fixture corpus.
+- [x] Pasting `{"role":"admin","tags":["a","b"],"meta":null}` in Infer mode produces `role:string`, `tags: array count 2 of string`, `meta:string nullable` marked amber with "Real type unknown (was null)"; the notice is visible; accepting opens the Builder tab.
+- [x] Inferring a sample larger than the node limit shows the `limits_exceeded` warning and does not replace the current schema.
+- [x] A 2,000-node schema loads into the JSON editor and parses on blur in under 200 ms.
+- [x] The editor uses the mono font and token colours (a custom CodeMirror theme from the `t-*` tokens); no network request is made for editor assets.
 
 ## Tests
-Testing Library for blur/parse/issue states; round-trip test over the shared corpus; Playwright for the infer flow in MSW mode.
+Testing Library for blur/parse/issue states; round-trip test over the shared corpus; Playwright for the infer flow in MSW mode (not added: no builder e2e harness exists yet; the infer flow is covered by Testing Library in `JsonTab.test.tsx`).
 
 ## Open questions
 - Whether the JSON tab should show the envelope or only `root` (prototype shows `{version, root}`; this spec shows the envelope so `components` are editable).

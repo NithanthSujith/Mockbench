@@ -16,6 +16,7 @@ export const INDENT_STEP_PX = 18
 export function BuilderRow({
   row,
   node,
+  flag,
   readOnly,
   onToggle,
   onKey,
@@ -27,6 +28,8 @@ export function BuilderRow({
 }: {
   row: VisibleRow
   node: BuilderNode
+  /** An amber note about this node (an inferred null whose real type is unknown). */
+  flag?: string
   readOnly: boolean
   onToggle: (id: string) => void
   onKey: (id: string, key: string) => void
@@ -98,12 +101,24 @@ export function BuilderRow({
         </div>
       )}
 
-      <TypeSelect
-        value={row.type}
-        label="Type"
-        disabled={readOnly}
-        onChange={(t) => onType(row.id, t)}
-      />
+      <div className="min-w-0">
+        <TypeSelect
+          value={row.type}
+          label="Type"
+          disabled={readOnly}
+          onChange={(t) => onType(row.id, t)}
+        />
+        {flag && row.type === 'string' && node.attrs.nullable === true ? (
+          <span
+            role="status"
+            data-flag="inferred-null"
+            className="mt-0.5 inline-flex items-center gap-1 text-tiny text-warn"
+          >
+            <TriangleAlert aria-hidden className="size-3" />
+            {flag}
+          </span>
+        ) : null}
+      </div>
 
       <div className="min-w-0 max-[860px]:col-span-full max-[860px]:row-start-2 max-[860px]:pl-6">
         <ExtraControl
