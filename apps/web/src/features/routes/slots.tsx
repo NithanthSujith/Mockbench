@@ -1,12 +1,17 @@
 import type { MockSchemaEnvelope, ResponseCase, Route } from '@mockbench/api-contract'
+import type { MockSchema } from '@mockbench/schema-core'
 import { Card, PanelBody, PanelHead } from '../../components/ui'
+import { SchemaBuilder } from '../schema-builder/SchemaBuilder'
 
 // Mounting points owned by this unit and implemented by later ones. The editor passes everything
 // they need; they replace these bodies without touching the editor.
 
-/** BLD-07/09 replace this with the Builder / JSON tabs. */
+/** BLD-07 fills this with the Builder tree; BLD-09 adds the JSON tab beside it. */
 export function SchemaEditorSlot({
   caseId,
+  value,
+  onChange,
+  readOnly,
 }: {
   caseId: string
   value: MockSchemaEnvelope
@@ -18,7 +23,12 @@ export function SchemaEditorSlot({
       <PanelHead>
         <h3>Response body</h3>
       </PanelHead>
-      <PanelBody className="text-control text-ink-2">Schema editor (BLD-07, BLD-09).</PanelBody>
+      <SchemaBuilder
+        value={value as MockSchema}
+        onChange={(schema) => onChange(schema as MockSchemaEnvelope)}
+        readOnly={readOnly}
+        sessionKey={caseId}
+      />
     </Card>
   )
 }
