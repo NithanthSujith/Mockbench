@@ -10,10 +10,12 @@ import type { DestinationStream } from 'pino'
 import { ConfigError, loadConfig } from './config'
 import type { Config } from './config'
 import { createDb } from './db/client'
+import { createHooks } from './http/hooks'
 import { createLogger } from './http/logger'
 import type { Logger } from './http/logger'
 import { createSessionService, startSessionSweeper } from './modules/auth/sessions'
 import { createRequestLogWriter, startRequestLogPruner } from './modules/dataplane/request-log'
+import { seedDemoOnStart } from './seed/demo'
 
 export interface ShutdownOptions {
   server: Server
@@ -85,14 +87,18 @@ export async function start(
     retentionDays: config.logRetentionDays,
     retentionRows: config.logRetentionRows,
   })
+  const hooks = createHooks(logger)
   const app = createApp({
     config,
     db: handle.db,
     pool: handle.pool,
     logger,
     requestLog,
+    hooks,
     ...appOverrides,
   })
+  // RUN-11: on an empty database, create the live `demo` project before accepting traffic.
+  if (config.seedDemo) await seedDemoOnStart(handle.db, hooks, logger)
   // Expired sessions are deleted at start-up and then hourly (AUTH-01); the timer is stopped on shutdown.
   const stopSweeper = startSessionSweeper({
     service: createSessionService({ db: handle.db, config }),

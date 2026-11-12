@@ -111,7 +111,7 @@ const versionNotFound = () =>
 export async function deployVersion(
   db: Db,
   projectId: string,
-  userId: string,
+  userId: string | null,
   versionId: string,
 ): Promise<{ deployment: Deployment; changed: boolean }> {
   const result = await db.transaction(async (tx) => {
