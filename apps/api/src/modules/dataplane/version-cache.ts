@@ -159,6 +159,7 @@ export class VersionCache {
         if (!row) throw new Error(`active version ${project.activeVersionId} not found`)
         version = compileVersion(row.snapshot as Snapshot, row.baked, row.label, {
           snapshotBytes: row.snapshotBytes,
+          versionId: project.activeVersionId,
         })
       }
       const entry: Entry = {
