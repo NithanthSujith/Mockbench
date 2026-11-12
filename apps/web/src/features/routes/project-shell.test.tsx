@@ -1,4 +1,10 @@
-import { exampleAuthState, exampleProject, exampleRoute, type Route } from '@mockbench/api-contract'
+import {
+  exampleAuthState,
+  exampleCase,
+  exampleProject,
+  exampleRoute,
+  type Route,
+} from '@mockbench/api-contract'
 import { createMemoryHistory } from '@tanstack/react-router'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -42,6 +48,22 @@ const server = setupServer(
     listCalls += 1
     return HttpResponse.json({ items: routes, nextCursor: null })
   }),
+  // The route editor (BLD-05) loads the selected route and its cases.
+  http.get('/api/v1/routes/:routeId', ({ params }) => {
+    const found = routes.find((r) => r.id === params.routeId)
+    return found
+      ? HttpResponse.json(found)
+      : HttpResponse.json({ error: 'not_found', message: 'nope', details: [] }, { status: 404 })
+  }),
+  http.get('/api/v1/routes/:routeId/cases', ({ params }) =>
+    HttpResponse.json({
+      items: [
+        { ...exampleCase, id: `${params.routeId}-case`, routeId: params.routeId, isDefault: true },
+      ],
+      nextCursor: null,
+    }),
+  ),
+  http.get('/api/v1/projects', () => HttpResponse.json({ items: [PROJECT], nextCursor: null })),
   http.post('/api/v1/projects/:projectId/routes', async ({ request }) => {
     const body = (await request.json()) as { method: Route['method']; path: string }
     created.push(body)

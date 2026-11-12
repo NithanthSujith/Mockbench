@@ -45,11 +45,14 @@ export interface Hooks {
   onVersionDeployed: HookPoint
   /** The project was deleted; the cache must forget its slug and version. */
   onProjectDeleted: HookPoint
+  /** An editor asked to flush the project's cached version (cache.flush); the cache drops its entry. */
+  onCacheFlushRequested: HookPoint
 }
 
 export function createHooks(log?: Logger): Hooks {
   return {
     onVersionDeployed: new HookPoint('onVersionDeployed', log),
     onProjectDeleted: new HookPoint('onProjectDeleted', log),
+    onCacheFlushRequested: new HookPoint('onCacheFlushRequested', log),
   }
 }

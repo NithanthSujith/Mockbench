@@ -15,7 +15,7 @@ import { createLogger } from './http/logger'
 import type { Logger } from './http/logger'
 import type { Handler, ModuleDefinition } from './http/types'
 import { createSessionAuth } from './modules/auth/session-middleware'
-import { createDataPlaneRouter } from './modules/dataplane'
+import { createDataPlaneRouter, registerVersionCache } from './modules/dataplane'
 import { modules as defaultModules } from './modules'
 import type { ModuleMap } from './modules'
 
@@ -71,13 +71,20 @@ export function createApp(deps: AppDeps): Express {
     mod.init?.({ db, pool, config, hooks, log: logger })
   }
 
+  // RUN-06: one version cache per app; it listens to the deploy / delete / flush hooks.
+  const versionCache = registerVersionCache(hooks, {
+    db,
+    maxMb: config.mockCacheMaxMb,
+    log: logger.child({ plane: 'data' }),
+  })
+
   const app = express()
   app.disable('x-powered-by')
   app.set('etag', false)
   app.set('trust proxy', config.trustProxy)
 
   // Data plane FIRST: nothing from the control plane may run for /mock/*.
-  app.use('/mock', createDataPlaneRouter({ logger }))
+  app.use('/mock', createDataPlaneRouter({ logger, cache: versionCache }))
 
   app.use(
     createControlPlane({

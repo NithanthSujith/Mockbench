@@ -48,6 +48,12 @@ export const handlers: ModuleHandlers<'versions' | 'deploy' | 'deployments' | 'c
     return { status: 200, body: deployment }
   },
 
+  'cache.flush': async (ctx, { params }) => {
+    await loadProjectForUser(ctx.db, authOf(ctx).userId, params.projectId, 'editor')
+    await ctx.hooks.onCacheFlushRequested.emit(params.projectId)
+    return { status: 204 }
+  },
+
   'deployments.list': async (ctx, { params, query }) => {
     await loadProjectForUser(ctx.db, authOf(ctx).userId, params.projectId, 'viewer')
     return {

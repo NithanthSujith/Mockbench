@@ -1,6 +1,6 @@
 # BLD-05 — Route editor and case management
 
-Status: approved
+Status: in review
 Phase: 3   Team: Builder
 Depends on: BLD-02, BLD-04
 Size: M
@@ -20,16 +20,16 @@ The schema editing UI itself (BLD-06/07/09), the preview (BLD-11), Try-it (BLD-1
 Endpoints `routes.get`, `routes.update`, `routes.duplicate`, `cases.list`, `cases.create`, `cases.get`, `cases.update`, `cases.delete`, `cases.setDefault`. UI routes `…/routes/$routeId` and `…/cases/$caseId`. Slot props: `<SchemaEditorSlot caseId value onChange />`, `<PreviewSlot case route />` implemented by later units.
 
 ## Acceptance criteria
-- [ ] `/p/s/routes/R` (no case) redirects to `/p/s/routes/R/cases/<default case id>`; switching a tab changes the URL; reloading keeps the selected case; a case id from another route 404s into the not-found screen.
-- [ ] Editing the path to a colliding one shows the `route_conflict` message inline and reverts the field; a path invalid per `parseRoutePath` is flagged live and not sent.
-- [ ] Changing the status code to 404 updates the chip colour class (4xx) immediately (optimistic) and persists; on a server error it reverts and shows the message.
-- [ ] The status select offers exactly the 14 codes; delay accepts 0–10000 and an empty value sends `null` ("inherit project default" hint shown with the project default value).
-- [ ] The headers editor rejects reserved names (`Content-Length`, `X-Mock-*`, `Access-Control-*`) with the contract message before sending, and allows adding/removing rows.
-- [ ] "+ Case" creates a case with a unique default name ("New case", "New case 2") and selects it; a name colliding case-insensitively shows `case_name_taken` inline.
-- [ ] "Make default" moves the star; deleting the default case is disabled with the tooltip "Make another case the default first"; deleting another case selects the default case.
-- [ ] A `204` status shows "No response body" in place of the schema editor.
-- [ ] Autosave: a burst of keystrokes in the description sends one request after 600 ms of quiet; the header shows "Saving…" then "Saved".
-- [ ] Viewer: all inputs disabled, no autosave, tabs still switch.
+- [x] `/p/s/routes/R` (no case) redirects to `/p/s/routes/R/cases/<default case id>`; switching a tab changes the URL; reloading keeps the selected case; a case id from another route 404s into the not-found screen.
+- [x] Editing the path to a colliding one shows the `route_conflict` message inline and reverts the field; a path invalid per `parseRoutePath` is flagged live and not sent.
+- [x] Changing the status code to 404 updates the chip colour class (4xx) immediately (optimistic) and persists; on a server error it reverts and shows the message.
+- [x] The status select offers exactly the 14 codes; delay accepts 0–10000 and an empty value sends `null` ("inherit project default" hint shown with the project default value).
+- [x] The headers editor rejects reserved names (`Content-Length`, `X-Mock-*`, `Access-Control-*`) with the contract message before sending, and allows adding/removing rows.
+- [x] "+ Case" creates a case with a unique default name ("New case", "New case 2") and selects it; a name colliding case-insensitively shows `case_name_taken` inline.
+- [x] "Make default" moves the star; deleting the default case is disabled with the tooltip "Make another case the default first"; deleting another case selects the default case.
+- [x] A `204` status shows "No response body" in place of the schema editor.
+- [x] Autosave: a burst of keystrokes in the description sends one request after 600 ms of quiet; the header shows "Saving…" then "Saved".
+- [x] Viewer: all inputs disabled, no autosave, tabs still switch.
 
 ## Tests
 Testing Library for each control and optimistic rollback; Playwright for URL sync and collision flow in MSW mode.
