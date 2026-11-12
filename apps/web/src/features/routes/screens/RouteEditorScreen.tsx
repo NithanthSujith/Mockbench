@@ -95,6 +95,10 @@ function EditorBody({
   const { state, track } = useSaveTracker()
   const [adding, setAdding] = useState(false)
   const [schemaFailure, setSchemaFailure] = useState<string | null>(null)
+  // The preview shows edits as they are typed, ahead of the debounced save.
+  const [draft, setDraft] = useState<{ caseId: string; schema: MockSchemaEnvelope } | null>(null)
+  const previewCase =
+    draft?.caseId === selected.id ? { ...selected, schema: draft.schema } : selected
 
   const goToCase = (caseId: string) =>
     navigate({
@@ -173,7 +177,10 @@ function EditorBody({
             caseId={selected.id}
             value={selected.schema}
             readOnly={!canEdit}
-            onChange={(schema) => schemaSaver.schedule({ schema })}
+            onChange={(schema) => {
+              setDraft({ caseId: selected.id, schema })
+              schemaSaver.schedule({ schema })
+            }}
           />
         )}
         {schemaFailure ? (
@@ -183,7 +190,7 @@ function EditorBody({
         ) : null}
       </Editor>
       <Response>
-        <PreviewSlot case={selected} route={route} />
+        <PreviewSlot case={previewCase} route={route} />
       </Response>
       <NewCaseDialog
         projectId={projectId}

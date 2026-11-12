@@ -4,6 +4,7 @@ import { LIMITS, validateSchema } from '@mockbench/schema-core'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { testApp } from '../../testing'
 import type { TestApp, TestSession } from '../../testing'
+import { computePreview } from '../../../../web/src/features/preview/compute'
 import { NIL_PROJECT_ID, handlers, limitIssueCode } from './schema'
 
 const fixture = (name: string): string =>
@@ -461,5 +462,33 @@ describe('limitIssueCode (pins the wording of schema-core limit messages)', () =
     )
     expect(limitIssueCode(`more than ${LIMITS.maxNodes} nodes`)).toBe('node_limit_exceeded')
     expect(limitIssueCode('something else entirely')).toBe('node_limit_exceeded')
+  })
+})
+
+// BLD-11: the browser preview (apps/web/src/features/preview/compute.ts) must produce the same
+// document the server does for the same inputs.
+describe('schema.preview vs the web live preview (BLD-11)', () => {
+  const rules = [{ match: { key: 'role' }, value: 'admin' }]
+  const cases = [
+    { settings: { indexing: 'local', mode: 'deterministic' }, presets: [] },
+    { settings: { indexing: 'path', mode: 'seeded' }, presets: [] },
+    { settings: { indexing: 'local', mode: 'deterministic' }, presets: [{ priority: 5, rules }] },
+  ] as const
+
+  it.each(cases)('is identical for %j', async ({ settings, presets }) => {
+    const res = await t
+      .as(me)
+      .post(PREVIEW)
+      .send({ schema: workedExample, settings, presets, projectId: GOLDEN_PROJECT_ID })
+    expect(res.status).toBe(200)
+    const local = computePreview({
+      schema: workedExample,
+      projectId: GOLDEN_PROJECT_ID,
+      settings: { ...settings },
+      components: {},
+      presets: presets.map((p) => ({ priority: p.priority, rules: [...p.rules] })),
+    })
+    expect(local.kind).toBe('ok')
+    expect(local.kind === 'ok' && local.json).toBe(res.body.json)
   })
 })
