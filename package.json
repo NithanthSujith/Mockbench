@@ -17,7 +17,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm -r --if-present test && vitest run",
-    "contract:docs": "node scripts/contract-docs.mjs"
+    "contract:docs": "node scripts/contract-docs.mjs",
+    "e2e": "bash e2e/run.sh"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
