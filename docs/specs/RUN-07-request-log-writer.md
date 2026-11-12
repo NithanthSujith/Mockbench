@@ -1,6 +1,6 @@
 # RUN-07 — Request-log writer and retention pruner
 
-Status: approved
+Status: done
 Phase: 3   Team: Runtime
 Depends on: RUN-05
 Size: M
@@ -20,18 +20,25 @@ The API and screen (RUN-08). Unknown-slug requests are not logged.
 Table `request_logs`. Env `LOG_RETENTION_DAYS` (7), `LOG_RETENTION_ROWS` (1000). Redacted header names (value → `"[redacted]"`): `authorization`, `proxy-authorization`, `cookie`, `set-cookie`, `x-api-key`, `x-auth-token`. Header values truncated at 1,000 chars, path at 2,000, ≤ 50 headers kept.
 
 ## Acceptance criteria
-- [ ] A mock request produces exactly one `request_logs` row (within 1 s) with method, path, status, duration, `route_pattern`, `case_name`, `version_id`, `ip`; the write happens after the response is flushed (response latency with the DB paused is unchanged).
-- [ ] A request carrying `Authorization: Bearer abc`, `Cookie: s=1`, `X-Api-Key: k` is stored with each value `"[redacted]"` and other headers intact; a 5,000-char header value is stored truncated to 1,000.
-- [ ] A mock-server error (`route_not_found`, `case_not_found`, `project_not_published`) is stored with `mock_error` set to its code and null `matched_route_id`/`matched_case_id`.
-- [ ] With the database unavailable, requests still succeed, the queue holds up to 10,000 entries, the 10,001st drops the oldest, and a single warn log reports the drop count; when the DB returns, queued entries are written.
-- [ ] 1,000 requests in 1 second produce ≤ 20 insert statements (batching), all rows present.
-- [ ] On `SIGTERM` pending entries are flushed before exit.
-- [ ] Pruner: with `LOG_RETENTION_DAYS=7`, rows older than 7 days are deleted and newer kept; with `LOG_RETENTION_ROWS=1000` and 1,500 recent rows for project A and 10 for project B, A keeps its newest 1,000 and B keeps all 10; the job runs every 10 minutes and once at startup; an overlapping run is skipped.
-- [ ] Deleting a version referenced by retained rows is blocked (FND-08 FK); once pruned it can be deleted (integration test with RUN-02).
-- [ ] Unknown-slug requests create no row and no error.
+- [x] A mock request produces exactly one `request_logs` row (within 1 s) with method, path, status, duration, `route_pattern`, `case_name`, `version_id`, `ip`; the write happens after the response is flushed (response latency with the DB paused is unchanged).
+- [x] A request carrying `Authorization: Bearer abc`, `Cookie: s=1`, `X-Api-Key: k` is stored with each value `"[redacted]"` and other headers intact; a 5,000-char header value is stored truncated to 1,000.
+- [x] A mock-server error (`route_not_found`, `case_not_found`, `project_not_published`) is stored with `mock_error` set to its code and null `matched_route_id`/`matched_case_id`.
+- [x] With the database unavailable, requests still succeed, the queue holds up to 10,000 entries, the 10,001st drops the oldest, and a single warn log reports the drop count; when the DB returns, queued entries are written.
+- [x] 1,000 requests in 1 second produce ≤ 20 insert statements (batching), all rows present.
+- [x] On `SIGTERM` pending entries are flushed before exit.
+- [x] Pruner: with `LOG_RETENTION_DAYS=7`, rows older than 7 days are deleted and newer kept; with `LOG_RETENTION_ROWS=1000` and 1,500 recent rows for project A and 10 for project B, A keeps its newest 1,000 and B keeps all 10; the job runs every 10 minutes and once at startup; an overlapping run is skipped.
+- [x] Deleting a version referenced by retained rows is blocked (FND-08 FK); once pruned it can be deleted (integration test with RUN-02).
+- [x] Unknown-slug requests create no row and no error.
 
 ## Tests
 Writer tests with a controllable clock and a stalled DB; redaction table; pruner tests with seeded rows.
 
 ## Open questions
+- Resolved (assumed, as the spec suggested): query values for keys named `token`/`key`/`password` are redacted.
 - Whether query-string values should also be redacted for keys named `token`/`key`/`password` (assumed yes for those names).
+
+## Implementation notes
+- `CompiledVersion.versionId` (RUN-04/06) was added so the data plane can record `version_id`; the cache passes `projects.active_version_id`.
+- `RequestLogInput` gained optional `matchedRouteId` / `matchedCaseId` (set only when a case was served, null for every mock error).
+- Drop warning: one `warn` when the queue first overflows (per outage), one `info` with the total when writes recover; `dropped()` is the running counter.
+- Wiring: `server.ts` creates the writer and pruner, `app.ts` accepts `requestLog`; shutdown stops the pruner and flushes the writer before the pool closes.

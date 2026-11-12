@@ -35,6 +35,10 @@ export interface SchemaBuilderProps {
    */
   sessionKey?: string
   debounceMs?: number
+  /** A store owned by the caller (the editor shares one between the Builder and JSON tabs). */
+  store?: BuilderStore
+  /** Notes to show on rows by node id (the amber marker for inferred nulls). */
+  flags?: Record<NodeId, string>
 }
 
 interface PendingTypeChange {
@@ -43,8 +47,13 @@ interface PendingTypeChange {
   discarded: number
 }
 
-function useBuilderStore(value: MockSchema, sessionKey: string | undefined): BuilderStore {
+export function useBuilderStore(
+  value: MockSchema,
+  sessionKey: string | undefined,
+  external?: BuilderStore,
+): BuilderStore {
   const [store] = useState(() => {
+    if (external) return external
     const created = createBuilderStore(value)
     if (sessionKey) {
       for (const id of recallCollapsed(sessionKey)) {
@@ -67,8 +76,10 @@ export function SchemaBuilder({
   readOnly = false,
   sessionKey,
   debounceMs = EMIT_DEBOUNCE_MS,
+  store: externalStore,
+  flags,
 }: SchemaBuilderProps) {
-  const store = useBuilderStore(value, sessionKey)
+  const store = useBuilderStore(value, sessionKey, externalStore)
   const state = useStore(store, (s) => s.state)
   const rows = useMemo(() => visibleRows(state), [state])
   const root = state.nodes[state.rootId]
@@ -185,6 +196,7 @@ export function SchemaBuilder({
               key={row.id}
               row={row}
               node={node}
+              flag={flags?.[row.id]}
               readOnly={readOnly}
               onToggle={toggle}
               onKey={act.setKey}

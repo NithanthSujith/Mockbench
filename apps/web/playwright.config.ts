@@ -21,7 +21,11 @@ export default defineConfig({
       testMatch: ['gallery.spec.ts', 'screenshots.spec.ts'],
       use: { baseURL: DESIGN },
     },
-    { name: 'mock', testMatch: 'app.spec.ts', use: { baseURL: MOCK } },
+    {
+      name: 'mock',
+      testMatch: ['app.spec.ts', 'project-settings.spec.ts'],
+      use: { baseURL: MOCK },
+    },
     { name: 'preview', testMatch: 'preview.spec.ts', use: { baseURL: PREVIEW } },
   ],
   webServer: [

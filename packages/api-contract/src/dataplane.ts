@@ -39,6 +39,7 @@ export const HARDENING_HEADERS = {
 export const MOCK_ERROR_CODES = [
   'project_not_found',
   'project_not_published',
+  'mock_unavailable',
   'route_not_found',
   'case_not_found',
   'rate_limited',
@@ -50,6 +51,7 @@ export type MockErrorCode = (typeof MOCK_ERROR_CODES)[number]
 export const MOCK_ERROR_STATUS: Record<MockErrorCode, number> = {
   project_not_found: 404,
   project_not_published: 503,
+  mock_unavailable: 503,
   route_not_found: 404,
   case_not_found: 400,
   rate_limited: 429,
@@ -62,6 +64,7 @@ const base = { message: z.string(), hint: z.string() }
 export const MockErrorBody = z.discriminatedUnion('error', [
   z.strictObject({ error: z.literal('project_not_found'), ...base, slug: z.string() }),
   z.strictObject({ error: z.literal('project_not_published'), ...base, slug: z.string() }),
+  z.strictObject({ error: z.literal('mock_unavailable'), ...base, slug: z.string() }),
   z.strictObject({
     error: z.literal('route_not_found'),
     ...base,

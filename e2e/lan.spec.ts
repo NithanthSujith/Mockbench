@@ -69,12 +69,16 @@ test.describe('the stack served at a LAN-style host name', () => {
       const res = await fetch('/mock/anything/at/all', { method: 'OPTIONS' })
       return {
         status: res.status,
-        mockError: res.headers.get('x-mock-error'),
+        allowOrigin: res.headers.get('access-control-allow-origin'),
+        maxAge: res.headers.get('access-control-max-age'),
         type: res.headers.get('content-type') ?? '',
       }
     })
-    // Phase 1: the data-plane stub answers 501 with X-Mock-Error. It must come from the api, not nginx.
-    expect(options.mockError).toBe('true')
-    expect(options.type).toContain('application/json')
+    // RUN-05: the data plane answers OPTIONS itself, 204 with permissive CORS. It must come from the
+    // api, not nginx or index.html.
+    expect(options.status).toBe(204)
+    expect(options.allowOrigin).toBe('*')
+    expect(options.maxAge).toBe('600')
+    expect(options.type).not.toContain('text/html')
   })
 })

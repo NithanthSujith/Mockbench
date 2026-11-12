@@ -13,6 +13,7 @@ import { createDb } from './db/client'
 import { createLogger } from './http/logger'
 import type { Logger } from './http/logger'
 import { createSessionService, startSessionSweeper } from './modules/auth/sessions'
+import { createRequestLogWriter, startRequestLogPruner } from './modules/dataplane/request-log'
 
 export interface ShutdownOptions {
   server: Server
@@ -76,7 +77,22 @@ export async function start(
   const handle = createDb(config.databaseUrl, {
     onError: (err) => logger.error({ err }, 'database pool error'),
   })
-  const app = createApp({ config, db: handle.db, pool: handle.pool, logger, ...appOverrides })
+  // RUN-07: the batched request-log writer and the retention pruner (once now, then every 10 min).
+  const requestLog = createRequestLogWriter({ db: handle.db, logger })
+  const pruner = startRequestLogPruner({
+    db: handle.db,
+    logger,
+    retentionDays: config.logRetentionDays,
+    retentionRows: config.logRetentionRows,
+  })
+  const app = createApp({
+    config,
+    db: handle.db,
+    pool: handle.pool,
+    logger,
+    requestLog,
+    ...appOverrides,
+  })
   // Expired sessions are deleted at start-up and then hourly (AUTH-01); the timer is stopped on shutdown.
   const stopSweeper = startSessionSweeper({
     service: createSessionService({ db: handle.db, config }),
@@ -93,6 +109,8 @@ export async function start(
     server,
     closeDb: async () => {
       stopSweeper()
+      pruner.stop()
+      await requestLog.stop() // flush pending entries before the pool closes
       await handle.close()
     },
     logger,

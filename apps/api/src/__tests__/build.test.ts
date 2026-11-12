@@ -84,7 +84,7 @@ describe('built artifact (node dist/server.js)', () => {
     expect(bundle).toMatch(/from ["']pg["']/)
   })
 
-  it('starts with only `node` + env and serves /healthz, /api/v1/readyz, /api/v1/instance and the 501 data plane', async () => {
+  it('starts with only `node` + env and serves /healthz, /api/v1/readyz, /api/v1/instance and the data plane', async () => {
     const db = await withTestDb()
     const port = await freePort()
     const r = run('server.js', {
@@ -107,7 +107,7 @@ describe('built artifact (node dist/server.js)', () => {
       }
       expect(instance.setupRequired).toBe(true)
       const mock = await fetch(`${base}/mock/demo/x`)
-      expect(mock.status).toBe(501)
+      expect(mock.status).toBe(404)
       expect(mock.headers.get('x-mock-error')).toBe('true')
       // production: responses are NOT contract-checked, and the log is JSON lines on stdout
       expect(
