@@ -1,53 +1,63 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-10 (after merging PRs #1-#8). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-12 (after merging PR #23). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
-**Phase 1 (freeze) is complete and tagged `contracts-v1`** (commit `2e47a99`). All 14 FND units are `done`; CI is green on `main`. The HTTP contract (53 endpoints), the 11-table database schema, `schema-core`, the design tokens, the API/web skeletons and the Docker/LAN stack are frozen. A change to any of them goes through the main session and updates `docs/API-CONTRACT.md`, `docs/DESIGN.md` and the registry together.
+**Phase 1 (freeze) is complete and tagged `contracts-v1`.** All 14 FND units are `done`. The HTTP contract (53 endpoints), the 11-table schema, `schema-core`, the design system and the Docker/LAN stack are frozen; a change goes through the main session and updates `docs/API-CONTRACT.md`, `docs/DESIGN.md` and the registry together.
 
-**Phase 2 progress: eight units built, reviewed and MERGED to `main` (squash) on 2026-11-10; the combined `main` passes typecheck, lint, format, build and 550+ tests.** Units merged: RUN-01 (#1), AUTH-01 (#2), WS-01 (#3), BLD-01 (#4), PRJ-01 (#5), RUN-04 (#6), BLD-03 (#7), BLD-06 (#8). All their specs are `done`.
+**Phase 2 (backend foundations) is done.** Merged to `main`: RUN-01, AUTH-01, WS-01, BLD-01, PRJ-01, RUN-04, BLD-03, BLD-06 (PRs #1-#8), then AUTH-02 (#12), WS-02 (#13), PRJ-02 (#10), BLD-02 (#11), RUN-02 (#9), RUN-03 (#19).
 
-Things to remember about the merged units:
-- **AUTH-01** left one shared-file change, now applied on `main`: `server.ts` starts the session sweeper at start-up and stops it on shutdown (tested: an expired session is deleted at start-up, a live one is kept).
-- **RUN-04:** RUN-06 must pass `versions.label` as the 3rd argument of `compileVersion` and treat `CompileError` as a load failure that is not cached.
-- **RUN-01:** RUN-02 should open its publish transaction at REPEATABLE READ (RUN-01 cannot set that itself).
-- **BLD-03:** its deep-nesting test is now a real test (the `it.todo` was enabled once the shared fix landed).
+**Phase 3 (screens) has started.** Merged: AUTH-03 sign-in/register/welcome/create-workspace (#14, spec still "in progress": no Playwright guard cases, never run against the real API in a browser), PRJ-04 project list/new project/switcher (#15), BLD-04 project shell and route rail (#20), WS-03 workspace switcher (#22), RUN-09 versions screen with publish/deploy/rollback (#23). Small fixes: #16 #17 #18 #21 #25 #26. `/welcome` route added (#18).
 
-Fixes made on `main` while the PRs were open: the 501-sweep and per-IP rate-limit tests use an empty module map; Docker images build on the native platform (`pnpm deploy` crashed under QEMU on arm64; arm64 Argon2 verified in the image); `invalid_cursor` declared on all paginated lists; pathologically nested request bodies answer 422 `depth_exceeded` instead of 500; the CI ownership job diffs against the CURRENT base branch (GitHub only refreshes a PR merge ref on a new push, so an old PR needs a rebase+push, not a re-run, to pick up workflow changes).
+**Open PRs, green apart from the expected `ownership` failure (they edit main-session files); waiting for the owner to say "merge #24 and #27":**
+- **#24 BLD-05 route editor and cases.** Includes a fix to the shared `routes.test.tsx` (real route and case fixtures; `currentScreen` now picks the element ending in `Screen`/`NotFound`).
+- **#27 RUN-06 version cache.** Includes the `app.ts` change: the cache is created in `app.ts` (`registerVersionCache`) and passed to `createDataPlaneRouter({ logger, cache })`; `cache.flush` emits the new `onCacheFlushRequested` hook, so the control plane never imports the data plane.
+
+What does NOT exist yet: the data plane (`/mock/:slug/*` still answers 501 until RUN-05), request logging (RUN-07/08), the schema builder UI (BLD-07/09), live preview (BLD-11/12), members screen (WS-04), presets/settings/export screens. A published API cannot be called from outside yet.
 
 ## Do these next, in order
 
-1. **Launch the next Phase 2 wave** (one agent per unit, each in its own worktree on `team/<team>/<ID>`; see `docs/WORKFLOW.md`): AUTH-02 (endpoints, Argon2 via `@node-rs/argon2`, first-user bootstrap), WS-02 (members), PRJ-02 (presets API), BLD-02 (cases API), RUN-02 (publish + versions API; then RUN-03 deploy). They now have their dependencies on `main`.
-2. Then **Phase 3** (screens and the publish loop), ending with XC-01, the first usable release. See `docs/PLAN.md` section 4 and the critical path in section 1.
-3. The assistant merges PRs only when the owner says so explicitly (the permission system blocks an unrequested merge).
+1. Merge #24 and #27 when the owner says so.
+2. **RUN-05** data-plane handler (depends on RUN-04, RUN-06). Lowercase the slug before the cache lookup (decided), map `VersionLoadError` to 503, answer OPTIONS before matching. Then RUN-07 (log writer), RUN-08 (logs API and screen).
+3. **BLD-07** schema builder tree UI, **BLD-09** JSON tab and inference, **BLD-11** live preview (they fill `SchemaEditorSlot` / `PreviewSlot` from BLD-05). Then WS-04 (members screen), PRJ-05+ (presets, settings, export), XC-01 (first usable release). See `docs/PLAN.md` section 4.
+4. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
+5. Add the Playwright cases that units skipped (`e2e/` is main-session owned): AUTH-03 guard/redirect, BLD-05 URL sync and collision, RUN-09 publish -> deploy -> rollback, and one end-to-end pass: define route, publish, call it.
+6. The assistant merges PRs only when the owner says so explicitly; the permission system blocks unrequested merges and merges of PRs with a failing check unless the owner names them. Force-pushes also need explicit approval per branch.
 
-## Open decisions and notes (need the owner or the main session)
+## Decisions made (ADR 0017, 2026-11-11)
 
-- **RUN-01:** a total baked-size cap per version is unspecified; the spec proposes 64 MiB with error `baked_too_large`. Not enforced yet beyond per-response limits. RUN-02 should open its publish transaction at REPEATABLE READ (RUN-01 cannot set that itself).
-- **PRJ-01:** confirm that unknown keys in `settings` are rejected (strict). A `component_in_use` check only covers stored cases left with an unresolved `ref`.
-- **Contract clarification done 2026-11-09:** `projects.list`, `versions.list`, `deployments.list` now declare `400 invalid_cursor` (API-CONTRACT 1.4 already promised it for all paginated lists).
-- **schema-core:** `mockNodeZod` has no OpenAPI id, so api-contract works around a recursion problem when generating OpenAPI. Clean fix: give it an id inside schema-core (one line).
-- **Known limitation:** `inferSchema` cannot preserve the order of integer-like keys (`"200"`), because JavaScript reorders them at parse time.
-- **Node floor:** `apps/web/test-node-shim.mjs` exists only because this machine has Node 22.12 (jsdom needs 22.15+ APIs). Raising the floor in `scripts/check-node.mjs` and upgrading Node would remove it.
-- **Timing-sensitive tests** can fail when the whole machine is busy (many test files in parallel, or agents sharing Postgres): FND-09 "lock is released when the holder is killed" (5 s deadline), FND-09 "bin/migrate exits within timeout + 2 s", and RUN-04 "100,000 matches in under 150 ms". All pass when run alone and in CI. If it recurs, loosen the slack or limit test parallelism.
+Last-owner race loser may get 409, 403 or 404; Argon2 stays m=19456 KiB, t=2, p=1 and the login limiter stays keyed on IP; a default `v<seq>` label that collides is a 409 `label_taken`; total baked size cap is 64 MiB (not built). Create-workspace dialog lives in `features/workspaces` (WS-03).
+
+## Open decisions and notes
+
+- **PRJ-01:** confirm unknown keys in `settings` are rejected (strict). Not yet ruled.
+- **schema-core:** `mockNodeZod` has no OpenAPI id; clean fix is one line inside schema-core (main session only).
+- **Known limitation:** `inferSchema` cannot preserve the order of integer-like keys (`"200"`).
+- **Node floor:** `apps/web/test-node-shim.mjs` exists only because this machine has Node 22.12 (jsdom needs 22.15+).
+- **RUN-09:** the LIVE pill shows `LIVE <label>`, so a custom label displays instead of `vN`. BLD-04 only counts routes in the rail (no counts for versions/logs). BLD-05 asks confirmation before deleting a case.
+- **Timing-sensitive tests** can fail under machine load: FND-09 lock-kill and `bin/migrate` timeout tests. The RUN-04 match budget was raised to 300 ms (#16) after a CI run measured 166 ms.
+- **Seeded edge case (RUN-03):** an active version with no `deployments` row creates one and fires the hook when re-deployed.
 
 ## How to resume (environment gotchas)
 
-- **Docker Desktop stops when the machine restarts.** Start it (`C:\Program Files\Docker\Docker\Docker Desktop.exe`), then `docker start mockbench-test-pg`. That container (postgres:16-alpine, user/password `mock`, host port 55432) is what the API/DB tests use via `TEST_DATABASE_URL` (default `postgres://mock:mock@127.0.0.1:55432/postgres`). Without it, about 150 API tests fail with a clear "start Postgres" message.
-- **GitHub CLI:** `gh` is installed at `C:\Program Files\GitHub CLI` but is not on this shell's PATH; add it. It is logged in as `NithanthSujith`. The shared API quota (5,000/hour) was nearly exhausted once by polling: poll sparingly.
-- **Git remote:** `https://github.com/NithanthSujith/Mockbench.git`, branch `main`, tag `contracts-v1`.
-- **Shell quirk:** the assistant's shell tool breaks on heredocs that contain apostrophes. Write such files with the file tool, or avoid apostrophes.
-- **Usage limits:** parallel agents burn the 5-hour limit quickly (hit three times). Launch at most about five at once, and resume cut-off agents by messaging them (their work is saved in `.claude/worktrees/`, git-ignored).
-- **Run the app:** `pnpm --filter @mockbench/web dev:mock` (localhost only, fake data), or `docker compose up` after `cp .env.example .env` (README has the LAN steps). The real login screens arrive with AUTH-03 (Phase 3), so the UI shows stubs for now.
+- **Docker Desktop stops across sessions.** Start `C:\Program Files\Docker\Docker\Docker Desktop.exe`, then `docker start mockbench-test-pg` (postgres:16-alpine, user/password `mock`, host port 55432, `TEST_DATABASE_URL` defaults to `postgres://mock:mock@127.0.0.1:55432/postgres`). Without it about 150 API tests fail with a clear message.
+- **GitHub CLI:** `gh` is at `C:\Program Files\GitHub CLI`, logged in as `NithanthSujith`. The shared 5,000/hour quota was exhausted once; poll sparingly (`gh pr checks N --watch` is fine).
+- **Remote:** `https://github.com/NithanthSujith/Mockbench.git`, branch `main`, tag `contracts-v1`. Squash merges, delete branch.
+- **Stale CI merge ref:** a re-run of CI reuses the old merge ref. To pick up changes on `main`, merge `main` into the PR branch and push normally (no force needed), or rebase and force-push with the owner's approval.
+- **Worktrees:** agents work in `.claude/worktrees/` (git-ignored). Fresh worktrees need `pnpm install --frozen-lockfile`. A usage-limit reset can delete an agent's worktree before it writes anything; the agent re-attaches one to its branch.
+- **Usage limits:** the 5-hour limit hit again with 3 agents plus heavy test runs. Launch at most about 3-5 agents; resume cut-off agents by messaging them.
+- **Shell quirks:** heredocs with apostrophes break the shell tool (use the file tool). `sleep` followed by another command is blocked; use `gh ... --watch` or run in the background.
+- **Run the app:** `cp .env.example .env && docker compose up`, then http://localhost:8080 (or the LAN IP). UI only with fake data: `pnpm --filter @mockbench/web dev:mock`. Component gallery at `/_dev/ui` in dev.
 - **Checks before any commit:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test`, `pnpm build`, `pnpm contract:docs --check`. Run prettier from the repo root only.
+- **No attribution lines** in commits or PRs (`.claude/settings.json`).
 
 ## Progress snapshot
 
 | Phase | Units | Done |
 | --- | --- | --- |
 | 1 Freeze | 14 | 14 |
-| 2 Slice foundations | 14 | 8 merged: RUN-01, AUTH-01, WS-01, BLD-01, PRJ-01, RUN-04, BLD-03, BLD-06. 6 to go: AUTH-02, WS-02, PRJ-02, BLD-02, RUN-02, RUN-03 |
-| 3 Screens and publish loop | 14 | 0 |
+| 2 Slice foundations | 14 | all units listed above merged except RUN-06 (open PR #27) |
+| 3 Screens and publish loop | 14 | merged: AUTH-03, PRJ-04, BLD-04, WS-03, RUN-09. Open PR: BLD-05 (#24). Not started: RUN-05, BLD-07, BLD-09, BLD-11, WS-04, RUN-08 and the rest |
 | 4 Depth | 11 | 0 |
 | 5 Release | 3 | 0 |
