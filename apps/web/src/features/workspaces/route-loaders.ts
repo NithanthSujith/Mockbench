@@ -1,5 +1,6 @@
 import type { RouteLoader } from '../../lib/route-loader'
+import { prefetchMembers } from './members-queries'
 
-// STUBS (FND-13): the owning team fills these in. The route files already call them.
+// STUB (FND-13): the workspace layout has nothing to prefetch.
 export const workspaceLoader: RouteLoader = () => {}
-export const membersLoader: RouteLoader = () => {}
+export const membersLoader: RouteLoader = (args) => prefetchMembers(args)
