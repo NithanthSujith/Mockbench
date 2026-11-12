@@ -29,7 +29,7 @@ Entry: `pnpm e2e`. The browser is launched with `--host-resolver-rules="MAP mock
 - [x] A case that sets `Content-Type: text/html` with an inline `<script>` payload, opened as a top-level navigation, does not execute the script (CSP sandbox) — the `window.__pwned` probe stays undefined.
 - [ ] With `SEED_DEMO=true`, a separate run shows `GET /mock/demo/users` answering before anyone has registered, and the first registrant owning workspace `default`. _First-registrant half passes; the demo-answers half is `test.fixme` until RUN-11 merges (Note 4)._
 - [x] The workflow fails if any browser request goes to a host other than the stack's (no external requests: fonts, CDNs, analytics).
-- [ ] The whole suite finishes in under 6 minutes on a standard runner and leaves no containers running. _Local run: 2m11s including an image build from cache, no containers or volumes left; CI timing to be confirmed on the PR._
+- [x] The whole suite finishes in under 6 minutes on a standard runner and leaves no containers running. _Local run: 2m11s including an image build from cache, no containers or volumes left; CI: whole e2e job 2m04s, including install, browser install and the no-containers-left check._
 
 ## Tests
 This unit is tests. Each criterion is one named spec.
