@@ -6,7 +6,7 @@ import {
   type RequestLogEntry,
 } from '@mockbench/api-contract'
 import { createMemoryHistory } from '@tanstack/react-router'
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HttpResponse, http } from 'msw'
 import { setupServer } from 'msw/node'
@@ -73,14 +73,76 @@ beforeEach(() => {
   urls = []
 })
 
-function mount() {
+function mount(path = '/p/billing-api/logs') {
   const queryClient = createQueryClient()
   const router = createAppRouter({
     queryClient,
-    history: createMemoryHistory({ initialEntries: ['/p/billing-api/logs'] }),
+    history: createMemoryHistory({ initialEntries: [path] }),
   })
   render(<App queryClient={queryClient} router={router} />)
+  return router
 }
+
+describe('request log filters in the URL', () => {
+  it('loads filters from the URL on first render', async () => {
+    rows = [entry(1, { statusCode: 404, mockError: 'route_not_found' })]
+    mount('/p/billing-api/logs?status=4xx&method=GET&path=inv&mockError=true')
+    await screen.findByText('/r/1')
+    const u = urls.at(-1)!
+    expect(u.searchParams.get('status')).toBe('4xx')
+    expect(u.searchParams.get('method')).toBe('GET')
+    expect(u.searchParams.get('path')).toBe('inv')
+    expect(u.searchParams.get('mockError')).toBe('true')
+    expect(screen.getByLabelText('Filter by path')).toHaveValue('inv')
+    expect(screen.getByLabelText('Mock-server errors only')).toBeChecked()
+    expect(screen.getByRole('combobox', { name: 'Status' })).toHaveTextContent('4xx')
+  })
+
+  it('changing a filter updates the URL (replace), and the path waits for its debounce', async () => {
+    rows = [entry(1)]
+    const router = mount()
+    await screen.findByText('/r/1')
+    fireEvent.click(screen.getByLabelText('Mock-server errors only'))
+    await waitFor(() => expect(router.state.location.search).toMatchObject({ mockError: true }))
+    expect(router.history.length).toBe(1)
+
+    fireEvent.change(screen.getByLabelText('Filter by path'), { target: { value: 'invoices' } })
+    expect(router.state.location.search).not.toHaveProperty('path')
+    await waitFor(() =>
+      expect(router.state.location.search).toMatchObject({ path: 'invoices', mockError: true }),
+    )
+    expect(router.history.length).toBe(1)
+    await waitFor(() =>
+      expect(urls.some((u) => u.searchParams.get('path') === 'invoices')).toBe(true),
+    )
+  })
+
+  it('a reload (fresh mount on the resulting URL) keeps the filters', async () => {
+    rows = [entry(1, { mockError: 'route_not_found' })]
+    const first = mount()
+    await screen.findByText('/r/1')
+    fireEvent.click(screen.getByLabelText('Mock-server errors only'))
+    await waitFor(() => expect(first.state.location.search).toMatchObject({ mockError: true }))
+    const href = first.state.location.href
+    cleanup()
+    urls = []
+    mount(href)
+    await screen.findByText('/r/1')
+    expect(screen.getByLabelText('Mock-server errors only')).toBeChecked()
+    expect(urls.at(-1)!.searchParams.get('mockError')).toBe('true')
+  })
+
+  it('invalid search params fall back to defaults', async () => {
+    rows = [entry(1)]
+    mount('/p/billing-api/logs?status=bogus&method=TRACE&mockError=maybe&since=yesterday')
+    await screen.findByText('/r/1')
+    const u = urls.at(-1)!
+    for (const k of ['status', 'method', 'mockError', 'since', 'path']) {
+      expect(u.searchParams.has(k)).toBe(false)
+    }
+    expect(screen.getByLabelText('Mock-server errors only')).not.toBeChecked()
+  })
+})
 
 describe('request log screen', () => {
   it('renders rows with method badge, status chip classes and the mock-server tag + hint', async () => {
