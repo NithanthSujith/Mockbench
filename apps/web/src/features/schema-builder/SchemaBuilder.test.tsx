@@ -296,7 +296,7 @@ describe('keyboard and read-only', () => {
     const { user } = setup()
     within(rowOf('branch_list')).getByRole('button', { name: 'Collapse branch_list' }).focus()
     const order: string[] = []
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       order.push(document.activeElement?.getAttribute('aria-label') ?? '')
       await user.tab()
     }
@@ -305,6 +305,7 @@ describe('keyboard and read-only', () => {
       'Field name',
       'Type',
       'Array length for branch_list',
+      'Attributes of branch_list',
       'Remove field',
     ])
   })
