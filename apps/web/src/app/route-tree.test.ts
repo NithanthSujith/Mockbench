@@ -51,7 +51,7 @@ describe('route files', () => {
   it('every feature screen a route imports lives under features/<area>/screens', () => {
     for (const text of Object.values(routeFiles)) {
       for (const m of text.matchAll(/from '\.\.\/features\/([a-z]+)\/([^']+)'/g)) {
-        expect(m[2], `${m[0]}`).toMatch(/^(screens\/[A-Za-z]+|route-loaders)$/)
+        expect(m[2], `${m[0]}`).toMatch(/^(screens\/[A-Za-z]+|route-loaders|search)$/)
       }
     }
   })

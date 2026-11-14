@@ -199,6 +199,14 @@ describe('case selection in the URL', () => {
     )
   })
 
+  it('keeps exactly one case settings bar after switching tabs', async () => {
+    mount(`${base}/cases/${mkCase(1).id}`)
+    expect(await screen.findAllByLabelText('Case name')).toHaveLength(1)
+    await userEvent.click(await screen.findByRole('tab', { name: /Case 2/ }))
+    await screen.findByDisplayValue('Case 2')
+    expect(screen.getAllByLabelText('Case name')).toHaveLength(1)
+  })
+
   it('shows not-found for a case that belongs to another route', async () => {
     mount(`${base}/cases/00000000-0000-7000-8000-00000000ffff`)
     expect(await screen.findByText('Page not found')).toBeInTheDocument()
@@ -284,6 +292,8 @@ describe('adding, defaulting and deleting cases', () => {
     expect(input).toHaveValue('New case 2')
     await userEvent.click(screen.getByRole('button', { name: 'Create case' }))
     await waitFor(() => expect(router.state.location.pathname).toMatch(/\/cases\/.*151$/))
+    await waitFor(() => expect(screen.getByLabelText('Case name')).toHaveValue('New case 2'))
+    expect(screen.getAllByLabelText('Case name')).toHaveLength(1)
   })
 
   it('shows case_name_taken inline', async () => {
