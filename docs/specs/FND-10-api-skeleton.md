@@ -36,7 +36,7 @@ Any real handler. The data-plane behaviour (it is a `501`-with-`X-Mock-Error` st
 | `SEED_DEMO` | `true` | |
 | `LOG_LEVEL` | `info` | |
 | `TRUST_PROXY` | `1` | hops |
-| `CONTROL_RATE_LIMIT` | `100` | per session per minute (tests override) |
+| `CONTROL_RATE_LIMIT` | `600` | per session per minute (tests override) |
 | `LOGIN_RATE_LIMIT` | `10` | per IP per minute |
 | `MOCK_RATE_LIMIT` | unset | data plane; unset = unlimited |
 | `LOG_RETENTION_DAYS` / `LOG_RETENTION_ROWS` | `7` / `1000` | |

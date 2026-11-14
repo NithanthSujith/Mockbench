@@ -25,7 +25,7 @@ Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file
 
 ## Decisions pending (owner)
 
-- **Rate limit:** the control plane's 100 requests a minute per session is exceeded (`429`) when one session drives the SPA for a minute (found by XC-01, which rotates sessions every three tests). Sign-in is 10 a minute per IP. Recommended: raise it; a main-session change in `apps/api/src/http/`.
+- **Rate limit:** resolved 2026-11-14: control-plane default raised from 100 to 600 requests a minute per session (ADR 0019). Sign-in stays 10 a minute per IP.
 - **RUN-11 "three routes":** merged as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`; the owner has not explicitly confirmed this reading.
 
 ## Decisions made
