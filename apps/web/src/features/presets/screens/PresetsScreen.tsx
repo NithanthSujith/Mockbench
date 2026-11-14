@@ -278,10 +278,14 @@ export function PresetsScreen() {
           name: parsed.file.name,
           priority: parsed.file.priority,
           rules: parsed.file.rules,
+          isEnabled: false,
         },
       })
       await queryClient.invalidateQueries({ queryKey: qk.project(projectId).presets })
-      setNotice({ kind: 'ok', text: `Imported "${parsed.file.name}".` })
+      setNotice({
+        kind: 'ok',
+        text: `Imported "${parsed.file.name}" (disabled; switch it on to use it).`,
+      })
     } catch (error) {
       setImportIssues([isApiError(error) ? error.message : 'The server rejected the preset.'])
     }

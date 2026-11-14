@@ -1,6 +1,6 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-14 (after merging #45-#49; BLD-08, PRJ-06 and REL-01 in progress). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
@@ -12,12 +12,12 @@ Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file
 
 **The first usable release loop works end to end and CI proves it:** register, create a project and route, build a schema (Builder or JSON tab, with inference), preview, publish, deploy, call the mock from outside the browser, read the request log. The Playwright `e2e` job runs it against the real `docker compose` stack at `mockbench.lan.test` in about 2 minutes.
 
-**Merged on 2026-11-14 (owner named them):** #42 BLD-05 stale case bar fix, #43 log filters in the URL (adds `zod` to `apps/web`; Contract line added to the RUN-08 spec), #41 RUN-11 demo seed, #44 BLD-12 Try-it panel (adds `lib/api/mock-request.ts`). #41 and #44 merged with a failing `ownership` check, which is expected because they edit main-session files. #43 needed one re-run of the flaky `bin/migrate` timing test. No feature PRs are open.
+**Merged on 2026-11-14 (owner named them):** #41-#44 (RUN-11 demo seed, BLD-05 case bar fix, log filters in the URL with `zod` in `apps/web`, BLD-12 Try-it panel), then #45 control-plane rate limit 600/min (ADR 0019), #46 RUN-13 data-plane rate cap (`MOCK_RATE_LIMIT`, wired in `app.ts`), #49 RUN-10 version diff, #47 PRJ-03 presets screen and #48 BLD-10 advanced attributes and components. #41, #44 and #46 merged with a failing `ownership` check, expected because they edit main-session files. Flaky tests that needed a re-run: `bin/migrate` timing (#43) and FND-09 lock-kill (#49). Imported presets are created disabled (follow-up PR to #47).
 
 ## Do these next, in order
 
-1. (Done 2026-11-14) PRs #41-#44 merged.
-2. Phase 4 and 5 units, all unblocked (RUN-11 is done): **PRJ-03** presets screen, **PRJ-06** export/import, **RUN-10** version diff, **RUN-13** data-plane rate cap, **BLD-08** drag and virtualize, **BLD-10** advanced attributes and components, **RUN-12** pg-notify fanout, then **REL-01** README/docs, **REL-02** release images (GHCR), **REL-03** contribution scaffolding. See `docs/PLAN.md` section 4.
+1. (Done 2026-11-14) PRs #41-#49 merged. In flight: BLD-08, PRJ-06 and REL-01 as agent PRs; merge each after merging `main` into its branch and a green CI.
+2. Remaining units: **RUN-12** pg-notify fanout (optional; recommended to drop for a single-instance deploy), then **REL-02** release images (GHCR) and **REL-03** contribution scaffolding. See `docs/PLAN.md` section 4.
 3. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
 4. Fix the XC-01 spec: its `Depends on` omits BLD-12 and RUN-11 (both merged); recommended: leave the dependency list and note the two checks belong to those units.
 5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
@@ -30,6 +30,7 @@ Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file
 
 ## Decisions made
 
+- **PRJ-03, BLD-10 and RUN-13 conventions (2026-11-14, accepted by merge):** imported presets are created disabled; preset rule values are read as JSON if they parse, otherwise as a plain string (no ADR yet); "Save as component" is copy-only and a component rename the server refuses keeps the old name too; RUN-13 logs a rate-limited request in `request_logs` only when the project is already warm in the cache.
 - **ADR 0017 (2026-11-11):** last-owner race loser may get 409, 403 or 404; Argon2 stays m=19456 KiB, t=2, p=1 and the login limiter stays keyed on IP; a default `v<seq>` label that collides is a 409 `label_taken`; total baked size cap is 64 MiB (not built). Create-workspace dialog lives in `features/workspaces`. Data plane lowercases the slug before the cache lookup.
 - **ADR 0018 (2026-11-12):** a version that cannot be loaded answers `503 mock_unavailable` (`project_not_published` now means only "no active version"); `OPTIONS` never needs the project to exist and reads `settings.cors` only from a warm cache; read-only builder keeps the collapse twists usable ("no edit control"); the seeded-mode preview sentence stays "Values are drawn from stable pools seeded by the key and position."; retention numbers are not exposed on `system.instance`.
 - **PRJ-01 unknown keys in `settings`:** rejected by the server (`ProjectSettingsInput` is a `strictObject`). Ruled.
@@ -68,5 +69,5 @@ Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file
 | 1 Freeze | 14 | 14 |
 | 2 Slice foundations | 14 | 14 |
 | 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
-| 4 Depth | 11 | RUN-11 done (#41). Not started: PRJ-03, PRJ-06, RUN-10, RUN-12, RUN-13, BLD-08, BLD-10 and the rest |
-| 5 Release | 3 | 0 (REL-01, REL-02, REL-03 not started) |
+| 4 Depth | 11 | Done: PRJ-03, RUN-10, RUN-11, RUN-13, BLD-10 and earlier units. In progress: BLD-08, PRJ-06. Not started: RUN-12 (optional) |
+| 5 Release | 3 | 0 done. REL-01 in progress. REL-02, REL-03 not started |
