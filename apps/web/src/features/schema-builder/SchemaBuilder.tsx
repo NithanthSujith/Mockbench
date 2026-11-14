@@ -1,4 +1,15 @@
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  pointerWithin,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragMoveEvent,
+} from '@dnd-kit/core'
 import type { MockNode, MockSchema } from '@mockbench/schema-core'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { Boxes, Plus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
@@ -18,6 +29,14 @@ import {
   subtreeNode,
 } from './attr-utils'
 import { BuilderRow } from './BuilderRow'
+import {
+  VIRTUALIZE_ABOVE,
+  planDrop,
+  planKeyMove,
+  zoneAt,
+  type DropZone,
+  type KeyMove,
+} from './drag'
 import { ExtraControl } from './ExtraControl'
 import { ManageComponentsDialog, type ComponentSource } from './ManageComponentsDialog'
 import { recallCollapsed, rememberCollapsed } from './session'
@@ -32,6 +51,9 @@ import { TypeSelect } from './TypeSelect'
 
 /** Wait this long after the last edit before telling the editor, so a burst of typing is one change. */
 export const EMIT_DEBOUNCE_MS = 250
+
+/** First guess at a row's height before it is measured. */
+const ROW_ESTIMATE_PX = 36
 
 export interface SchemaBuilderProps {
   value: MockSchema
@@ -153,13 +175,84 @@ export function SchemaBuilder({
     }
   }, [store, readOnly, debounceMs])
 
+  const virtualized = rows.length > VIRTUALIZE_ABOVE
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useVirtualizer({
+    count: virtualized ? rows.length : 0,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: 8,
+    getItemKey: (index) => rows[index]?.id ?? index,
+  })
+
   useEffect(() => {
     if (focusId === null) return
-    containerRef.current?.querySelector<HTMLInputElement>(`[data-node-input="${focusId}"]`)?.focus()
-    setFocusId(null)
-  }, [focusId, rows])
+    const find = () =>
+      containerRef.current?.querySelector<HTMLInputElement>(`[data-node-input="${focusId}"]`)
+    const input = find()
+    if (input) {
+      input.focus()
+      setFocusId(null)
+      return
+    }
+    // A virtualised row that is out of the window is not in the DOM: scroll to it and look again.
+    const index = rows.findIndex((r) => r.id === focusId)
+    if (!virtualized || index < 0) {
+      setFocusId(null)
+      return
+    }
+    virtualizer.scrollToIndex(index)
+    const frame = requestAnimationFrame(() => {
+      find()?.focus()
+      setFocusId(null)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focusId, rows, virtualized, virtualizer])
 
   const act = store.getState()
+
+  // Drag and drop (BLD-08). The indicator is computed on every move and applied on release.
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+  const [dragId, setDragId] = useState<NodeId | null>(null)
+  const [hover, setHover] = useState<{ id: NodeId; zone: DropZone; ok: boolean } | null>(null)
+  const [announcement, setAnnouncement] = useState('')
+  const hoverRef = useRef(hover)
+  hoverRef.current = hover
+
+  const labelOf = (id: NodeId) => store.getState().state.nodes[id]?.key ?? 'item'
+
+  const onDragMove = (event: DragMoveEvent) => {
+    const { active, over, delta, activatorEvent } = event
+    if (!over) return setHover(null)
+    const y = (activatorEvent as PointerEvent).clientY + delta.y
+    const overNode = store.getState().state.nodes[String(over.id)]
+    const zone = zoneAt(over.rect.top, over.rect.height, y, overNode?.type === 'object')
+    const plan = planDrop(store.getState().state, String(active.id), String(over.id), zone)
+    const next = plan ? { id: String(over.id), zone, ok: plan.ok } : null
+    const prev = hoverRef.current
+    if (prev?.id === next?.id && prev?.zone === next?.zone && prev?.ok === next?.ok) return
+    setHover(next)
+  }
+
+  const onDragEnd = (event: DragEndEvent) => {
+    const current = hoverRef.current
+    setDragId(null)
+    setHover(null)
+    if (!current || !current.ok) return
+    const activeId = String(event.active.id)
+    const plan = planDrop(store.getState().state, activeId, current.id, current.zone)
+    if (!plan?.ok || !act.moveNode(activeId, plan.parentId, plan.index)) return
+    const where = current.zone === 'inside' ? 'into' : current.zone
+    setAnnouncement(`moved ${labelOf(activeId)} ${where} ${labelOf(current.id)}`)
+    setFocusId(activeId)
+  }
+
+  const moveByKey = (id: NodeId, move: KeyMove) => {
+    const plan = planKeyMove(store.getState().state, id, move)
+    if (!plan || !act.moveNode(id, plan.parentId, plan.index)) return
+    setAnnouncement(plan.message)
+    setFocusId(id)
+  }
 
   const toggle = (id: NodeId) => {
     act.toggleExpanded(id)
@@ -201,6 +294,36 @@ export function SchemaBuilder({
     const ids = refNodesNamed(store.getState().state, from)
     for (const id of ids) act.setAttr(id, 'name', to)
     return ids.length
+  }
+
+  const renderRow = (row: (typeof rows)[number]) => {
+    const node = state.nodes[row.id]
+    if (!node) return null
+    return (
+      <BuilderRow
+        key={row.id}
+        row={row}
+        node={node}
+        flag={flags?.[row.id]}
+        readOnly={readOnly}
+        onToggle={toggle}
+        onKey={act.setKey}
+        onType={requestType}
+        onValues={(id, v) => act.setAttr(id, 'values', v)}
+        onCount={(id, c) => act.setAttr(id, 'count', c)}
+        onAdd={add}
+        onRemove={act.removeNode}
+        onAttr={act.setAttr}
+        componentNames={componentNames}
+        issues={rowIssues(node, known, cyclic)}
+        onSaveAsComponent={
+          components !== undefined && onSaveComponents ? saveAsComponent : undefined
+        }
+        dragEnabled={!readOnly}
+        drop={hover?.id === row.id ? hover : undefined}
+        onMoveKey={moveByKey}
+      />
+    )
   }
 
   if (!root) return null
@@ -269,33 +392,56 @@ export function SchemaBuilder({
           </Button>
         </div>
       ) : (
-        rows.map((row) => {
-          const node = state.nodes[row.id]
-          if (!node) return null
-          return (
-            <BuilderRow
-              key={row.id}
-              row={row}
-              node={node}
-              flag={flags?.[row.id]}
-              readOnly={readOnly}
-              onToggle={toggle}
-              onKey={act.setKey}
-              onType={requestType}
-              onValues={(id, v) => act.setAttr(id, 'values', v)}
-              onCount={(id, c) => act.setAttr(id, 'count', c)}
-              onAdd={add}
-              onRemove={act.removeNode}
-              onAttr={act.setAttr}
-              componentNames={componentNames}
-              issues={rowIssues(node, known, cyclic)}
-              onSaveAsComponent={
-                components !== undefined && onSaveComponents ? saveAsComponent : undefined
-              }
-            />
-          )
-        })
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerWithin}
+          onDragStart={(e) => setDragId(String(e.active.id))}
+          onDragMove={onDragMove}
+          onDragEnd={onDragEnd}
+          onDragCancel={() => {
+            setDragId(null)
+            setHover(null)
+          }}
+        >
+          {virtualized ? (
+            <div
+              ref={scrollRef}
+              data-testid="builder-scroll"
+              className="h-[70vh] min-h-60 overflow-auto"
+            >
+              <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+                {virtualizer.getVirtualItems().map((item) => {
+                  const row = rows[item.index]
+                  if (!row) return null
+                  return (
+                    <div
+                      key={item.key}
+                      ref={virtualizer.measureElement}
+                      data-index={item.index}
+                      className="absolute inset-x-0 top-0"
+                      style={{ transform: `translateY(${item.start}px)` }}
+                    >
+                      {renderRow(row)}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            rows.map(renderRow)
+          )}
+          <DragOverlay dropAnimation={null}>
+            {dragId ? (
+              <div className="mono pointer-events-none inline-block rounded-sm border border-line-strong bg-panel-3 px-2 py-1 text-small text-ink">
+                {labelOf(dragId)}
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       )}
+      <div aria-live="polite" data-testid="move-announcer" className="sr-only">
+        {announcement}
+      </div>
 
       {components !== undefined ? (
         <ManageComponentsDialog
