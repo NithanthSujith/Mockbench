@@ -1,6 +1,6 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-12 (after merging #40; four PRs open). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-14 (after merging #41-#44; no feature PRs open). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
@@ -12,26 +12,21 @@ Last updated: 2026-11-12 (after merging #40; four PRs open). This file is the ha
 
 **The first usable release loop works end to end and CI proves it:** register, create a project and route, build a schema (Builder or JSON tab, with inference), preview, publish, deploy, call the mock from outside the browser, read the request log. The Playwright `e2e` job runs it against the real `docker compose` stack at `mockbench.lan.test` in about 2 minutes.
 
-**Open PRs (built by agents, CI green, none merged; the assistant merges only PRs the owner names):**
-- **#41 RUN-11 demo seed.** `SEED_DEMO=true` seeds workspace `Default` (no members) and project `demo` with `v1` deployed; the first registrant is adopted into `Default`. Edits `server.ts` and `e2e/seed.spec.ts` (ownership fails as expected). Widens `publishVersion`/`deployVersion` to accept a null user id. Un-fixmes the seed e2e.
-- **#42 BLD-05 fix.** Duplicate sibling `key` on `CaseBar` and `SchemaEditorSlot` left the previous case bar mounted. Distinct keys plus two regression tests; un-fixmes the e2e.
-- **#43 log filters in the URL.** `validateSearch` on the logs route (the route tree, on purpose) and `features/logs/search.ts`. **Adds `zod` 4.6.7 as a direct web dependency**: needs the owner's OK and a Contract line in the RUN-08 spec. Widens the route-import guard regex in `route-tree.test.ts` to allow `search`.
-- **#44 BLD-12 Try-it panel.** Curl from `getMockBaseUrl`, copy fallback, Send. Adds `apps/web/src/lib/api/mock-request.ts` (the only `fetch` for the panel; `lib/` is main-session). Un-fixmes the Try-it e2e. Two toast wordings differ (Try-it uses an em dash, the topbar a colon).
+**Merged on 2026-11-14 (owner named them):** #42 BLD-05 stale case bar fix, #43 log filters in the URL (adds `zod` to `apps/web`; Contract line added to the RUN-08 spec), #41 RUN-11 demo seed, #44 BLD-12 Try-it panel (adds `lib/api/mock-request.ts`). #41 and #44 merged with a failing `ownership` check, which is expected because they edit main-session files. #43 needed one re-run of the flaky `bin/migrate` timing test. No feature PRs are open.
 
 ## Do these next, in order
 
-1. Owner names the PRs to merge. Suggested order #41, #42, #43, #44, each after merging `main` into its branch (plain push) and a green CI. Add the zod Contract line to the RUN-08 spec with #43.
-2. Phase 4 and 5 units, all unblocked: **PRJ-03** presets screen, **PRJ-06** export/import, **RUN-10** version diff, **RUN-13** data-plane rate cap, **BLD-08** drag and virtualize, **BLD-10** advanced attributes and components, **RUN-12** pg-notify fanout, then **REL-01** README/docs, **REL-02** release images (GHCR), **REL-03** contribution scaffolding. See `docs/PLAN.md` section 4.
+1. (Done 2026-11-14) PRs #41-#44 merged.
+2. Phase 4 and 5 units, all unblocked (RUN-11 is done): **PRJ-03** presets screen, **PRJ-06** export/import, **RUN-10** version diff, **RUN-13** data-plane rate cap, **BLD-08** drag and virtualize, **BLD-10** advanced attributes and components, **RUN-12** pg-notify fanout, then **REL-01** README/docs, **REL-02** release images (GHCR), **REL-03** contribution scaffolding. See `docs/PLAN.md` section 4.
 3. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
-4. Fix the XC-01 spec: its `Depends on` omits BLD-12 and RUN-11 (now being merged); recommended: leave the dependency list and note the two checks belong to those units.
+4. Fix the XC-01 spec: its `Depends on` omits BLD-12 and RUN-11 (both merged); recommended: leave the dependency list and note the two checks belong to those units.
 5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
 6. The permission system blocks merges the owner has not named, merges of PRs with a failing check unless named, and `--admin` merges. Force-pushes need explicit approval per branch.
 
 ## Decisions pending (owner)
 
 - **Rate limit:** the control plane's 100 requests a minute per session is exceeded (`429`) when one session drives the SPA for a minute (found by XC-01, which rotates sessions every three tests). Sign-in is 10 a minute per IP. Recommended: raise it; a main-session change in `apps/api/src/http/`.
-- **RUN-11 "three routes":** read as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`. Confirm.
-- **Zod in web** (#43) and **`lib/api/mock-request.ts`** (#44): see the open PRs.
+- **RUN-11 "three routes":** merged as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`; the owner has not explicitly confirmed this reading.
 
 ## Decisions made
 
@@ -72,6 +67,6 @@ Last updated: 2026-11-12 (after merging #40; four PRs open). This file is the ha
 | --- | --- | --- |
 | 1 Freeze | 14 | 14 |
 | 2 Slice foundations | 14 | 14 |
-| 3 Screens and publish loop | 14 | merged: AUTH-03, PRJ-04, BLD-04, WS-03, RUN-09, BLD-05, WS-04, BLD-07, RUN-05, PRJ-05, BLD-11, BLD-09, RUN-07, RUN-08, XC-01. Open PRs: RUN-11 (#41), BLD-05 fix (#42), logs URL filters (#43), BLD-12 (#44) |
-| 4 Depth | 11 | RUN-11 in review. Not started: PRJ-03, PRJ-06, RUN-10, RUN-12, RUN-13, BLD-08, BLD-10 and the rest |
+| 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
+| 4 Depth | 11 | RUN-11 done (#41). Not started: PRJ-03, PRJ-06, RUN-10, RUN-12, RUN-13, BLD-08, BLD-10 and the rest |
 | 5 Release | 3 | 0 (REL-01, REL-02, REL-03 not started) |

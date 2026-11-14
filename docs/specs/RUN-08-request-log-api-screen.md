@@ -17,6 +17,7 @@ The writer and pruner (RUN-07); export; charts.
 
 ## Contract
 Endpoint `requests.list` (API-CONTRACT §3.10). Table `request_logs` (+ `versions.label` join). UI route `/p/$projectSlug/logs`.
+New runtime dependency: `zod` 4.x as a direct dependency of `apps/web` (the stack's validator, ADR 0016), used by `validateSearch` for the logs filters in the URL (`features/logs/search.ts`). Approved by the owner with the merge of #43.
 
 ## Acceptance criteria
 - [x] `GET …/requests` returns newest first with `limit` (default 50, max 200), `nextCursor` over 120 rows pages 50/50/20; `limit=201` → `422`; a tampered cursor → `400 invalid_cursor`.
