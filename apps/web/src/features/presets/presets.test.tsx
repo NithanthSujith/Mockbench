@@ -327,8 +327,10 @@ describe('export, import and templates', () => {
       }),
     )
     await waitFor(() => expect(creates).toHaveLength(1))
-    expect(creates[0]).toEqual({ name: 'Imported', priority: 3, rules })
-    expect(await screen.findByRole('status')).toHaveTextContent('Imported "Imported".')
+    expect(creates[0]).toEqual({ name: 'Imported', priority: 3, rules, isEnabled: false })
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Imported "Imported" (disabled; switch it on to use it).',
+    )
   })
 
   it('Add from template lists the packs and creates a disabled copy', async () => {
