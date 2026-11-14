@@ -6,7 +6,6 @@
 #   3. register the first user over the API, import every examples/*.mockbench.json through
 #      projects.import, publish and deploy each, and call a mock
 #   4. compare the README's second example (a case picked by header) with the real response
-# Step 3 is skipped, loudly, while projects.import is still 501 (PRJ-06).
 #
 #   scripts/readme-smoke.sh          up, check, down
 #   scripts/readme-smoke.sh up|check|down
@@ -83,11 +82,6 @@ cmd_check() {
     slug="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).project.slug)' "$f")"
     body="$(node -e 'console.log(JSON.stringify({ workspaceId: process.argv[1], document: JSON.parse(require("fs").readFileSync(process.argv[2], "utf8")) }))' "$ws" "$f")"
     http -X POST "${BASE}/api/v1/projects/import" -H "$CLIENT_HEADER" -H "Cookie: ${cookie}" -H 'Content-Type: application/json' --data "$body"
-    if [ "$HTTP_CODE" = "501" ]; then
-      # TEMPORARY: projects.import is PRJ-06. Remove this branch when it merges so the step is strict.
-      echo '  SKIP projects.import is not implemented yet (PRJ-06); examples are not imported'
-      return
-    fi
     if [ "$HTTP_CODE" != "201" ]; then fail "import ${f} -> ${HTTP_CODE} ${HTTP_BODY}"; continue; fi
     pass "import ${f} -> 201"
     pid="$(json_get "$HTTP_BODY" 'd.id')"
