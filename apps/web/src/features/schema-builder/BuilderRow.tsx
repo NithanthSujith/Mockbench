@@ -1,6 +1,8 @@
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import {
   ChevronDown,
   ChevronRight,
+  GripVertical,
   PackagePlus,
   Plus,
   SlidersHorizontal,
@@ -13,11 +15,19 @@ import type { RowIssues } from './attr-utils'
 import { AttributePanel, IssueBadges, PinControl } from './AttrControls'
 import { DraftInput } from './DraftInput'
 import { ExtraControl } from './ExtraControl'
+import type { DropZone, KeyMove } from './drag'
 import type { BuilderNode, VisibleRow } from './store'
 import { TypeSelect } from './TypeSelect'
 
 export const INDENT_BASE_PX = 15
 export const INDENT_STEP_PX = 18
+
+const KEY_MOVES: Record<string, KeyMove | undefined> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  ArrowRight: 'indent',
+  ArrowLeft: 'outdent',
+}
 
 /**
  * One tree row (prototype `.brow`): twist, key, type, type-specific control, actions. The five cells are
@@ -40,6 +50,9 @@ export function BuilderRow({
   componentNames,
   issues,
   onSaveAsComponent,
+  dragEnabled = false,
+  drop,
+  onMoveKey,
 }: {
   row: VisibleRow
   node: BuilderNode
@@ -60,7 +73,20 @@ export function BuilderRow({
   issues?: RowIssues
   /** Offered on object rows when the caller can save components. */
   onSaveAsComponent?: (id: string) => void
+  /** Show the drag handle (BLD-08). Never shown on an array's `[ item ]` row. */
+  dragEnabled?: boolean
+  /** The drop indicator to draw on this row while something is dragged over it. */
+  drop?: { zone: DropZone; ok: boolean }
+  /** An Alt+Arrow key was pressed on this row. */
+  onMoveKey?: (id: string, move: KeyMove) => void
 }) {
+  const canDrag = dragEnabled && !readOnly && row.kind === 'field'
+  const drag = useDraggable({ id: row.id, disabled: !canDrag })
+  const droppable = useDroppable({ id: row.id })
+  const setRowRef = (el: HTMLElement | null) => {
+    drag.setNodeRef(el)
+    droppable.setNodeRef(el)
+  }
   const label = row.key ?? '[ item ]'
   const [panelOpen, setPanelOpen] = useState(false)
   const extraKeys = [...Object.keys(node.extras), ...Object.keys(node.entryExtras ?? {})]
@@ -74,29 +100,59 @@ export function BuilderRow({
       role="group"
       aria-label={label}
       title={description}
+      ref={setRowRef}
       data-node-id={row.id}
       data-depth={row.depth}
       data-kind={row.kind}
-      className="group grid min-w-0 grid-cols-[auto_minmax(96px,1.3fr)_118px_minmax(0,1.4fr)_auto] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-[860px]:grid-cols-[auto_minmax(80px,1fr)_104px] max-[860px]:gap-y-1"
+      onKeyDown={(e) => {
+        if (!canDrag || !onMoveKey || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
+        const move = KEY_MOVES[e.key]
+        if (!move) return
+        e.preventDefault()
+        e.stopPropagation()
+        onMoveKey(row.id, move)
+      }}
+      className={cn(
+        'group relative grid min-w-0 grid-cols-[auto_minmax(96px,1.3fr)_118px_minmax(0,1.4fr)_auto] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-[860px]:grid-cols-[auto_minmax(80px,1fr)_104px] max-[860px]:gap-y-1',
+        drag.isDragging && 'opacity-40',
+      )}
       style={{ paddingLeft: INDENT_BASE_PX + row.depth * INDENT_STEP_PX }}
     >
-      {row.isContainer ? (
-        <button
-          type="button"
-          aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${label}`}
-          aria-expanded={row.expanded}
-          onClick={() => onToggle(row.id)}
-          className="grid size-4 shrink-0 place-items-center rounded-xs text-ink-3 transition-ui hover:bg-panel-3 hover:text-ink"
-        >
-          {row.expanded ? (
-            <ChevronDown aria-hidden className="size-3" />
-          ) : (
-            <ChevronRight aria-hidden className="size-3" />
-          )}
-        </button>
-      ) : (
-        <span aria-hidden className="size-4 shrink-0" />
-      )}
+      <div className="flex items-center gap-0.5">
+        {row.kind === 'field' ? (
+          <button
+            type="button"
+            ref={drag.setActivatorNodeRef}
+            aria-label={`Drag ${label}`}
+            title="Drag to reorder (Alt+Arrow keys also move the row)"
+            disabled={!canDrag}
+            tabIndex={-1}
+            {...drag.listeners}
+            className="grid size-4 shrink-0 cursor-grab touch-none place-items-center rounded-xs text-ink-3 hover:text-ink disabled:invisible"
+          >
+            <GripVertical aria-hidden className="size-3" />
+          </button>
+        ) : (
+          <span aria-hidden className="size-4 shrink-0" />
+        )}
+        {row.isContainer ? (
+          <button
+            type="button"
+            aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${label}`}
+            aria-expanded={row.expanded}
+            onClick={() => onToggle(row.id)}
+            className="grid size-4 shrink-0 place-items-center rounded-xs text-ink-3 transition-ui hover:bg-panel-3 hover:text-ink"
+          >
+            {row.expanded ? (
+              <ChevronDown aria-hidden className="size-3" />
+            ) : (
+              <ChevronRight aria-hidden className="size-3" />
+            )}
+          </button>
+        ) : (
+          <span aria-hidden className="size-4 shrink-0" />
+        )}
+      </div>
 
       {row.kind === 'item' ? (
         <span className="mono inline-block rounded-sm border border-dashed border-line-strong px-2 py-1.25 text-small text-ink-3">
@@ -213,6 +269,26 @@ export function BuilderRow({
         ) : null}
       </div>
 
+      {drop ? (
+        <span
+          aria-hidden
+          data-drop-indicator={drop.zone}
+          data-ok={drop.ok}
+          className={cn(
+            'pointer-events-none absolute inset-x-0',
+            drop.zone === 'before' && 'top-0 h-0.5',
+            drop.zone === 'after' && 'bottom-0 h-0.5',
+            drop.zone === 'inside' && 'inset-y-0 rounded-sm border-2',
+            drop.zone === 'inside'
+              ? drop.ok
+                ? 'border-signal'
+                : 'border-bad'
+              : drop.ok
+                ? 'bg-signal'
+                : 'bg-bad',
+          )}
+        />
+      ) : null}
       {extraKeys.length > 0 ? (
         <div
           data-testid="extra-attributes"
