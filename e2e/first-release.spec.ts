@@ -227,10 +227,8 @@ test('the topbar base URL carries the LAN host and no page text says localhost',
   }
 })
 
-// PRODUCT BUG (BLD-05 route editor): after "+ Case" or switching case tabs, the previous case's settings
-// bar stays mounted under the new one (two "Case name" fields) until the page is reloaded.
-// Repro: open any route, click "+ Case", name it, Create. Expected: one case bar.
-test.fixme('switching case leaves exactly one case settings bar', async ({ page, context }) => {
+// Regression for the BLD-05 stale case bar (duplicate React keys on sibling elements).
+test('switching case leaves exactly one case settings bar', async ({ page, context }) => {
   await signIn(context)
   await page.goto(state.productsRouteUrl!)
   await page.getByRole('tab', { name: /Not found/ }).click()

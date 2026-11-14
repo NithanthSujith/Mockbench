@@ -151,8 +151,9 @@ function EditorBody({
             }
           />
         </Card>
+        {/* Distinct key prefixes: sibling keys must be unique, or React leaks the old sibling. */}
         <CaseBar
-          key={selected.id}
+          key={`case-bar:${selected.id}`}
           caseItem={selected}
           projectId={projectId}
           routeId={route.id}
@@ -173,7 +174,7 @@ function EditorBody({
           </Card>
         ) : (
           <SchemaEditorSlot
-            key={selected.id}
+            key={`schema:${selected.id}`}
             caseId={selected.id}
             value={selected.schema}
             readOnly={!canEdit}
