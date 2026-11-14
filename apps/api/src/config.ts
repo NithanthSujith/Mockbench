@@ -131,7 +131,7 @@ export function loadConfig(env: Env): Config {
     seedDemo: bool('SEED_DEMO', true),
     logLevel,
     trustProxy,
-    controlRateLimit: int('CONTROL_RATE_LIMIT', 100, 1),
+    controlRateLimit: int('CONTROL_RATE_LIMIT', 600, 1),
     loginRateLimit: int('LOGIN_RATE_LIMIT', 10, 1),
     mockRateLimit,
     logRetentionDays: int('LOG_RETENTION_DAYS', 7, 1),

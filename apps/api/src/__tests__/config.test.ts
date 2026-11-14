@@ -18,7 +18,7 @@ describe('config.ts (the only reader of the environment)', () => {
       seedDemo: true,
       logLevel: 'info',
       trustProxy: 1,
-      controlRateLimit: 100,
+      controlRateLimit: 600,
       loginRateLimit: 10,
       mockRateLimit: null,
       logRetentionDays: 7,
