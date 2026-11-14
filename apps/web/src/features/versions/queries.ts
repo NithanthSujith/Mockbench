@@ -45,6 +45,20 @@ export function useDeployments(projectId: string | undefined) {
   })
 }
 
+/** RUN-10: the diff between two versions of one project. */
+export function useVersionDiff(
+  projectId: string | undefined,
+  fromId: string | undefined,
+  toId: string | undefined,
+) {
+  return useQuery({
+    queryKey: qk.versionDiff(projectId ?? '', fromId ?? '', toId ?? ''),
+    queryFn: ({ signal }) =>
+      api.versions.diff({ params: { fromId: fromId ?? '', toId: toId ?? '' } }, { signal }),
+    enabled: projectId !== undefined && fromId !== undefined && toId !== undefined,
+  })
+}
+
 /** The project in the URL (its `activeVersion` drives the topbar pill). Shares the shell's query. */
 export function useProjectForVersions(slug: string | undefined) {
   return useQuery({ ...projectBySlugOptions(slug ?? ''), enabled: slug !== undefined })
