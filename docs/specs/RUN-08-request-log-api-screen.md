@@ -38,7 +38,7 @@ Handler tests (filters, pagination, role matrix); Testing Library for table stat
 
 ## Implementation notes
 - Backend: `apps/api/src/modules/requests/{index,service}.ts`; keyset cursor on `(created_at, id)` like `deployments.list`. `method` is matched case-insensitively (upper-cased), `path` is an escaped `ILIKE` substring, `since` is inclusive (`>=`), `mockError=false` returns only rows with a null `mockError`.
-- Screen: `apps/web/src/features/logs/`. Filters (status class, method, path text with a 250 ms debounce, mock-server-only) are component state and form the Query key; they are not in the URL because the route file is frozen and declares no `validateSearch`.
+- Screen: `apps/web/src/features/logs/`. Filters (status class, method, path text with a 250 ms debounce, mock-server-only) live in the URL search (`validateSearch` in the logs route, schema in `features/logs/search.ts`; invalid values fall back to no filter) and form the Query key. Changes use `navigate({ search, replace: true })`; the path update to the URL keeps the 250 ms debounce. Added `zod` (already the stack validator) to `apps/web` for this.
 - Auto-refresh re-fetches the loaded pages (`refetchInterval` 3 s, only while `document.visibilityState` is visible); rows are keyed by id so the DOM and scroll position are kept.
 - Retention note is the generic "Older entries are pruned automatically." The open question (exposing `LOG_RETENTION_*` on `system.instance`) still needs a contract ruling.
 - The Playwright poll test is covered by a Vitest fake-timer test instead (Playwright config is a shared file).
