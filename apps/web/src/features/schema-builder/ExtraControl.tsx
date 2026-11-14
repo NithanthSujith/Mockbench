@@ -1,4 +1,5 @@
 import { TriangleAlert } from 'lucide-react'
+import { Select, SelectItem } from '../../components/ui'
 import { DraftInput } from './DraftInput'
 import type { BuilderNode } from './store'
 
@@ -26,13 +27,43 @@ export function ExtraControl({
   disabled,
   onValues,
   onCount,
+  componentNames,
+  onRefName,
 }: {
   node: BuilderNode
   disabled: boolean
   onValues: (values: string[]) => void
   onCount: (count: number) => void
+  /** The components a `ref` can point at. */
+  componentNames?: readonly string[]
+  onRefName?: (name: string) => void
 }) {
   const name = node.key ?? 'root'
+  if (node.type === 'ref') {
+    const current = typeof node.attrs.name === 'string' ? node.attrs.name : ''
+    const names = componentNames ?? []
+    const options = current !== '' && !names.includes(current) ? [...names, current] : names
+    if (options.length === 0) {
+      return <span className="text-small text-ink-3">No components yet</span>
+    }
+    return (
+      <Select
+        mono
+        value={current === '' ? undefined : current}
+        placeholder="Pick a component"
+        disabled={disabled}
+        aria-label={`Component for ${name}`}
+        onValueChange={(v) => onRefName?.(v)}
+        className="py-1.25 pl-2 text-small text-ink-2"
+      >
+        {options.map((n) => (
+          <SelectItem key={n} value={n}>
+            {names.includes(n) ? n : `${n} (missing)`}
+          </SelectItem>
+        ))}
+      </Select>
+    )
+  }
   if (node.type === 'enum') {
     const values = Array.isArray(node.attrs.values)
       ? (node.attrs.values as unknown[]).map(String)

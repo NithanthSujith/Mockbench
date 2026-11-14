@@ -19,6 +19,8 @@ export function SchemaEditor({
   readOnly = false,
   sessionKey,
   debounceMs,
+  components,
+  onSaveComponents,
 }: SchemaBuilderProps) {
   const store = useBuilderStore(value, sessionKey)
   const [tab, setTab] = useState<Tab>('builder')
@@ -52,6 +54,8 @@ export function SchemaEditor({
           readOnly={readOnly}
           sessionKey={sessionKey}
           debounceMs={debounceMs}
+          components={components}
+          onSaveComponents={onSaveComponents}
         />
       ) : (
         <JsonTab

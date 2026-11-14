@@ -176,6 +176,7 @@ function EditorBody({
           <SchemaEditorSlot
             key={`schema:${selected.id}`}
             caseId={selected.id}
+            projectId={projectId}
             value={selected.schema}
             readOnly={!canEdit}
             onChange={(schema) => {

@@ -1,5 +1,16 @@
-import { ChevronDown, ChevronRight, Plus, TriangleAlert, X } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  PackagePlus,
+  Plus,
+  SlidersHorizontal,
+  TriangleAlert,
+  X,
+} from 'lucide-react'
+import { useState } from 'react'
 import { IconButton, cn } from '../../components/ui'
+import type { RowIssues } from './attr-utils'
+import { AttributePanel, IssueBadges, PinControl } from './AttrControls'
 import { DraftInput } from './DraftInput'
 import { ExtraControl } from './ExtraControl'
 import type { BuilderNode, VisibleRow } from './store'
@@ -25,6 +36,10 @@ export function BuilderRow({
   onCount,
   onAdd,
   onRemove,
+  onAttr,
+  componentNames,
+  issues,
+  onSaveAsComponent,
 }: {
   row: VisibleRow
   node: BuilderNode
@@ -38,12 +53,27 @@ export function BuilderRow({
   onCount: (id: string, count: number) => void
   onAdd: (id: string) => void
   onRemove: (id: string) => void
+  /** Edit any attribute of this node (BLD-10). */
+  onAttr: (id: string, name: string, value: unknown) => void
+  /** The components a `ref` row can point at. */
+  componentNames?: readonly string[]
+  issues?: RowIssues
+  /** Offered on object rows when the caller can save components. */
+  onSaveAsComponent?: (id: string) => void
 }) {
   const label = row.key ?? '[ item ]'
+  const [panelOpen, setPanelOpen] = useState(false)
+  const extraKeys = [...Object.keys(node.extras), ...Object.keys(node.entryExtras ?? {})]
+  const description =
+    typeof node.attrs.description === 'string' && node.attrs.description !== ''
+      ? node.attrs.description
+      : undefined
+  const setAttr = (name: string, value: unknown) => onAttr(row.id, name, value)
   return (
     <div
       role="group"
       aria-label={label}
+      title={description}
       data-node-id={row.id}
       data-depth={row.depth}
       data-kind={row.kind}
@@ -118,15 +148,19 @@ export function BuilderRow({
             {flag}
           </span>
         ) : null}
+        <IssueBadges issues={issues} refName={node.attrs.name} />
       </div>
 
-      <div className="min-w-0 max-[860px]:col-span-full max-[860px]:row-start-2 max-[860px]:pl-6">
+      <div className="flex min-w-0 items-center gap-1.5 max-[860px]:col-span-full max-[860px]:row-start-2 max-[860px]:pl-6">
         <ExtraControl
           node={node}
           disabled={readOnly}
           onValues={(v) => onValues(row.id, v)}
           onCount={(c) => onCount(row.id, c)}
+          componentNames={componentNames}
+          onRefName={(n) => setAttr('name', n)}
         />
+        <PinControl node={node} disabled={readOnly} onAttr={setAttr} />
       </div>
 
       <div
@@ -135,6 +169,26 @@ export function BuilderRow({
           'max-[860px]:col-start-3 max-[860px]:row-start-1 max-[860px]:opacity-100',
         )}
       >
+        <IconButton
+          aria-label={`Attributes of ${label}`}
+          title="Attributes"
+          aria-expanded={panelOpen}
+          className={cn('size-6 border-transparent bg-transparent', panelOpen && 'text-signal')}
+          onClick={() => setPanelOpen((o) => !o)}
+        >
+          <SlidersHorizontal aria-hidden className="size-3.5" />
+        </IconButton>
+        {row.type === 'object' && onSaveAsComponent ? (
+          <IconButton
+            aria-label={`Save ${label} as component`}
+            title="Save as component"
+            className="size-6 border-transparent bg-transparent"
+            disabled={readOnly}
+            onClick={() => onSaveAsComponent(row.id)}
+          >
+            <PackagePlus aria-hidden className="size-3.5" />
+          </IconButton>
+        ) : null}
         {row.type === 'object' ? (
           <IconButton
             aria-label="Add field"
@@ -158,6 +212,17 @@ export function BuilderRow({
           </IconButton>
         ) : null}
       </div>
+
+      {extraKeys.length > 0 ? (
+        <div
+          data-testid="extra-attributes"
+          title="Kept as they are and saved with the schema; edit them in the JSON tab"
+          className="mono col-span-full pl-6 text-tiny text-ink-3"
+        >
+          extra attributes: {extraKeys.join(', ')}
+        </div>
+      ) : null}
+      {panelOpen ? <AttributePanel node={node} disabled={readOnly} onAttr={setAttr} /> : null}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import type { MockSchemaEnvelope, ResponseCase, Route } from '@mockbench/api-con
 import type { MockSchema } from '@mockbench/schema-core'
 import { Card, PanelHead } from '../../components/ui'
 import { ResponsePreview } from '../preview/ResponsePreview'
+import { useProjectComponents } from '../schema-builder/project-components'
 import { SchemaEditor } from '../schema-builder/SchemaEditor'
 import { TryItPanel } from '../preview/TryItPanel'
 
@@ -11,15 +12,18 @@ import { TryItPanel } from '../preview/TryItPanel'
 /** The Builder tree (BLD-07) and the JSON tab (BLD-09). */
 export function SchemaEditorSlot({
   caseId,
+  projectId,
   value,
   onChange,
   readOnly,
 }: {
   caseId: string
+  projectId: string
   value: MockSchemaEnvelope
   onChange: (value: MockSchemaEnvelope) => void
   readOnly?: boolean
 }) {
+  const { components, save } = useProjectComponents(projectId)
   return (
     <Card data-screen="schema-builder/SchemaEditorSlot" data-case-id={caseId}>
       <PanelHead>
@@ -30,6 +34,8 @@ export function SchemaEditorSlot({
         onChange={(schema) => onChange(schema as MockSchemaEnvelope)}
         readOnly={readOnly}
         sessionKey={caseId}
+        components={components}
+        onSaveComponents={save}
       />
     </Card>
   )
