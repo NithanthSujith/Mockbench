@@ -264,7 +264,9 @@ describe('refs and components', () => {
       target: { value: 'Place' },
     })
     await user.click(screen.getByRole('button', { name: 'Rename Address' }))
-    expect(await screen.findByRole('status')).toHaveTextContent(/Other cases that use "Address"/)
+    expect(await within(await screen.findByRole('dialog')).findByRole('status')).toHaveTextContent(
+      /Other cases that use "Address"/,
+    )
     expect(Object.keys(onSave.mock.calls[0]?.[0] as object)).toEqual(['Place'])
     await settle()
     expect(fieldNode(last(), 'home')).toEqual({ type: 'ref', name: 'Place' })
@@ -284,7 +286,9 @@ describe('refs and components', () => {
       target: { value: 'Place' },
     })
     await user.click(screen.getByRole('button', { name: 'Rename Address' }))
-    expect(await screen.findByRole('status')).toHaveTextContent(/was kept/)
+    expect(await within(await screen.findByRole('dialog')).findByRole('status')).toHaveTextContent(
+      /was kept/,
+    )
     expect(Object.keys(onSave.mock.calls[1]?.[0] as object)).toEqual(['Address', 'Place'])
   })
 

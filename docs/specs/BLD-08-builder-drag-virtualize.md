@@ -1,6 +1,6 @@
 # BLD-08 — Schema builder: drag-reorder and virtualisation
 
-Status: approved
+Status: in review
 Phase: 4   Team: Builder
 Depends on: BLD-07
 Size: M
@@ -19,14 +19,14 @@ Store operations (BLD-06 provides `moveNode`), new node controls, touch-gesture 
 Uses `moveNode` and `visibleRows` from BLD-06; extends `SchemaBuilder` internals only. Dependencies: `@dnd-kit/*`, `@tanstack/react-virtual` (pre-declared).
 
 ## Acceptance criteria
-- [ ] Dragging field `c` above `a` in `{a,b,c}` yields order `c,a,b` in the emitted schema; dragging a field into a sibling object appends it there and updates indentation.
-- [ ] Dropping a node onto its own descendant is visibly refused (indicator turns `bad`) and the schema is unchanged.
-- [ ] The `[ item ]` row of an array has no drag handle and cannot be moved or removed; a drag cannot detach an array's item node.
-- [ ] Keyboard: focused row + `Alt+ArrowDown` moves it down one sibling; `Alt+ArrowRight` nests it into the previous sibling if that is an object; each move is announced via an `aria-live` region ("moved city after pincode").
-- [ ] With a 2,000-node schema all expanded, the DOM contains at most 60 row elements and scrolling the full list keeps frame time under 16 ms p95 in a Playwright trace; typing in a key input has no visible lag (input-to-paint under 50 ms).
-- [ ] Below 200 visible rows virtualisation is not used (all rows in the DOM) — asserted by DOM count at 199 vs 201 rows.
-- [ ] Collapsing a node with 500 descendants removes them from the DOM in one frame; scroll position is retained.
-- [ ] Undo after a drag restores the previous order in one step.
+- [x] Dragging field `c` above `a` in `{a,b,c}` yields order `c,a,b` in the emitted schema; dragging a field into a sibling object appends it there and updates indentation.
+- [x] Dropping a node onto its own descendant is visibly refused (indicator turns `bad`) and the schema is unchanged.
+- [x] The `[ item ]` row of an array has no drag handle and cannot be moved or removed; a drag cannot detach an array's item node.
+- [x] Keyboard: focused row + `Alt+ArrowDown` moves it down one sibling; `Alt+ArrowRight` nests it into the previous sibling if that is an object; each move is announced via an `aria-live` region ("moved city after pincode").
+- [ ] With a 2,000-node schema all expanded, the DOM contains at most 60 row elements and scrolling the full list keeps frame time under 16 ms p95 in a Playwright trace; typing in a key input has no visible lag (input-to-paint under 50 ms). (DOM cap tested in Testing Library; the Playwright frame-time and input-latency trace is not yet written.)
+- [x] Below 200 visible rows virtualisation is not used (all rows in the DOM) — asserted by DOM count at 199 vs 201 rows.
+- [x] Collapsing a node with 500 descendants removes them from the DOM in one frame; scroll position is retained.
+- [x] Undo after a drag restores the previous order in one step.
 
 ## Tests
 Testing Library + dnd-kit test utilities for reorder/keyboard; Playwright perf test with a generated 2,000-node schema.
