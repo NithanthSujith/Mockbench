@@ -10,6 +10,7 @@ import express from 'express'
 import type { NextFunction, Request, Response, Router } from 'express'
 import type { Logger } from 'pino'
 import type { CompiledCase, CompiledRoute, CompiledVersion } from './compiled-version'
+import { createRateLimiter } from './rate-limit'
 import { requestLog as defaultRequestLog } from './request-log'
 import type { RequestLog } from './request-log'
 import { VersionLoadError } from './version-cache'
@@ -21,6 +22,10 @@ export interface DataPlaneDeps {
   cache: VersionCache
   /** RUN-07: the request-log writer (default: discards). */
   requestLog?: RequestLog
+  /** RUN-13: requests/minute/IP; unset or null = no limiter is created and none runs. */
+  rateLimit?: number | null
+  /** Clock for the limiter (tests). */
+  now?: () => number
   /** Delay implementation (tests inject a recorder). */
   sleep?: (ms: number) => Promise<void>
 }
@@ -97,12 +102,14 @@ function sendMockError(
   message: string,
   hint: string,
   extra: Record<string, unknown> = {},
+  headers: Record<string, string> = {},
 ): void {
   const ctx = ctxOf(res)
   ctx.mockError = error
   // Drop anything a half-built response set (e.g. a bad custom header), then start clean.
   for (const name of res.getHeaderNames()) res.removeHeader(name)
-  baseHeaders(res, ctx.cors)
+  baseHeaders(res, ctx.cors, Object.keys(headers))
+  for (const [name, value] of Object.entries(headers)) res.setHeader(name, value)
   const body = JSON.stringify({ error, message, hint, ...extra })
   res.statusCode = status
   res.setHeader('X-Mock-Error', 'true')
@@ -205,6 +212,8 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
   const log = deps.logger.child({ plane: 'data' })
   const requestLog = deps.requestLog ?? defaultRequestLog
   const sleep = deps.sleep ?? defaultSleep
+  const limiter =
+    deps.rateLimit != null ? createRateLimiter(deps.rateLimit, { now: deps.now }) : null
   const router = express.Router()
 
   router.use(async (req: Request, res: Response) => {
@@ -239,6 +248,26 @@ export function createDataPlaneRouter(deps: DataPlaneDeps): Router {
         log.warn({ err }, 'request log record failed')
       }
     })
+
+    // RUN-13: rate cap, before any cache access. OPTIONS is never counted. Only a warm slug is
+    // peeked (no load), so a limited request is recorded in request_logs only when its project is cached.
+    if (limiter && req.method !== 'OPTIONS') {
+      const d = limiter.hit(req.ip ?? 'unknown')
+      if (!d.allowed) {
+        ctx.projectId = deps.cache.projectIdFor(slug)
+        log.warn({ ip: req.ip, slug }, 'rate limited')
+        sendMockError(
+          res,
+          429,
+          'rate_limited',
+          'Too many requests from this address.',
+          `Retry in ${d.retryAfterSeconds} seconds.`,
+          { retryAfter: d.retryAfterSeconds },
+          { 'Retry-After': String(d.retryAfterSeconds) },
+        )
+        return
+      }
+    }
 
     // 2-3. Resolve the project and its live version. (A warm lookup is a Map read; the lookup is also
     // how OPTIONS learns `cors: "off"`. It never makes OPTIONS depend on the project existing.)
