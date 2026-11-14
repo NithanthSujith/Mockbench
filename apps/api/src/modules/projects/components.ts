@@ -12,7 +12,7 @@ import { HttpError } from '../../http/errors'
 type Components = Record<string, MockNode>
 
 /** The components themselves: each one validated as the root of a schema that sees the whole set. */
-function componentIssues(components: Components): ValidationIssue[] {
+export function componentIssues(components: Components): ValidationIssue[] {
   const issues: ValidationIssue[] = []
   const seen = new Set<string>()
   for (const [name, node] of Object.entries(components)) {

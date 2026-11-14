@@ -1,5 +1,5 @@
-// Module "projects" (PRJ-01): the Project resource of API-CONTRACT 3.4. Export/import are PRJ-06 and
-// stay unbound; presets live in the sibling "presets" module (PRJ-02).
+// Module "projects" (PRJ-01, PRJ-06): the Project resource of API-CONTRACT 3.4 and export/import (3.11);
+// presets live in the sibling "presets" module (PRJ-02).
 import { DEFAULT_PROJECT_SETTINGS, isReservedSlug } from '@mockbench/api-contract'
 import { and, eq } from 'drizzle-orm'
 import { loadProjectForUser, notFound, requireRole, requireWorkspaceRole } from '../../access'
@@ -7,6 +7,7 @@ import { projects, workspaceMembers } from '../../db/schema'
 import { HttpError } from '../../http/errors'
 import type { ApiContext, ModuleHandlers } from '../../http/types'
 import { assertComponentsAcceptable } from './components'
+import { buildExport, validateImport, writeImport } from './portability'
 import { findProjectById, findProjectBySlug, listProjects } from './queries'
 
 export const areas = ['projects'] as const
@@ -137,5 +138,57 @@ export const handlers: ModuleHandlers<'projects'> = {
     // Tell the data-plane cache (a no-op until the Runtime team registers its listener).
     await ctx.hooks.onProjectDeleted.emit(entity.id)
     return { status: 204 }
+  },
+
+  'projects.export': async (ctx, { params }) => {
+    const { entity } = await loadProjectForUser(ctx.db, callerId(ctx), params.projectId, 'viewer')
+    const doc = await buildExport(ctx.db, entity)
+    // Written here (pretty, trailing newline) so the file diffs well; the dispatcher skips a sent response.
+    ctx.res
+      .status(200)
+      .setHeader('Content-Disposition', `attachment; filename="${entity.slug}.mockbench.json"`)
+    ctx.res.type('application/json').send(`${JSON.stringify(doc, null, 2)}
+`)
+    return { status: 200, body: doc }
+  },
+
+  'projects.import': async (ctx, { body }) => {
+    await requireWorkspaceRole(ctx.db, callerId(ctx), body.workspaceId, 'editor')
+    const doc = body.document
+    const effective = {
+      slug: body.slug ?? doc.project.slug,
+      name: body.name ?? doc.project.name,
+    }
+    if (isReservedSlug(effective.slug)) {
+      throw new HttpError(
+        422,
+        'slug_reserved',
+        `"${effective.slug}" is reserved and cannot be used as a project slug.`,
+      )
+    }
+    const issues = validateImport(doc, effective)
+    if (issues.length > 0) {
+      throw new HttpError(
+        422,
+        'import_invalid',
+        `The file cannot be imported: ${issues.length} problem${issues.length === 1 ? '' : 's'} found.`,
+        issues,
+      )
+    }
+    const [taken] = await ctx.db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(eq(projects.slug, effective.slug))
+      .limit(1)
+    if (taken) throw slugTaken()
+
+    let id: string
+    try {
+      id = await ctx.db.transaction((tx) => writeImport(tx, body.workspaceId, doc, effective))
+    } catch (err) {
+      if (isUniqueViolation(err, SLUG_CONSTRAINT)) throw slugTaken()
+      throw err
+    }
+    return { status: 201, body: await respond(ctx, id) }
   },
 }
