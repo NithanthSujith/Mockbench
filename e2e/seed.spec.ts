@@ -1,16 +1,16 @@
 import { expect, OWNER, test } from './fixtures'
 import { AuthPage } from './pages/auth.page'
 
-// XC-01: run against a separate fresh stack with SEED_DEMO=true (E2E_STACK=seed). RUN-11 (the demo
-// seed) is not merged yet, so the first test is fixme until it is. The registrant test passes today.
+// XC-01: run against a separate fresh stack with SEED_DEMO=true (E2E_STACK=seed). The first test needs the RUN-11 demo seed; the second needs the first-registrant hand-off.
 test.describe.configure({ mode: 'serial' })
 
-test.fixme('GET /mock/demo/users answers before anyone has registered (RUN-11 demo seed is not built yet)', async ({
+test('GET /mock/demo/users answers before anyone has registered (RUN-11 demo seed)', async ({
   request,
 }) => {
   const res = await request.get('/mock/demo/users')
   expect(res.status()).toBe(200)
-  expect(res.headers()['x-mock-version']).toBeDefined()
+  expect(res.headers()['x-mock-version']).toBe('v1')
+  expect(await res.json()).toHaveLength(3)
 })
 
 test('the first registrant owns workspace default', async ({ page }) => {

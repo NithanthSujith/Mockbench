@@ -155,7 +155,7 @@ const MAX_ATTEMPTS = 8
 export async function publishVersion(
   db: Db,
   projectId: string,
-  userId: string,
+  userId: string | null,
   input: { label?: string; notes?: string },
 ): Promise<Version> {
   for (let attempt = 1; ; attempt++) {

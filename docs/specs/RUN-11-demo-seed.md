@@ -1,6 +1,6 @@
 # RUN-11 — Demo seed
 
-Status: approved
+Status: done
 Phase: 4   Team: Runtime
 Depends on: RUN-03, BLD-02, PRJ-01
 Size: S
@@ -20,13 +20,13 @@ Seeding real data, extra sample projects, a "reset demo" command.
 Env `SEED_DEMO`. Seeded content: project `demo`; `GET /users` (200 "List": array of 3 `user` objects), `GET /users/:id` (cases `Found` 200 default, `Not found` 404), `POST /users` (cases `Created` 201 default, `Validation failed` 422). Uses `buildVersionPayload`, the publish and deploy transactions, `hooks.onVersionDeployed`.
 
 ## Acceptance criteria
-- [ ] On an empty DB with `SEED_DEMO=true`, after start `GET /mock/demo/users` → `200` with `X-Mock-Version: v1` and a three-element list; `GET /mock/demo/users/1` → `200`; `-H 'X-Mock-Case: Not found'` → `404`.
-- [ ] Starting again (or with two api replicas starting together) creates nothing new: exactly one `demo` project, one `v1`, one deployment row.
-- [ ] With `SEED_DEMO=false` nothing is seeded.
-- [ ] After a user registers and later deletes the demo project, restarting does **not** re-seed (users/workspaces are no longer empty).
-- [ ] The first registrant becomes `owner` of workspace `default` and sees the `demo` project; a second registrant sees no workspace (D3).
-- [ ] Seeding failure (e.g. DB error mid-way) leaves no half-built project (single transaction) and does not stop the server from starting; it logs one error.
-- [ ] Seed content passes the same publish validation as user content (no special-casing).
+- [x] On an empty DB with `SEED_DEMO=true`, after start `GET /mock/demo/users` → `200` with `X-Mock-Version: v1` and a three-element list; `GET /mock/demo/users/1` → `200`; `-H 'X-Mock-Case: Not found'` → `404`.
+- [x] Starting again (or with two api replicas starting together) creates nothing new: exactly one `demo` project, one `v1`, one deployment row.
+- [x] With `SEED_DEMO=false` nothing is seeded.
+- [x] After a user registers and later deletes the demo project, restarting does **not** re-seed (users/workspaces are no longer empty).
+- [x] The first registrant becomes `owner` of workspace `default` and sees the `demo` project; a second registrant sees no workspace (D3).
+- [x] Seeding failure (e.g. DB error mid-way) leaves no half-built project (single transaction) and does not stop the server from starting; it logs one error.
+- [x] Seed content passes the same publish validation as user content (no special-casing).
 
 ## Tests
 Integration tests with a fresh DB: seed, double start, flag off, first-registration adoption, failure rollback.
