@@ -1,0 +1,246 @@
+{
+  "formatVersion": 1,
+  "project": {
+    "name": "Shop API",
+    "slug": "shop-api",
+    "description": "Products and orders: a ref component shared across routes.",
+    "settings": {
+      "indexing": "local",
+      "mode": "deterministic",
+      "cors": "*",
+      "defaultDelayMs": 0
+    },
+    "components": {
+      "Product": {
+        "type": "object",
+        "fields": [
+          {
+            "key": "id",
+            "node": {
+              "type": "uuid"
+            }
+          },
+          {
+            "key": "name",
+            "node": {
+              "type": "string"
+            }
+          },
+          {
+            "key": "sku",
+            "node": {
+              "type": "string"
+            }
+          },
+          {
+            "key": "price",
+            "node": {
+              "type": "number",
+              "min": 10,
+              "max": 500
+            }
+          },
+          {
+            "key": "category",
+            "node": {
+              "type": "enum",
+              "values": ["books", "games", "tools"]
+            }
+          },
+          {
+            "key": "inStock",
+            "node": {
+              "type": "boolean"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "presets": [
+    {
+      "name": "Shop defaults",
+      "isEnabled": true,
+      "priority": 10,
+      "rules": [
+        {
+          "match": {
+            "key": "sku"
+          },
+          "pattern": "SKU-{n:05}"
+        },
+        {
+          "match": {
+            "key": "currency"
+          },
+          "value": "EUR"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/products",
+      "description": "List products",
+      "cases": [
+        {
+          "name": "List",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "array",
+              "count": 3,
+              "items": {
+                "type": "ref",
+                "name": "Product"
+              }
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Empty",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "array",
+              "count": 0,
+              "items": {
+                "type": "ref",
+                "name": "Product"
+              }
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/products/:id",
+      "description": "Get one product",
+      "cases": [
+        {
+          "name": "Found",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "ref",
+              "name": "Product"
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Not found",
+          "statusCode": 404,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Product not found"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/orders",
+      "description": "Place an order",
+      "cases": [
+        {
+          "name": "Created",
+          "statusCode": 201,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "orderId",
+                  "node": {
+                    "type": "uuid"
+                  }
+                },
+                {
+                  "key": "status",
+                  "node": {
+                    "type": "string",
+                    "fixed": "confirmed"
+                  }
+                },
+                {
+                  "key": "currency",
+                  "node": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "key": "total",
+                  "node": {
+                    "type": "number",
+                    "min": 10,
+                    "max": 500
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Validation failed",
+          "statusCode": 422,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Validation failed"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        }
+      ]
+    }
+  ]
+}
