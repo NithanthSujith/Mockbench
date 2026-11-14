@@ -73,6 +73,11 @@ export class VersionCache {
     return this.entries.size
   }
 
+  /** Warm-only, synchronous: the project id for a cached slug, else null. Never loads or touches LRU order. */
+  projectIdFor(slug: string): string | null {
+    return this.slugIndex.get(slug) ?? null
+  }
+
   async get(slug: string): Promise<VersionLookup> {
     const projectId = this.slugIndex.get(slug)
     if (projectId !== undefined) {

@@ -89,7 +89,12 @@ export function createApp(deps: AppDeps): Express {
   // Data plane FIRST: nothing from the control plane may run for /mock/*.
   app.use(
     '/mock',
-    createDataPlaneRouter({ logger, cache: versionCache, requestLog: deps.requestLog }),
+    createDataPlaneRouter({
+      logger,
+      cache: versionCache,
+      requestLog: deps.requestLog,
+      rateLimit: config.mockRateLimit,
+    }),
   )
 
   app.use(
