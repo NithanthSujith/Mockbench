@@ -24,6 +24,7 @@ import { getMockBaseUrl } from '../../../lib/mock-url'
 import { qk } from '../../../lib/query-keys'
 import { Editor } from '../../../shell/columns'
 import { DeleteProjectDialog } from '../DeleteProjectDialog'
+import { ExportProjectButton } from '../ExportProjectButton'
 import { indexingExample } from '../indexing-example'
 import { useCurrentWorkspace } from '../queries'
 import {
@@ -106,6 +107,7 @@ function SettingsForm({
         <h3 className="m-0 text-body font-semibold">Project settings</h3>
         <span className="flex-1" />
         <span className="mono text-small text-ink-3">{project.slug}</span>
+        <ExportProjectButton projectId={project.id} slug={project.slug} />
       </PanelHead>
       <PanelBody>
         <form
