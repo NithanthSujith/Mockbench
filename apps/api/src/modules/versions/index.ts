@@ -1,9 +1,11 @@
-// Module "versions": owns the endpoint areas below. RUN-02 binds `versions.{list,publish,get,delete}`;
+// Module "versions": owns the endpoint areas below. RUN-02 binds `versions.{list,publish,get,delete,diff}`;
 // RUN-03 binds `deploy.create` and `deployments.list`; cache stays unbound. The TYPE only admits ids of these areas.
 import { loadProjectForUser, loadVersionForUser } from '../../access'
 import { authOf } from '../../http/auth'
 import type { ModuleHandlers } from '../../http/types'
 import { deployVersion, listDeployments } from './deploy'
+import { diffSnapshots } from './diff'
+import { HttpError } from '../../http/errors'
 import { deleteVersion, fetchVersion, listVersions, publishVersion } from './service'
 
 export const areas = ['versions', 'deploy', 'deployments', 'cache'] as const
@@ -32,6 +34,30 @@ export const handlers: ModuleHandlers<'versions' | 'deploy' | 'deployments' | 'c
     await loadVersionForUser(ctx.db, authOf(ctx).userId, params.versionId, 'editor')
     await deleteVersion(ctx.db, params.versionId)
     return { status: 204 }
+  },
+
+  'versions.diff': async (ctx, { params }) => {
+    const { userId } = authOf(ctx)
+    const a = await loadVersionForUser(ctx.db, userId, params.fromId, 'viewer')
+    const b = await loadVersionForUser(ctx.db, userId, params.toId, 'viewer')
+    if (a.projectId !== b.projectId) {
+      throw new HttpError(
+        422,
+        'versions_different_projects',
+        'Versions of different projects cannot be compared.',
+      )
+    }
+    const from = await fetchVersion(ctx.db, params.fromId)
+    const to = params.toId === params.fromId ? from : await fetchVersion(ctx.db, params.toId)
+    return {
+      status: 200,
+      body: diffSnapshots(
+        from.snapshot,
+        to.snapshot,
+        { id: from.id, label: from.label },
+        { id: to.id, label: to.label },
+      ),
+    }
   },
 
   'deploy.create': async (ctx, { params, body }) => {

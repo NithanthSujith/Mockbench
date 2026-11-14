@@ -249,6 +249,34 @@ describe('versions.delete', () => {
   })
 })
 
+describe('versions.diff', () => {
+  it('compares two versions; viewers may; other projects 422; unseen 404', async () => {
+    const w = await world()
+    const v1 = await publish(w)
+    await t.f.createRoute({ projectId: w.project.id, path: '/extra' })
+    const v2 = await publish(w)
+    const res = await t.as(w.viewer).get(`/api/v1/versions/${v1.body.id}/diff/${v2.body.id}`)
+    expect(res.status).toBe(200)
+    t.assertContract('versions.diff', res)
+    expect(res.body.from).toEqual({ id: v1.body.id, label: v1.body.label })
+    expect(res.body.routes.added).toEqual([{ method: 'GET', path: '/extra' }])
+
+    const same = await t.as(w.viewer).get(`/api/v1/versions/${v1.body.id}/diff/${v1.body.id}`)
+    expect(same.status).toBe(200)
+    expect(same.body.routes).toEqual({ added: [], removed: [], changed: [] })
+
+    const second = await t.f.createProject({ workspaceId: w.ws.id })
+    await t.f.createRoute({ projectId: second.id, path: '/s' })
+    const o = await publish({ editor: w.editor, project: second })
+    const cross = await t.as(w.editor).get(`/api/v1/versions/${v1.body.id}/diff/${o.body.id}`)
+    expect(cross.status).toBe(422)
+    expect(cross.body.error).toBe('versions_different_projects')
+
+    const hidden = await t.as(w.outsider).get(`/api/v1/versions/${v1.body.id}/diff/${v2.body.id}`)
+    expect(hidden.status).toBe(404)
+  })
+})
+
 describe('immutability', () => {
   it('a raw-SQL UPDATE on a version row fails (trigger)', async () => {
     const w = await world()
