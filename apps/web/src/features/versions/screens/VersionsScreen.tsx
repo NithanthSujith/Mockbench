@@ -25,6 +25,7 @@ import { api } from '../../../lib/api/client'
 import { isApiError } from '../../../lib/api/errors'
 import { Editor } from '../../../shell/columns'
 import { useCurrentWorkspace } from '../../projects/queries'
+import { ComparePanel } from '../ComparePanel'
 import { useDeployments, useProjectForVersions, useRefreshVersions, useVersions } from '../queries'
 
 const EMPTY_TEXT =
@@ -173,6 +174,7 @@ export function VersionsScreen() {
   const refresh = useRefreshVersions()
   const [deploying, setDeploying] = useState<VersionSummary | null>(null)
   const [deleting, setDeleting] = useState<VersionSummary | null>(null)
+  const [comparing, setComparing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
 
@@ -225,6 +227,11 @@ export function VersionsScreen() {
       <Card>
         <PanelHead>
           <h3 className="m-0">Versions</h3>
+          {versions.length > 0 ? (
+            <Button variant="ghost" size="sm" onClick={() => setComparing((c) => !c)}>
+              {comparing ? 'Close compare' : 'Compare'}
+            </Button>
+          ) : null}
         </PanelHead>
         {versionsQuery.isPending ? (
           <PanelBody>
@@ -249,6 +256,10 @@ export function VersionsScreen() {
           </PanelBody>
         ) : null}
       </Card>
+
+      {comparing && versions.length > 0 ? (
+        <ComparePanel projectId={projectId} versions={versions} />
+      ) : null}
 
       <DeploymentsPanel projectId={projectId} />
 

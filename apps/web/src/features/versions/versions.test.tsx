@@ -1,10 +1,12 @@
 import {
   exampleAuthState,
   exampleDeployment,
+  exampleDiff,
   exampleProject,
   exampleVersion,
   exampleVersionSummary,
   type Project,
+  type VersionDiff,
   type VersionSummary,
 } from '@mockbench/api-contract'
 import { createMemoryHistory } from '@tanstack/react-router'
@@ -34,6 +36,7 @@ let publishError: { status: number; error: string; details?: unknown[] } | null 
 let deployFails = false
 let deleteError: string | null = null
 let calls: string[] = []
+let diffOverride: Partial<VersionDiff> = {}
 
 function project(): Project {
   return {
@@ -85,6 +88,15 @@ const server = setupServer(
     active = { id: v.id, label: v.label }
     return HttpResponse.json({ ...exampleDeployment, versionId, versionLabel: v.label })
   }),
+  http.get('/api/v1/versions/:fromId/diff/:toId', ({ params }) => {
+    calls.push(`diff ${String(params.fromId).slice(-1)}>${String(params.toId).slice(-1)}`)
+    return HttpResponse.json({
+      ...exampleDiff,
+      from: { id: String(params.fromId), label: 'from' },
+      to: { id: String(params.toId), label: 'to' },
+      ...diffOverride,
+    })
+  }),
   http.delete('/api/v1/versions/:versionId', ({ params }) => {
     calls.push('delete')
     if (deleteError) {
@@ -116,6 +128,7 @@ beforeEach(() => {
   deployFails = false
   deleteError = null
   calls = []
+  diffOverride = {}
 })
 
 function mount(path = '/p/billing-api/versions') {
@@ -257,5 +270,56 @@ describe('publish dialog', () => {
     mount()
     await screen.findByText('not published')
     expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
+  })
+})
+
+describe('compare', () => {
+  const EMPTY: Partial<VersionDiff> = {
+    routes: { added: [], removed: [], changed: [] },
+  }
+
+  async function openCompare() {
+    versions = [ver(1), ver(2, true)]
+    active = { id: versions[1]!.id, label: 'v2' }
+    mount()
+    await userEvent.click(await screen.findByRole('button', { name: 'Compare' }))
+  }
+
+  it('compares the previous version with the newest and groups changes by token colour', async () => {
+    await openCompare()
+    expect(await screen.findByText('/invoices')).toBeVisible()
+    expect(calls).toContain('diff 1>2')
+    expect(screen.getAllByLabelText('Added')[0]).toHaveClass('text-good')
+    expect(screen.getByText('/invoices/:id').closest('summary')).toBeTruthy()
+    expect(screen.getAllByLabelText('Changed')[0]).toHaveClass('text-warn')
+    expect(screen.getByText('Renames show as remove + add')).toBeVisible()
+  })
+
+  it('expands a changed case to its schema changes', async () => {
+    await openCompare()
+    await userEvent.click(await screen.findByText('/invoices/:id'))
+    await userEvent.click(await screen.findByText('Found'))
+    expect(await screen.findByText('$.currency')).toBeVisible()
+  })
+
+  it('shows removed routes as bad', async () => {
+    diffOverride = {
+      ...EMPTY,
+      routes: { added: [], removed: [{ method: 'GET', path: '/gone' }], changed: [] },
+    }
+    await openCompare()
+    expect(await screen.findByText('/gone')).toBeVisible()
+    expect(screen.getByLabelText('Removed')).toHaveClass('text-bad')
+  })
+
+  it('says No differences for an empty diff', async () => {
+    diffOverride = {
+      ...EMPTY,
+      settings: [],
+      components: { added: [], removed: [], changed: [] },
+      presets: { added: [], removed: [], changed: [] },
+    }
+    await openCompare()
+    expect(await screen.findByText('No differences')).toBeVisible()
   })
 })
