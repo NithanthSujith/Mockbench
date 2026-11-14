@@ -487,7 +487,7 @@ Everything under `/api/v1`, JSON in and out, session cookie for auth, and an Ope
 - Errors: `{ "error": "<machine_code>", "message": "<human>", "details": [ ] }`, with `details` carrying the Zod issue list on a `422`.
 - Lists are cursor-paginated on `created_at` plus id, returning `{ "items": [], "nextCursor": null }`. Offset pagination on the request log breaks as rows are pruned under it.
 - `PATCH` is a partial update; absent keys are untouched, explicit `null` clears.
-- Rate limit the control plane at 100 requests per minute per session, and `/auth/login` at 10 per minute per IP. The data plane is deliberately unlimited — it is a load target by design — with one env knob to cap it if someone exposes an instance publicly.
+- Rate limit the control plane at 600 requests per minute per session, and `/auth/login` at 10 per minute per IP. The data plane is deliberately unlimited — it is a load target by design — with one env knob to cap it if someone exposes an instance publicly.
 
 ### The project export file
 

@@ -94,7 +94,7 @@ Every list endpoint returns `{ "items": T[], "nextCursor": string | null }`.
 | Cleared by | `auth.logout` (`Max-Age=0`), `auth.changePassword` (other sessions revoked, current one kept) |
 | Invalid / expired / revoked | `401 unauthenticated`, and the response clears the cookie |
 
-Rate limits: control plane **100 requests/minute per session** (unauthenticated requests are keyed by client IP); `auth.login` and `auth.register` **10/minute per client IP**. Client IP comes from `X-Forwarded-For` set by the web container's nginx (`TRUST_PROXY=1`).
+Rate limits: control plane **600 requests/minute per session** (`CONTROL_RATE_LIMIT`; raised from 100 because one SPA session exceeded it) (unauthenticated requests are keyed by client IP); `auth.login` and `auth.register` **10/minute per client IP**. Client IP comes from `X-Forwarded-For` set by the web container's nginx (`TRUST_PROXY=1`).
 
 ### 1.7 Shared field rules
 
