@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "productId": "product-1",
+      "quantity": 2
+    }
+  ],
+  "shippingAddress": {
+    "city": "Berlin",
+    "postalCode": "10115"
+  }
+}

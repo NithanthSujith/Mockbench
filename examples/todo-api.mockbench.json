@@ -1,0 +1,201 @@
+{
+  "formatVersion": 1,
+  "project": {
+    "name": "Todo API",
+    "slug": "todo-api",
+    "description": "A small CRUD API, including a 204 delete.",
+    "settings": {
+      "indexing": "path",
+      "mode": "deterministic",
+      "cors": "*",
+      "defaultDelayMs": 0
+    },
+    "components": {}
+  },
+  "presets": [],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/todos",
+      "description": "List todos",
+      "cases": [
+        {
+          "name": "List",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "array",
+              "count": 4,
+              "items": {
+                "type": "object",
+                "fields": [
+                  {
+                    "key": "id",
+                    "node": {
+                      "type": "integer"
+                    }
+                  },
+                  {
+                    "key": "title",
+                    "node": {
+                      "type": "string"
+                    }
+                  },
+                  {
+                    "key": "done",
+                    "node": {
+                      "type": "boolean"
+                    }
+                  },
+                  {
+                    "key": "tags",
+                    "node": {
+                      "type": "array",
+                      "count": 2,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/todos",
+      "description": "Create a todo",
+      "cases": [
+        {
+          "name": "Created",
+          "statusCode": 201,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "id",
+                  "node": {
+                    "type": "integer"
+                  }
+                },
+                {
+                  "key": "title",
+                  "node": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "key": "done",
+                  "node": {
+                    "type": "boolean",
+                    "fixed": false
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        }
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/todos/:id",
+      "description": "Update a todo",
+      "cases": [
+        {
+          "name": "Updated",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "id",
+                  "node": {
+                    "type": "integer"
+                  }
+                },
+                {
+                  "key": "title",
+                  "node": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "key": "done",
+                  "node": {
+                    "type": "boolean",
+                    "fixed": true
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Not found",
+          "statusCode": 404,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Todo not found"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        }
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/todos/:id",
+      "description": "Delete a todo",
+      "cases": [
+        {
+          "name": "Deleted",
+          "statusCode": 204,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "null"
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "formatVersion": 1,
+  "project": {
+    "name": "Flaky Payments",
+    "slug": "flaky-payments",
+    "description": "Error cases, a custom header and a delay, for testing client retry code.",
+    "settings": {
+      "indexing": "local",
+      "mode": "deterministic",
+      "cors": "*",
+      "defaultDelayMs": 0
+    },
+    "components": {}
+  },
+  "presets": [],
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/charges",
+      "description": "Create a charge",
+      "cases": [
+        {
+          "name": "Succeeded",
+          "statusCode": 201,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "id",
+                  "node": {
+                    "type": "uuid"
+                  }
+                },
+                {
+                  "key": "amount",
+                  "node": {
+                    "type": "integer",
+                    "min": 500,
+                    "max": 500
+                  }
+                },
+                {
+                  "key": "status",
+                  "node": {
+                    "type": "string",
+                    "fixed": "succeeded"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Card declined",
+          "statusCode": 422,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "card_declined"
+                  }
+                },
+                {
+                  "key": "message",
+                  "node": {
+                    "type": "string",
+                    "fixed": "The card was declined."
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        },
+        {
+          "name": "Rate limited",
+          "statusCode": 429,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Too many requests"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {
+            "Retry-After": "2"
+          },
+          "delayMs": null,
+          "isDefault": false
+        },
+        {
+          "name": "Gateway down",
+          "statusCode": 503,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Payment gateway unavailable"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        },
+        {
+          "name": "Slow success",
+          "statusCode": 201,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "id",
+                  "node": {
+                    "type": "uuid"
+                  }
+                },
+                {
+                  "key": "status",
+                  "node": {
+                    "type": "string",
+                    "fixed": "succeeded"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": 1500,
+          "isDefault": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/charges/:id",
+      "description": "Fetch a charge",
+      "cases": [
+        {
+          "name": "Found",
+          "statusCode": 200,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "id",
+                  "node": {
+                    "type": "uuid"
+                  }
+                },
+                {
+                  "key": "status",
+                  "node": {
+                    "type": "enum",
+                    "values": ["pending", "succeeded", "failed"]
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": true
+        },
+        {
+          "name": "Not found",
+          "statusCode": 404,
+          "schema": {
+            "version": 1,
+            "components": {},
+            "root": {
+              "type": "object",
+              "fields": [
+                {
+                  "key": "error",
+                  "node": {
+                    "type": "string",
+                    "fixed": "Charge not found"
+                  }
+                }
+              ]
+            }
+          },
+          "headers": {},
+          "delayMs": null,
+          "isDefault": false
+        }
+      ]
+    }
+  ]
+}

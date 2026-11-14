@@ -100,6 +100,21 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,scope=${{ matrix.image }},mode=max
 
+  readme-smoke:
+    # REL-01: the README's quickstart works as written and its printed responses are the real ones.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Quickstart, README curls, example import
+        run: bash scripts/readme-smoke.sh
+      - name: Print logs on failure
+        if: failure()
+        run: docker compose -p mockbench-readme --env-file .env.example logs --no-color --tail 200
+      - name: Tear down
+        if: always()
+        run: bash scripts/readme-smoke.sh down
+
   ownership:
     # Teams may only change files they own (docs/TEAMS.md 2.1). Applies to branches team/<team>/<SPEC-ID>.
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'team/')
