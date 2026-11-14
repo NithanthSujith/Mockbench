@@ -17,6 +17,7 @@ import {
   cn,
 } from '../../../components/ui'
 import { getMockBaseUrl } from '../../../lib/mock-url'
+import { ImportProjectDialog } from '../ImportProjectDialog'
 import { NewProjectDialog } from '../NewProjectDialog'
 import { useCurrentWorkspace, useWorkspaceProjects } from '../queries'
 
@@ -34,6 +35,7 @@ export function ProjectListScreen() {
   const { workspace, loading, canCreate } = useCurrentWorkspace()
   const projects = useWorkspaceProjects(workspace?.id)
   const [creating, setCreating] = useState(false)
+  const [importing, setImporting] = useState(false)
 
   if (loading || (workspace && !projects.data && !projects.isError)) {
     return (
@@ -79,6 +81,11 @@ export function ProjectListScreen() {
   const newButton = canCreate ? (
     <Button onClick={() => setCreating(true)}>New project</Button>
   ) : null
+  const importButton = canCreate ? (
+    <Button variant="ghost" size="sm" onClick={() => setImporting(true)}>
+      Import project
+    </Button>
+  ) : null
 
   return (
     <Body>
@@ -92,6 +99,7 @@ export function ProjectListScreen() {
             </span>
           ) : null}
           <span className="flex-1" />
+          {importButton}
           {items.length > 0 && newButton ? (
             <Button variant="ghost" size="sm" onClick={() => setCreating(true)}>
               + New project
@@ -183,7 +191,14 @@ export function ProjectListScreen() {
         </p>
       </Card>
       {canCreate ? (
-        <NewProjectDialog workspaceId={workspace.id} open={creating} onOpenChange={setCreating} />
+        <>
+          <NewProjectDialog workspaceId={workspace.id} open={creating} onOpenChange={setCreating} />
+          <ImportProjectDialog
+            workspaceId={workspace.id}
+            open={importing}
+            onOpenChange={setImporting}
+          />
+        </>
       ) : null}
     </Body>
   )
