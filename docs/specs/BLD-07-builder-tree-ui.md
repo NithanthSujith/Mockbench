@@ -1,6 +1,6 @@
 # BLD-07 — Schema builder tree UI
 
-Status: in review
+Status: done
 Phase: 3   Team: Builder
 Depends on: BLD-06, BLD-05
 Size: M

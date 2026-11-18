@@ -1,6 +1,6 @@
 # BLD-08 — Schema builder: drag-reorder and virtualisation
 
-Status: in review
+Status: done
 Phase: 4   Team: Builder
 Depends on: BLD-07
 Size: M

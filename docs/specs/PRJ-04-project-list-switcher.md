@@ -1,6 +1,6 @@
 # PRJ-04 — Project list, new-project dialog, project switcher
 
-Status: in progress
+Status: done
 Phase: 3   Team: Projects
 Depends on: PRJ-01, AUTH-03
 Size: M

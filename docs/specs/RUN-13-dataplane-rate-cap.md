@@ -1,6 +1,6 @@
 # RUN-13 — Data-plane rate cap
 
-Status: review
+Status: done
 Phase: 4   Team: Runtime
 Depends on: RUN-05
 Size: S
