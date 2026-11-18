@@ -2,6 +2,7 @@
 //   dist/server.js   the api
 //   dist/migrate.js  the migration entry the container runs before the server
 //   dist/migrations  the SQL migrations next to migrate.js
+//   dist/reset-password.js  operator password reset (AUTH-04)
 // @mockbench/* workspace packages (TypeScript source) are INLINED; every other npm dependency stays
 // external and is loaded from node_modules at runtime (the image copies production node_modules).
 import { cpSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
@@ -22,7 +23,11 @@ export async function buildApi({ outdir = resolve(root, 'dist') } = {}) {
   mkdirSync(outdir, { recursive: true })
   await build({
     absWorkingDir: root,
-    entryPoints: { server: 'src/server.ts', migrate: 'src/bin/migrate.ts' },
+    entryPoints: {
+      server: 'src/server.ts',
+      migrate: 'src/bin/migrate.ts',
+      'reset-password': 'src/bin/reset-password.ts',
+    },
     outdir,
     bundle: true,
     platform: 'node',
