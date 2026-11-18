@@ -133,10 +133,15 @@ The honest differentiator is the combination: team-shared, versioned and publish
 ## Developing
 
 ```sh
-docker compose -f docker-compose.dev.yml up -d   # Postgres on 127.0.0.1 only, for apps run on the host
 pnpm install
-pnpm --filter @mockbench/web dev:mock             # the UI with fake data, no backend (open it on localhost)
+cp .env.example .env
+echo 'DATABASE_URL=postgres://mock:mock@127.0.0.1:5432/mockserver' >> .env
+docker compose -f docker-compose.dev.yml up -d --wait   # Postgres on 127.0.0.1 only
+pnpm db:migrate
+pnpm dev                                                 # API on :3000, UI on :5173 (proxies /api and /mock)
 ```
+
+Setup, checks, specs, commit and changeset rules are in [CONTRIBUTING.md](CONTRIBUTING.md). `pnpm --filter @mockbench/web dev:mock` serves the UI with fake data and no backend.
 
 The standing rules for contributors and AI agents are in `CLAUDE.md`; the design is in `docs/DESIGN.md`. The checks CI runs are `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test` and `pnpm build`.
 

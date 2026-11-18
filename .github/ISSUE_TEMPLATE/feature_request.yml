@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose a change in what Mockbench does.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Mockbench is self-hosted and LAN-only. Requests for hosted features, telemetry or outbound network calls will be declined.
+        Larger features become a spec in docs/specs before anyone writes code (see CONTRIBUTING.md).
+  - type: input
+    id: version
+    attributes:
+      label: Mockbench version you are using
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what stops you today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: What should happen instead? Steps, screens or example requests and responses help.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+    validations:
+      required: false

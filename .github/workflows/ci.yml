@@ -115,6 +115,24 @@ jobs:
         if: always()
         run: bash scripts/readme-smoke.sh down
 
+  contributing-smoke:
+    # REL-03: CONTRIBUTING.md's setup block, run as written on a clean checkout, yields a working
+    # `pnpm dev` (API through the Vite proxy, UI served, demo mock answering).
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Documented setup, then pnpm dev
+        run: bash scripts/contributing-smoke.sh
+      - name: Tear down
+        if: always()
+        run: bash scripts/contributing-smoke.sh down
+
   ownership:
     # Teams may only change files they own (docs/TEAMS.md 2.1). Applies to branches team/<team>/<SPEC-ID>.
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'team/')

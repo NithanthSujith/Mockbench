@@ -1,0 +1,49 @@
+name: pr-checks
+
+# REL-03 / ADR 0020: checks on the PR itself, re-run when its title or labels change.
+#   title      the PR title is the squash commit on main, so it must be a conventional commit
+#   changeset  a PR that changes what ships adds a changeset or carries the `no-changeset` label
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Conventional PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node scripts/check-pr-title.mjs "$PR_TITLE"
+
+  changeset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Changeset present for shipped changes
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          git diff --name-only --diff-filter=ACMRD "origin/$BASE_REF...$HEAD_SHA" > changed.txt
+          node scripts/check-changeset.mjs --from changed.txt
