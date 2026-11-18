@@ -41,7 +41,7 @@ Any real handler. The data-plane behaviour (it is a `501`-with-`X-Mock-Error` st
 | `MOCK_RATE_LIMIT` | unset | data plane; unset = unlimited |
 | `LOG_RETENTION_DAYS` / `LOG_RETENTION_ROWS` | `7` / `1000` | |
 | `MOCK_CACHE_MAX_MB` | `256` | byte bound for the version cache |
-| `CACHE_FANOUT` | `true` | Postgres `LISTEN`/`NOTIFY` cache fan-out (RUN-12; ignored until it merges) |
+| ~~`CACHE_FANOUT`~~ | — | Removed: RUN-12 dropped (ADR 0020) |
 
 - Mount order: data-plane router **first**, mounted at `/mock`, before any body parser, cookie parser, session, CSRF or JSON error handler.
 

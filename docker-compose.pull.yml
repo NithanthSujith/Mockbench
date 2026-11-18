@@ -37,7 +37,6 @@ services:
       LOG_RETENTION_ROWS: ${LOG_RETENTION_ROWS:-1000}
       MOCK_RATE_LIMIT: ${MOCK_RATE_LIMIT:-}
       MOCK_CACHE_MAX_MB: ${MOCK_CACHE_MAX_MB:-256}
-      CACHE_FANOUT: ${CACHE_FANOUT:-true}
     depends_on:
       db:
         condition: service_healthy

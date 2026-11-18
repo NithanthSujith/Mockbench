@@ -21,6 +21,11 @@ New decisions arise under `docs/WORKFLOW.md` rule 5: stop, ask, record here, ame
 | 0013 | PostgreSQL, not SQLite | accepted |
 | 0014 | Path-prefixed mock URLs (`/mock/<slug>`) | accepted |
 | 0015 | Contract-first: Zod endpoint registry | proposed (this planning session) |
+| 0016 | Zod 4 | accepted |
+| 0017 | Phase 2 rulings | accepted |
+| 0018 | Data-plane load failures, preflight and read-only builder | accepted |
+| 0019 | Control-plane rate limit raised to 600 per minute | accepted |
+| 0020 | Release rulings: changesets, commit lint, RUN-12 dropped, password reset | accepted |
 
 Template:
 
