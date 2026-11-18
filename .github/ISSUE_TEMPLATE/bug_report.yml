@@ -1,0 +1,59 @@
+name: Bug report
+description: Something in Mockbench does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Security problems go through private vulnerability reporting (Security tab), not here.
+        Mockbench is LAN-only and its mock endpoints are unauthenticated by design.
+  - type: input
+    id: version
+    attributes:
+      label: Mockbench version
+      description: The release tag (MOCKBENCH_VERSION) or the commit you built from.
+      placeholder: v0.1.0 or a1b2c3d
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How do you run it?
+      options:
+        - docker compose with published images (docker-compose.pull.yml)
+        - docker compose built from source (docker-compose.yml)
+        - pnpm dev on the host
+        - Other (describe below)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps from a fresh start. Include the route, schema or curl command if relevant.
+      placeholder: |
+        1. Create a route GET /users
+        2. Publish and deploy
+        3. curl -i http://<host>:8080/mock/<slug>/users
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead. Paste error messages, response bodies or api log lines (JSON from stdout).
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS and architecture, Docker version, browser if it is a UI bug.
+    validations:
+      required: false

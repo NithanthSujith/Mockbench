@@ -1,0 +1,13 @@
+{
+  "baseBranch": "main",
+  "access": "restricted",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    ["@mockbench/api", "@mockbench/web", "@mockbench/schema-core", "@mockbench/api-contract"]
+  ],
+  "linked": [],
+  "ignore": ["@mockbench/tsconfig"],
+  "privatePackages": { "version": true, "tag": false },
+  "updateInternalDependencies": "patch"
+}

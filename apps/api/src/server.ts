@@ -134,8 +134,9 @@ function isEntry(): boolean {
   }
 }
 
-if (isEntry()) {
-  start(process.env)
+/** Starts the server with signal handling and exits the process on fatal errors (the entry and `dev.ts`). */
+export function run(env: Record<string, string | undefined>): void {
+  start(env)
     .then(({ shutdown, logger }) => {
       const stop = (signal: string) => {
         logger.info({ signal }, 'signal received')
@@ -156,3 +157,5 @@ if (isEntry()) {
       process.exit(1)
     })
 }
+
+if (isEntry()) run(process.env)
