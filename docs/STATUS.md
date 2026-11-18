@@ -1,6 +1,6 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; REL-02 and REL-03 next). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-19 (after #54-#58; every planned unit is merged; REL-02 awaits its first tag). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
@@ -14,10 +14,17 @@ Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; RE
 
 **Merged on 2026-11-14 (owner named them):** #41-#44 (RUN-11 demo seed, BLD-05 case bar fix, log filters in the URL with `zod` in `apps/web`, BLD-12 Try-it panel), then #45 control-plane rate limit 600/min (ADR 0019), #46 RUN-13 data-plane rate cap (`MOCK_RATE_LIMIT`, wired in `app.ts`), #49 RUN-10 version diff, #47 PRJ-03 presets screen and #48 BLD-10 advanced attributes and components. #41, #44 and #46 merged with a failing `ownership` check, expected because they edit main-session files. Flaky tests that needed a re-run: `bin/migrate` timing (#43) and FND-09 lock-kill (#49). Imported presets are created disabled (follow-up PR to #47). Then #51 REL-01 README/docs/examples, #52 PRJ-06 export and import, #53 BLD-08 drag reorder and virtualized rows.
 
+**Merged on 2026-11-18 (owner named them):**
+- #54: spec status sync.
+- #55: ADR 0020 release rulings, which drops RUN-12 and `CACHE_FANOUT` and adds the AUTH-04 spec.
+- #56: REL-03 contribution scaffolding. It adds Changesets, the `pr-checks.yml` title and changeset checks, CodeQL and `contributing-smoke`. It also fixes `pnpm dev`, which had never started the API: `server.ts` now exports `run(env)`.
+- #57: the REL-02 release workflow `docker.yml`. The web image now runs as non-root (`nginx-unprivileged`). The owner merged it in the web UI, because `gh` lacks the `workflow` scope.
+- #58: AUTH-04 `dist/reset-password.js`. It went in on branch `main-session/AUTH-04`, because the spec puts most of its files with the main session.
+
 ## Do these next, in order
 
-1. (Done 2026-11-14) PRs #41-#53 merged. Spec `Status:` lines brought in line with `main` on 2026-11-18.
-2. Remaining units: **REL-03** contribution scaffolding and **REL-02** release images (GHCR). **RUN-12** pg-notify fanout waits on an owner decision (recommended: drop for a single-instance deploy). See `docs/PLAN.md`.
+1. **REL-02 dry run:** push `v0.1.0-rc.1`, but only with the owner's explicit go-ahead, because it publishes to GHCR and creates a GitHub prerelease. Then tick REL-02's criteria; they all need a tag. GHCR packages may start private; the owner sets them public once. The criterion allowing only `contents: read` drifts: the release job needs `contents: write`, as recorded in the spec.
+2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion.
 3. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
 4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
 5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
@@ -26,10 +33,16 @@ Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; RE
 ## Decisions pending (owner)
 
 - **Rate limit:** resolved 2026-11-14: control-plane default raised from 100 to 600 requests a minute per session (ADR 0019). Sign-in stays 10 a minute per IP.
-- **REL-01 CLI password reset:** the criterion has no implementing unit; add a small unit or drop it.
+- **REL-02 tag:** approval to push `v0.1.0-rc.1`.
 - **RUN-11 "three routes":** merged as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`; the owner has not explicitly confirmed this reading.
 
 ## Decisions made
+
+- **ADR 0020 (2026-11-18):**
+  - Changesets cover anything shipped: api, web, schema-core and api-contract in one fixed group. Tests, docs and fixtures are exempt, and so is any PR with the `no-changeset` label.
+  - The commit-lint check runs on the PR title only.
+  - RUN-12 is dropped, because v1 is single-instance.
+  - The CLI password reset became AUTH-04.
 
 - **PRJ-03, BLD-10 and RUN-13 conventions (2026-11-14, accepted by merge):** imported presets are created disabled; preset rule values are read as JSON if they parse, otherwise as a plain string (no ADR yet); "Save as component" is copy-only and a component rename the server refuses keeps the old name too; RUN-13 logs a rate-limited request in `request_logs` only when the project is already warm in the cache.
 - **ADR 0017 (2026-11-11):** last-owner race loser may get 409, 403 or 404; Argon2 stays m=19456 KiB, t=2, p=1 and the login limiter stays keyed on IP; a default `v<seq>` label that collides is a 409 `label_taken`; total baked size cap is 64 MiB (not built). Create-workspace dialog lives in `features/workspaces`. Data plane lowercases the slug before the cache lookup.
@@ -53,13 +66,14 @@ Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; RE
 ## How to resume (environment gotchas)
 
 - **Docker Desktop stops across sessions.** Start `C:\Program Files\Docker\Docker\Docker Desktop.exe`, then `docker start mockbench-test-pg` (postgres:16-alpine, user/password `mock`, host port 55432, `TEST_DATABASE_URL` defaults to `postgres://mock:mock@127.0.0.1:55432/postgres`). Without it about 150 API tests fail with a clear message.
-- **GitHub CLI:** `gh` is at `C:\Program Files\GitHub CLI`, logged in as `NithanthSujith`. The shared 5,000/hour quota was exhausted once; poll sparingly (`gh pr checks N --watch` is fine).
+- **GitHub CLI:** `gh` is at `C:\Program Files\GitHub CLI`, logged in as `NithanthSujith`. Its token has no `workflow` scope, so it cannot merge a PR that changes `.github/workflows/`. The owner merges those in the web UI or runs `gh auth refresh -s workflow`. The shared 5,000/hour quota was exhausted once; poll sparingly (`gh pr checks N --watch` is fine).
 - **Remote:** `https://github.com/NithanthSujith/Mockbench.git`, branch `main`, tag `contracts-v1`. Squash merges, delete branch.
 - **Stale CI merge ref:** a re-run of CI reuses the old merge ref. To pick up changes on `main`, merge `main` into the PR branch and push normally (no force needed), or rebase and force-push with the owner's approval.
 - **Worktrees:** agents work in `.claude/worktrees/` (git-ignored). Fresh worktrees need `pnpm install --frozen-lockfile`. A usage-limit reset can delete an agent's worktree before it writes anything; the agent re-attaches one to its branch.
 - **Usage limits:** the 5-hour limit hit again with 3 agents plus heavy test runs. Launch at most about 3-5 agents; resume cut-off agents by messaging them.
 - **Shell quirks:** heredocs with apostrophes break the shell tool (use the file tool). `sleep` followed by another command is blocked; use `gh ... --watch` or run in the background.
 - **Run the app:** `cp .env.example .env && docker compose up`, then http://localhost:8080 (or the LAN IP). UI only with fake data: `pnpm --filter @mockbench/web dev:mock`. Component gallery at `/_dev/ui` in dev.
+- **PR checks (since #56):** the PR title must be a conventional commit. A change to a shipped package needs a `.changeset/*.md` (run `pnpm changeset`) or the `no-changeset` label.
 - **Checks before any commit:** `pnpm typecheck`, `pnpm lint`, `pnpm format:check`, `pnpm test`, `pnpm build`, `pnpm contract:docs --check`. Run prettier from the repo root only.
 - **No attribution lines** in commits or PRs (`.claude/settings.json`).
 
@@ -70,5 +84,5 @@ Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; RE
 | 1 Freeze | 14 | 14 |
 | 2 Slice foundations | 14 | 14 |
 | 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
-| 4 Depth | 11 | 10. Not started: RUN-12 (optional, owner decision) |
-| 5 Release | 3 | 1 (REL-01). REL-02, REL-03 not started |
+| 4 Depth | 10 (RUN-12 dropped, ADR 0020) | 10 |
+| 5 Release | 4 (AUTH-04 added) | 3 done (REL-01, REL-03, AUTH-04); REL-02 merged, waiting on its first tag |
