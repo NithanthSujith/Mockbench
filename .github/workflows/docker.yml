@@ -1,0 +1,150 @@
+name: docker
+
+# REL-02: pushing a tag v* builds the api and web images for linux/amd64 + linux/arm64, publishes them to
+# GHCR with provenance and SBOM attestations, inspects them, runs the XC-01 golden loop against the
+# PULLED images, and only then attaches docker-compose.pull.yml and .env.example to the GitHub release.
+#
+# Tags: vX.Y.Z, vX.Y and latest. A prerelease tag (v0.1.0-rc.1) gets only its own tag and a prerelease,
+# so it can dry-run the whole workflow without moving `latest`.
+#
+# Third-party actions are pinned by commit SHA (the comment names the tag the SHA was taken from).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    strategy:
+      fail-fast: true
+      matrix:
+        image: [api, web]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Image name (GHCR needs a lowercase owner)
+        id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/mockbench-${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ${{ steps.name.outputs.image }}
+          flavor: latest=false
+          # {{major}}.{{minor}} is skipped for prerelease tags by metadata-action itself.
+          tags: |
+            type=semver,pattern=v{{version}}
+            type=semver,pattern=v{{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+          labels: |
+            org.opencontainers.image.title=mockbench-${{ matrix.image }}
+            org.opencontainers.image.licenses=MIT
+      - id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: docker/${{ matrix.image }}.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
+      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-name: ${{ steps.name.outputs.image }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+  inspect:
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Manifest lists, non-root, no drizzle-kit, no .env, no absolute source-map paths
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          bash scripts/image-inspect.sh --published \
+            "ghcr.io/$owner/mockbench-api:$GITHUB_REF_NAME" "ghcr.io/$owner/mockbench-web:$GITHUB_REF_NAME"
+
+  smoke:
+    needs: inspect
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MOCKBENCH_VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Image owner matches docker-compose.pull.yml
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          grep -q "image: ghcr.io/$owner/mockbench-api:" docker-compose.pull.yml
+          grep -q "image: ghcr.io/$owner/mockbench-web:" docker-compose.pull.yml
+      - name: No source checkout - only the two release assets in an empty directory
+        run: |
+          dir="$(mktemp -d)"
+          cp docker-compose.pull.yml .env.example "$dir/"
+          cd "$dir"
+          cp .env.example .env
+          docker compose -f docker-compose.pull.yml up -d --wait
+          code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/v1/readyz)"
+          echo "GET /api/v1/readyz -> $code"
+          docker compose -f docker-compose.pull.yml ps
+          docker compose -f docker-compose.pull.yml down -v
+          test "$code" = 200
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @mockbench/web exec playwright install --with-deps chromium
+      - name: XC-01 golden loop against the pulled images
+        env:
+          E2E_COMPOSE_FILE: docker-compose.pull.yml
+          E2E_SKIP_BUILD: '1'
+        run: bash e2e/run.sh
+
+  release:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # creating the release and uploading its two assets
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Create or update the release with docker-compose.pull.yml and .env.example
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          pre=()
+          [[ "$TAG" == *-* ]] && pre=(--prerelease)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" docker-compose.pull.yml .env.example --clobber
+          else
+            gh release create "$TAG" --verify-tag --generate-notes "${pre[@]}" \
+              docker-compose.pull.yml .env.example
+          fi

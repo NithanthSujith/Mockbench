@@ -24,7 +24,12 @@ COPY packages packages
 COPY apps/web apps/web
 RUN pnpm --filter @mockbench/web build
 
-FROM nginx:alpine AS runtime
+# Runs as non-root (REL-02): nginx-unprivileged is the nginx project's own image with the user (uid 101),
+# pid file and temp paths set up for that. It still listens on 80 inside the container: Docker (20.10+)
+# lets unprivileged processes bind low ports in a container's network namespace, so compose and the docs
+# are unchanged.
+FROM nginxinc/nginx-unprivileged:alpine AS runtime
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /repo/apps/web/dist /usr/share/nginx/html
+USER 101
 EXPOSE 80

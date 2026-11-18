@@ -63,6 +63,8 @@ jobs:
         run: bash scripts/lan-smoke.sh up
       - name: Network, health, logs and image checks
         run: bash scripts/lan-smoke.sh check
+      - name: Image contents (REL-02 inspection, also run on released images)
+        run: bash scripts/image-inspect.sh mockbench-lansmoke-api mockbench-lansmoke-web
       - name: Browser check at a host-resolver-mapped name
         run: bash scripts/lan-smoke.sh playwright
       - name: Database outage

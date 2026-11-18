@@ -628,7 +628,7 @@ The api image's entrypoint runs `drizzle-kit migrate` and then starts the server
 | Image | Base | Build |
 | --- | --- | --- |
 | api | `node:22-alpine` | Multi-stage: pnpm fetch, build `schema-core` and `api`, then copy only `dist` and production `node_modules` into the runtime stage. Runs as the `node` user, not root |
-| web | `nginx:alpine` | Stage 1 builds the Vite bundle; stage 2 copies `dist` into nginx with a config that proxies `/api` and `/mock` to `api:3000` and falls back to `index.html` for SPA routes |
+| web | `nginxinc/nginx-unprivileged:alpine` (non-root, REL-02) | Stage 1 builds the Vite bundle; stage 2 copies `dist` into nginx with a config that proxies `/api` and `/mock` to `api:3000` and falls back to `index.html` for SPA routes |
 
 Build both for `linux/amd64` and `linux/arm64` — a large share of the developers who will try this are on Apple Silicon, and an amd64-only image under emulation is slow enough to read as "this project is broken". Publish to GHCR on tag, and ship a second compose file that pulls the published images instead of building, so trying the project takes a download rather than a five-minute build.
 

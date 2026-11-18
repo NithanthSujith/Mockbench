@@ -7,7 +7,9 @@
 #   e2e/run.sh up|down  bring the loop stack up / remove it (for debugging a single spec)
 #
 # Environment: E2E_PORT (host port, default 8080), E2E_PROJECT (compose project, default mockbench-e2e),
-# E2E_SKIP_BUILD=1 (reuse images). The browser reaches the stack as http://mockbench.lan.test:$E2E_PORT.
+# E2E_SKIP_BUILD=1 (reuse images), E2E_COMPOSE_FILE (default docker-compose.yml; the release workflow uses
+# docker-compose.pull.yml with MOCKBENCH_VERSION, REL-02). The browser reaches the stack as
+# http://mockbench.lan.test:$E2E_PORT.
 # Always leaves no containers or volumes behind, including after a failure.
 set -u
 cd "$(dirname "$0")/.."
@@ -15,7 +17,8 @@ cd "$(dirname "$0")/.."
 PORT="${E2E_PORT:-8080}"
 PROJECT="${E2E_PROJECT:-mockbench-e2e}"
 export PORT E2E_PORT="$PORT"
-compose() { docker compose -p "$PROJECT" --env-file .env.example "$@"; }
+COMPOSE_FILE_ARG=(-f "${E2E_COMPOSE_FILE:-docker-compose.yml}")
+compose() { docker compose -p "$PROJECT" "${COMPOSE_FILE_ARG[@]}" --env-file .env.example "$@"; }
 
 up() {
   local seed="$1" build=(--build)
