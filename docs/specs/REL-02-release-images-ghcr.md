@@ -1,6 +1,6 @@
 # REL-02 — Release workflow: multi-arch images on GHCR
 
-Status: approved
+Status: in review
 Phase: 5   Team: Core
 Depends on: FND-14, XC-01
 Size: M
@@ -30,5 +30,14 @@ Image names `ghcr.io/<owner>/mockbench-api` and `…-web`. Tag policy: `vX.Y.Z`,
 ## Tests
 A dry-run of the workflow on a prerelease tag in CI; inspection scripts.
 
+## Implementation notes
+- **Namespace:** `ghcr.io/nithanthsujith/mockbench-{api,web}` (the repository owner, lowercased). The workflow derives it from `github.repository_owner` and checks it matches `docker-compose.pull.yml`, which REL-01 already shipped.
+- **Tags:** `vX.Y.Z`, `vX.Y` and `latest` (with the `v`, so `MOCKBENCH_VERSION` equals the git tag). A prerelease tag such as `v0.1.0-rc.1` gets only its own tag and a GitHub prerelease, and does not move `latest` or `vX.Y`.
+- **Non-root web image (drift from FND-14 and DESIGN):** the web image ran nginx as root. It now uses `nginxinc/nginx-unprivileged:alpine` (uid 101) and still listens on 80 inside the container, since Docker 20.10+ lets unprivileged processes bind low ports in a container namespace. Compose, nginx.conf and the docs are otherwise unchanged. DESIGN's container table is updated in the same commit.
+- **Permissions (drift from the criterion):** the workflow default is `contents: read`. `publish` adds `packages: write`, `id-token: write` and `attestations: write`. `release` needs `contents: write`, because creating a release and uploading assets is impossible with `contents: read`. Only that job has it, and it runs last, after the smoke test.
+- **Order:** publish → inspect (`scripts/image-inspect.sh --published`) → smoke (empty directory with only the two assets, then XC-01 via `E2E_COMPOSE_FILE=docker-compose.pull.yml`) → release. A failed smoke leaves the images pushed but creates no release.
+- **PR-time coverage:** `lan-smoke` runs the same `scripts/image-inspect.sh` on the locally built images, so a regression shows up before a tag.
+- **Dry run:** needs a pushed prerelease tag, which publishes real images. Pending the owner's go-ahead.
+
 ## Open questions
-- Image owner/namespace (depends on where the repository is hosted).
+- GHCR packages created by Actions may start private. If so, set both packages to public once (Package settings) so `docker compose pull` works without a login.
