@@ -33,7 +33,6 @@ export interface Config {
   logRetentionDays: number
   logRetentionRows: number
   mockCacheMaxMb: number
-  cacheFanout: boolean
 }
 
 export interface ConfigProblem {
@@ -137,7 +136,6 @@ export function loadConfig(env: Env): Config {
     logRetentionDays: int('LOG_RETENTION_DAYS', 7, 1),
     logRetentionRows: int('LOG_RETENTION_ROWS', 1000, 1),
     mockCacheMaxMb: int('MOCK_CACHE_MAX_MB', 256, 1),
-    cacheFanout: bool('CACHE_FANOUT', true),
   }
   if (problems.length > 0) throw new ConfigError(problems)
   return config

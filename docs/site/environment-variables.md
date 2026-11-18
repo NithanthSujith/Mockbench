@@ -31,7 +31,6 @@ After editing `.env`, run `docker compose up -d` again so the containers pick up
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `CACHE_FANOUT` | `true` | Reserved for sharing cache invalidation between several API containers. It is read and validated, but nothing uses it yet. |
 | `TRUST_PROXY` | `1` | How many proxy hops in front of the API to trust when working out the client IP. The compose file fixes it at `1` (the web container). Only relevant when you run the API outside compose. |
 | `CONTROL_RATE_LIMIT` | `600` | Editor/API requests per minute per session (per client IP when not signed in). The compose file does not pass this variable through, so it has an effect only when you run the API outside compose or edit `docker-compose.yml`. |
 | `LOGIN_RATE_LIMIT` | `10` | Sign-in and registration attempts per minute per client IP. Not passed through by the compose file either. |

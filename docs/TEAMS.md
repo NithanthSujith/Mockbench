@@ -84,7 +84,7 @@ The contract is the point. While a dependency is unbuilt:
 
 | | |
 | --- | --- |
-| **Specs** | AUTH-01, AUTH-02, AUTH-03 |
+| **Specs** | AUTH-01, AUTH-02, AUTH-03, AUTH-04 |
 | **Owns** | `apps/api/src/modules/auth/` · `apps/web/src/features/auth/` |
 | **Endpoints** | `auth.register`, `auth.login`, `auth.logout`, `auth.me`, `auth.changePassword`, `system.instance` |
 | **Also owns** | The session middleware `apps/api/src/modules/auth/session-middleware.ts` (`requireSession`). Core seeds a minimal working read-path version in FND-10 so every other team can authenticate from day one; AUTH-01 hardens it and must keep its signature (`req.auth = { userId, sessionId }`) |

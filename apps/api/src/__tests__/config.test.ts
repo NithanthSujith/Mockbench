@@ -24,7 +24,6 @@ describe('config.ts (the only reader of the environment)', () => {
       logRetentionDays: 7,
       logRetentionRows: 1000,
       mockCacheMaxMb: 256,
-      cacheFanout: true,
       sessionSecretIsPlaceholder: false,
     })
   })
@@ -40,7 +39,6 @@ describe('config.ts (the only reader of the environment)', () => {
       TRUST_PROXY: '2',
       CONTROL_RATE_LIMIT: '3',
       MOCK_RATE_LIMIT: '600',
-      CACHE_FANOUT: 'false',
       LOG_LEVEL: 'debug',
     })
     expect(c).toMatchObject({
@@ -52,7 +50,6 @@ describe('config.ts (the only reader of the environment)', () => {
       trustProxy: 2,
       controlRateLimit: 3,
       mockRateLimit: 600,
-      cacheFanout: false,
       logLevel: 'debug',
     })
     expect(loadConfig({ ...base, TRUST_PROXY: 'true' }).trustProxy).toBe(true)

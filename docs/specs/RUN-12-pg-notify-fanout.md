@@ -1,6 +1,6 @@
 # RUN-12 — Postgres LISTEN/NOTIFY cache fan-out (optional)
 
-Status: approved
+Status: dropped (ADR 0020: v1 is single-instance)
 Phase: 4   Team: Runtime
 Depends on: RUN-06
 Size: S

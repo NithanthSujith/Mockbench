@@ -112,7 +112,7 @@ DESIGN M5 plus the rest of the builder.
 | RUN-08 | Request-log API + screen | RUN-07, BLD-04 | M | Runtime |
 | RUN-10 | Version diff (API + UI) | RUN-02, RUN-09 | M | Runtime |
 | RUN-11 | Demo seed (`SEED_DEMO`) | RUN-03, BLD-02, PRJ-01 | S | Runtime |
-| RUN-12 | Postgres `LISTEN`/`NOTIFY` cache fan-out — **optional, drop if single-instance (D13)** | RUN-06 | S | Runtime |
+| RUN-12 | Postgres `LISTEN`/`NOTIFY` cache fan-out — **dropped (ADR 0020)** | RUN-06 | S | Runtime |
 | RUN-13 | Data-plane rate cap (`MOCK_RATE_LIMIT`) | RUN-05 | S | Runtime |
 
 ## 6. Phase 5 — Release   *(DESIGN M6)*
@@ -122,6 +122,7 @@ DESIGN M5 plus the rest of the builder.
 | REL-01 | README (GIF, quickstart, LAN URL, firewall note), docs site, `examples/` | XC-01, RUN-11 | M | Core |
 | REL-02 | GHCR multi-arch release workflow, `docker-compose.pull.yml`, e2e on tag | FND-14, XC-01 | M | Core |
 | REL-03 | CONTRIBUTING, CoC, issue/PR templates, Changesets, CodeQL, good-first-issues | FND-01 | S | Core |
+| AUTH-04 | CLI password reset (`dist/reset-password.js`), ADR 0020 | AUTH-02, FND-14 | S | Auth |
 
 **Counts:** Phase 1: 14 · Phase 2: 14 · Phase 3: 14 · Phase 4: 11 · Phase 5: 3 → **56 units**. By owner: Core 18, Auth 3, Workspaces 4, Projects 6, Builder 12, Runtime 13.
 
