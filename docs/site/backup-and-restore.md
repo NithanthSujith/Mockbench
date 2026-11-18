@@ -47,4 +47,19 @@ To restore it, create an empty volume, extract the archive into it the same way,
 
 ## Losing access
 
-There is no command that resets a user's password, and no password-reset email. A signed-in user can change their own password. Keep a second owner in each workspace, and keep a recent backup, so that losing one account is not a lockout.
+There is no password-reset email. A signed-in user can change their own password. Anyone with shell access to the host can reset any account's password from the api container:
+
+```sh
+docker compose exec api node dist/reset-password.js you@example.com
+```
+
+It prints a new random 20-character password once. To choose the password instead, pipe it in (it is not printed):
+
+```sh
+printf '%s
+' 'new password here' | docker compose exec -T api node dist/reset-password.js you@example.com --password-stdin
+```
+
+Either way, every session of that user is signed out. The email is matched case-insensitively. A deactivated account stays deactivated. The password must be 8 to 128 characters. The command exits 1 with `reset-password: failed: <reason>` (for example for an unknown email) and changes nothing.
+
+Keep a recent backup all the same: a reset recovers an account, not deleted data.

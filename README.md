@@ -87,6 +87,8 @@ Skip virtual adapters (VMware, WSL, Hyper-V, Docker); they are not reachable fro
 
 **Before you share the instance:** change `SESSION_SECRET` in `.env` (the placeholder works, but the API logs a warning), change `POSTGRES_PASSWORD` if the database is ever reachable beyond the compose network (by default it is not published), and consider `ALLOW_SIGNUP=false` once your team has accounts. The session cookie is not marked `Secure`, because plain HTTP on a LAN IP must work; set `COOKIE_SECURE=true` only if you put HTTPS in front. Do not publish the port to the internet: the mock URLs take no authentication by design.
 
+**Forgot a password?** There is no reset email. From the host, run `docker compose exec api node dist/reset-password.js you@example.com`; it prints a new password and signs that user out everywhere. See [Backup and restore](docs/site/backup-and-restore.md#losing-access).
+
 ## Examples
 
 [`examples/`](examples/README.md) holds three ready-made projects (`*.mockbench.json`) and sample request payloads: a shop API that shares one component between routes, a small CRUD API, and a payments API full of error cases for testing retry code.

@@ -6,6 +6,7 @@
 #   3. register the first user over the API, import every examples/*.mockbench.json through
 #      projects.import, publish and deploy each, and call a mock
 #   4. compare the README's second example (a case picked by header) with the real response
+#   5. reset the user's password with `docker compose exec api node dist/reset-password.js` (AUTH-04)
 #
 #   scripts/readme-smoke.sh          up, check, down
 #   scripts/readme-smoke.sh up|check|down
@@ -97,6 +98,26 @@ cmd_check() {
   if [ "$HTTP_CODE" = "200" ] && [ "$(json_get "$HTTP_BODY" 'd.length')" = "3" ]; then pass "GET /mock/shop-api/products -> 3 products"; else fail "shop-api products: ${HTTP_CODE} ${HTTP_BODY}"; fi
   http -X POST "${BASE}/mock/flaky-payments/charges" -H 'X-Mock-Case: Card declined' -H 'Content-Type: application/json' --data "$(cat examples/payloads/create-charge.json)"
   if [ "$HTTP_CODE" = "422" ]; then pass "flaky-payments, case chosen by X-Mock-Case -> 422"; else fail "flaky-payments card declined: ${HTTP_CODE} ${HTTP_BODY}"; fi
+
+  # Last, because it signs the smoke user out.
+  section "password reset in the container (AUTH-04)"
+  local who out rc newpw
+  who="$(compose exec -T api id -un 2>&1)"
+  if [ "$who" = "node" ]; then pass "api container runs as node"; else fail "api container user: ${who}"; fi
+  out="$(compose exec -T api node dist/reset-password.js SMOKE@example.com 2>&1)"
+  newpw="$(printf '%s' "$out" | tr -d '\r' | sed -n 's/^reset-password: new password for SMOKE@example.com: //p')"
+  if [ "${#newpw}" = "20" ]; then pass "reset-password printed a 20-character password"; else fail "reset-password output: ${out}"; fi
+  http "${BASE}/api/v1/auth/me" -H "Cookie: ${cookie}"
+  if [ "$HTTP_CODE" = "401" ]; then pass "the old session is signed out"; else fail "old session after reset -> ${HTTP_CODE}"; fi
+  http -X POST "${BASE}/api/v1/auth/login" -H "$CLIENT_HEADER" -H 'Content-Type: application/json' \
+    --data "{\"email\":\"smoke@example.com\",\"password\":\"${newpw}\"}"
+  if [ "$HTTP_CODE" = "200" ]; then pass "the new password logs in"; else fail "login with the new password -> ${HTTP_CODE} ${HTTP_BODY}"; fi
+  rc=0
+  out="$(printf 'piped-password-123\n' | compose exec -T api node dist/reset-password.js smoke@example.com --password-stdin 2>&1)" || rc=$?
+  if [ "$rc" = "0" ] && ! printf '%s' "$out" | grep -q 'piped-password-123'; then pass "--password-stdin sets it without printing it"; else fail "--password-stdin (exit ${rc}): ${out}"; fi
+  http -X POST "${BASE}/api/v1/auth/login" -H "$CLIENT_HEADER" -H 'Content-Type: application/json' \
+    --data '{"email":"smoke@example.com","password":"piped-password-123"}'
+  if [ "$HTTP_CODE" = "200" ]; then pass "the piped password logs in"; else fail "login with the piped password -> ${HTTP_CODE} ${HTTP_BODY}"; fi
 }
 
 cmd_down() {
