@@ -1,6 +1,6 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-14 (after merging #45-#49; BLD-08, PRJ-06 and REL-01 in progress). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-18 (after #51-#53; Phase 4 done except optional RUN-12; REL-02 and REL-03 next). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
@@ -12,20 +12,21 @@ Last updated: 2026-11-14 (after merging #45-#49; BLD-08, PRJ-06 and REL-01 in pr
 
 **The first usable release loop works end to end and CI proves it:** register, create a project and route, build a schema (Builder or JSON tab, with inference), preview, publish, deploy, call the mock from outside the browser, read the request log. The Playwright `e2e` job runs it against the real `docker compose` stack at `mockbench.lan.test` in about 2 minutes.
 
-**Merged on 2026-11-14 (owner named them):** #41-#44 (RUN-11 demo seed, BLD-05 case bar fix, log filters in the URL with `zod` in `apps/web`, BLD-12 Try-it panel), then #45 control-plane rate limit 600/min (ADR 0019), #46 RUN-13 data-plane rate cap (`MOCK_RATE_LIMIT`, wired in `app.ts`), #49 RUN-10 version diff, #47 PRJ-03 presets screen and #48 BLD-10 advanced attributes and components. #41, #44 and #46 merged with a failing `ownership` check, expected because they edit main-session files. Flaky tests that needed a re-run: `bin/migrate` timing (#43) and FND-09 lock-kill (#49). Imported presets are created disabled (follow-up PR to #47).
+**Merged on 2026-11-14 (owner named them):** #41-#44 (RUN-11 demo seed, BLD-05 case bar fix, log filters in the URL with `zod` in `apps/web`, BLD-12 Try-it panel), then #45 control-plane rate limit 600/min (ADR 0019), #46 RUN-13 data-plane rate cap (`MOCK_RATE_LIMIT`, wired in `app.ts`), #49 RUN-10 version diff, #47 PRJ-03 presets screen and #48 BLD-10 advanced attributes and components. #41, #44 and #46 merged with a failing `ownership` check, expected because they edit main-session files. Flaky tests that needed a re-run: `bin/migrate` timing (#43) and FND-09 lock-kill (#49). Imported presets are created disabled (follow-up PR to #47). Then #51 REL-01 README/docs/examples, #52 PRJ-06 export and import, #53 BLD-08 drag reorder and virtualized rows.
 
 ## Do these next, in order
 
-1. (Done 2026-11-14) PRs #41-#49 merged. In flight: BLD-08, PRJ-06 and REL-01 as agent PRs; merge each after merging `main` into its branch and a green CI.
-2. Remaining units: **RUN-12** pg-notify fanout (optional; recommended to drop for a single-instance deploy), then **REL-02** release images (GHCR) and **REL-03** contribution scaffolding. See `docs/PLAN.md` section 4.
+1. (Done 2026-11-14) PRs #41-#53 merged. Spec `Status:` lines brought in line with `main` on 2026-11-18.
+2. Remaining units: **REL-03** contribution scaffolding and **REL-02** release images (GHCR). **RUN-12** pg-notify fanout waits on an owner decision (recommended: drop for a single-instance deploy). See `docs/PLAN.md`.
 3. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
-4. Fix the XC-01 spec: its `Depends on` omits BLD-12 and RUN-11 (both merged); recommended: leave the dependency list and note the two checks belong to those units.
+4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
 5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
 6. The permission system blocks merges the owner has not named, merges of PRs with a failing check unless named, and `--admin` merges. Force-pushes need explicit approval per branch.
 
 ## Decisions pending (owner)
 
 - **Rate limit:** resolved 2026-11-14: control-plane default raised from 100 to 600 requests a minute per session (ADR 0019). Sign-in stays 10 a minute per IP.
+- **REL-01 CLI password reset:** the criterion has no implementing unit; add a small unit or drop it.
 - **RUN-11 "three routes":** merged as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`; the owner has not explicitly confirmed this reading.
 
 ## Decisions made
@@ -69,5 +70,5 @@ Last updated: 2026-11-14 (after merging #45-#49; BLD-08, PRJ-06 and REL-01 in pr
 | 1 Freeze | 14 | 14 |
 | 2 Slice foundations | 14 | 14 |
 | 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
-| 4 Depth | 11 | Done: PRJ-03, RUN-10, RUN-11, RUN-13, BLD-10 and earlier units. In progress: BLD-08, PRJ-06. Not started: RUN-12 (optional) |
-| 5 Release | 3 | 0 done. REL-01 in progress. REL-02, REL-03 not started |
+| 4 Depth | 11 | 10. Not started: RUN-12 (optional, owner decision) |
+| 5 Release | 3 | 1 (REL-01). REL-02, REL-03 not started |

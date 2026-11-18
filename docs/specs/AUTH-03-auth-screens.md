@@ -1,6 +1,6 @@
 # AUTH-03 — Sign-in and register screens, route guard, account menu
 
-Status: in progress (blocked: AUTH-02 unmerged)
+Status: done
 Phase: 3   Team: Auth
 Depends on: AUTH-02, FND-13
 Size: M

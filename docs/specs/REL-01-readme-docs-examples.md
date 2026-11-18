@@ -1,6 +1,6 @@
 # REL-01 — README, docs site, examples
 
-Status: in review
+Status: done
 Phase: 5   Team: Core
 Depends on: XC-01, RUN-11
 Size: M
