@@ -1,6 +1,6 @@
 # AUTH-04 — CLI password reset
 
-Status: in review
+Status: done
 Phase: 5   Team: Auth (+ main session for the build entry)
 Depends on: AUTH-02, FND-14
 Size: S
@@ -37,7 +37,7 @@ No HTTP or schema change. New image entry `dist/reset-password.js`. Reuses `user
 Unit tests for `resetPassword` with the DB test harness (FND-09); `main()` tests for every exit path; one compose smoke step.
 
 ## Implementation notes
-- Tests: `apps/api/src/bin/__tests__/reset-password.test.ts` (12 cases, every exit path, through `main()` against the FND-09 test database). The container criterion is a step at the end of `scripts/readme-smoke.sh` (it checks the container user is `node`, both modes, the old session gets 401 and the new passwords log in); it passed locally against freshly built images.
+- Tests: `apps/api/src/bin/__tests__/reset-password.test.ts` (12 cases, every exit path, through `main()` against the FND-09 test database). The container criterion is a step at the end of `scripts/readme-smoke.sh` (it checks the container user is `node`, both modes, the old session gets 401 and the new passwords log in); it passed locally against freshly built images and in CI on #58.
 - The password rule is the contract's `PasswordField` (8–128), not a copy.
 - The hash is computed before the transaction opens, so no row lock is held during Argon2id.
 - One trailing newline on stdin is stripped (`echo` and heredocs add one); anything else is part of the password.
