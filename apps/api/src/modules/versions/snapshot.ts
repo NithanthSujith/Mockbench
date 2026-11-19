@@ -38,6 +38,45 @@ export class PublishInvalidError extends Error {
   }
 }
 
+/** Total size limit for one version's baked payload (ADR 0017, ADR 0021): 64 MiB, not configurable. */
+export const MAX_BAKED_BYTES = 64 * 1024 * 1024
+/** How many of the largest cases a `baked_too_large` error lists. */
+export const BAKED_TOO_LARGE_LISTED = 10
+
+/** One case in `baked_too_large` details (API-CONTRACT 3.9). `bytes`: UTF-8 length of its body. */
+export interface BakedCaseSize {
+  routeId: string
+  method: string
+  path: string
+  caseId: string
+  caseName: string
+  bytes: number
+}
+
+/** The baked payload would exceed `MAX_BAKED_BYTES`. Nothing was stored. */
+export class BakedTooLargeError extends Error {
+  constructor(
+    readonly totalBytes: number,
+    readonly limitBytes: number,
+    /** The largest cases, largest first, at most `BAKED_TOO_LARGE_LISTED`. */
+    readonly largest: BakedCaseSize[],
+    /** The most body bytes held in memory at once while baking (bounded by the limit plus one case). */
+    readonly retainedBytes: number,
+  ) {
+    super(`Baked payload of ${totalBytes} bytes exceeds the ${limitBytes}-byte limit`)
+    this.name = 'BakedTooLargeError'
+  }
+}
+
+/** Keeps the `limit` largest entries, largest first; ties keep the earlier case first. */
+function keepLargest(list: BakedCaseSize[], entry: BakedCaseSize, limit: number): void {
+  if (list.length === limit && entry.bytes <= list[list.length - 1]!.bytes) return
+  let i = list.length
+  while (i > 0 && list[i - 1]!.bytes < entry.bytes) i--
+  list.splice(i, 0, entry)
+  if (list.length > limit) list.pop()
+}
+
 /** The project has no routes, so there is nothing to publish. */
 export class EmptyProjectError extends Error {
   constructor() {
@@ -125,11 +164,22 @@ function bake(
   }
 }
 
+export interface BuildVersionOptions {
+  /** Test-only override of `MAX_BAKED_BYTES`, so tests need not bake 64 MiB. */
+  maxBakedBytes?: number
+}
+
 /**
  * Builds the payload for one publish. Throws `EmptyProjectError` (no routes), `PublishInvalidError`
- * (every offending case listed, nothing baked) or `ProjectNotFoundError`.
+ * (every offending case listed, nothing baked), `BakedTooLargeError` (over the total cap; an
+ * invalid case takes precedence) or `ProjectNotFoundError`.
  */
-export async function buildVersionPayload(tx: Tx, projectId: string): Promise<VersionPayload> {
+export async function buildVersionPayload(
+  tx: Tx,
+  projectId: string,
+  opts: BuildVersionOptions = {},
+): Promise<VersionPayload> {
+  const maxBakedBytes = opts.maxBakedBytes ?? MAX_BAKED_BYTES
   const draft = await loadDraft(tx, projectId)
   if (!draft) throw new ProjectNotFoundError(projectId)
   if (draft.routes.length === 0) throw new EmptyProjectError()
@@ -193,10 +243,52 @@ export async function buildVersionPayload(tx: Tx, projectId: string): Promise<Ve
     }
     const bodies: Record<string, string> = {}
     const bakeFailures: PublishIssue[] = []
+    // Exact size of JSON.stringify(bodies): braces, commas, and each `"key":"body"` entry. Once it
+    // passes the cap, bodies are no longer kept (only measured), so memory stays bounded.
+    let totalBytes = 2
+    let entries = 0
+    let retained = 0
+    let peakRetained = 0
+    let over = false
+    const largest: BakedCaseSize[] = []
+    const record = (
+      route: DraftRoute,
+      c: DraftRoute['cases'][number],
+      key: string,
+      body: string,
+    ) => {
+      totalBytes +=
+        (entries++ > 0 ? 1 : 0) +
+        Buffer.byteLength(JSON.stringify(key), 'utf8') +
+        1 +
+        Buffer.byteLength(JSON.stringify(body), 'utf8')
+      const bytes = Buffer.byteLength(body, 'utf8')
+      const entry = {
+        routeId: route.id,
+        method: route.method,
+        path: route.path,
+        caseId: c.id,
+        caseName: c.name,
+        bytes,
+      }
+      keepLargest(largest, entry, BAKED_TOO_LARGE_LISTED)
+      // `retained + bytes`: the bodies kept so far plus the one just generated, held by the caller.
+      peakRetained = Math.max(peakRetained, retained + bytes)
+      if (!over && totalBytes > maxBakedBytes) {
+        over = true
+        for (const k of Object.keys(bodies)) delete bodies[k]
+        retained = 0
+      }
+      if (!over) {
+        bodies[key] = body
+        retained += bytes
+      }
+    }
     for (const route of snapshot.routes) {
       for (const c of route.cases) {
+        const key = `${route.id}:${c.id}`
         if (c.statusCode === 204) {
-          bodies[`${route.id}:${c.id}`] = ''
+          record(route, c, key, '')
           continue
         }
         const out = bake(c.schema as MockSchema, ctx)
@@ -210,11 +302,12 @@ export async function buildVersionPayload(tx: Tx, projectId: string): Promise<Ve
             issues: [out.issue],
           })
         } else {
-          bodies[`${route.id}:${c.id}`] = out.body
+          record(route, c, key, out.body)
         }
       }
     }
     if (bakeFailures.length > 0) throw new PublishInvalidError(bakeFailures)
+    if (over) throw new BakedTooLargeError(totalBytes, maxBakedBytes, largest, peakRetained)
     baked = JSON.stringify(bodies)
   }
 

@@ -11,7 +11,9 @@ import {
   EmptyProjectError,
   ProjectNotFoundError,
   PublishInvalidError,
+  BakedTooLargeError,
 } from './snapshot'
+import type { BuildVersionOptions } from './snapshot'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const CURSOR_TS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{6}Z$/
@@ -157,6 +159,8 @@ export async function publishVersion(
   projectId: string,
   userId: string | null,
   input: { label?: string; notes?: string },
+  /** Test-only: `maxBakedBytes` overrides the 64 MiB cap. */
+  opts: BuildVersionOptions = {},
 ): Promise<Version> {
   for (let attempt = 1; ; attempt++) {
     try {
@@ -168,7 +172,7 @@ export async function publishVersion(
             .where(eq(projects.id, projectId))
             .for('update')
           if (!locked) throw new ProjectNotFoundError(projectId)
-          const payload = await buildVersionPayload(tx, projectId)
+          const payload = await buildVersionPayload(tx, projectId, opts)
           const seq = locked.seq + 1
           const [row] = await tx
             .insert(versions)
@@ -202,6 +206,15 @@ export async function publishVersion(
           'publish_invalid',
           'Some response cases are invalid; nothing was published.',
           err.details,
+        )
+      }
+      if (err instanceof BakedTooLargeError) {
+        const mib = (n: number) => (n / (1024 * 1024)).toFixed(1)
+        throw new HttpError(
+          422,
+          'baked_too_large',
+          `The baked responses total ${mib(err.totalBytes)} MiB; the limit is ${mib(err.limitBytes).replace(/\.0$/, '')} MiB. Shrink the largest cases or switch the project to random mode.`,
+          err.largest,
         )
       }
       if (err instanceof ProjectNotFoundError) throw new HttpError(404, 'not_found', 'Not found.')

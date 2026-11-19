@@ -805,6 +805,7 @@ const versions = {
       { status: 409, code: 'label_taken' },
       { status: 422, code: 'empty_project' },
       { status: 422, code: 'publish_invalid' },
+      { status: 422, code: 'baked_too_large' },
     ],
     example: { request: { label: 'first-cut' }, response: exampleVersion },
     tags: ['versions'],
