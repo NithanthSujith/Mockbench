@@ -129,7 +129,7 @@ The contract is the point. While a dependency is unbuilt:
 
 | | |
 | --- | --- |
-| **Specs** | RUN-01 … RUN-13 |
+| **Specs** | RUN-01 … RUN-14 |
 | **Owns** | `apps/api/src/modules/{versions,dataplane,requests}/` · `apps/api/src/seed/` · `apps/web/src/features/{versions,logs}/` |
 | **Endpoints** | `versions.*`, `deploy.create`, `deployments.list`, `cache.flush`, `requests.list`; the whole data plane `/mock/:slug/*` |
 | **Screens** | `/p/$projectSlug/versions` (list, publish dialog, deploy/rollback, diff), `/p/$projectSlug/logs`, the LIVE pill data |

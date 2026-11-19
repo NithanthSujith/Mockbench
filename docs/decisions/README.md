@@ -26,6 +26,7 @@ New decisions arise under `docs/WORKFLOW.md` rule 5: stop, ask, record here, ame
 | 0018 | Data-plane load failures, preflight and read-only builder | accepted |
 | 0019 | Control-plane rate limit raised to 600 per minute | accepted |
 | 0020 | Release rulings: changesets, commit lint, RUN-12 dropped, password reset | accepted |
+| 0021 | Baked-size cap: 422, top 10 largest cases, fixed 64 MiB | accepted |
 
 Template:
 

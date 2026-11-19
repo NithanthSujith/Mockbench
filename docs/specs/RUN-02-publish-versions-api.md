@@ -45,4 +45,4 @@ Role matrix; concurrency and rollback tests; pagination test; immutability test.
 - `seq` = `projects.version_seq + 1`; the counter is advanced in the same transaction, so a rolled-back publish (label_taken, publish_invalid, empty_project) consumes nothing, and deleting a version never lowers it.
 - Default label `v<seq>` can collide with a user-chosen label of the same text (e.g. an earlier manual "v3"): that publish answers `409 label_taken` and the user supplies a label. Not special-cased.
 - Delete checks `projects.active_version_id` then `request_logs`; the `request_logs.version_id` FK (RESTRICT) backs it up if a log lands in between (also mapped to `version_referenced`).
-- Total baked-size cap (`baked_too_large`, proposed 64 MiB) is NOT implemented: still awaiting a ruling.
+- Total baked-size cap (`baked_too_large`, proposed 64 MiB) is NOT implemented here: ruled in ADR 0017 and ADR 0021, and implemented by RUN-14.

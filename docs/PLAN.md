@@ -114,6 +114,7 @@ DESIGN M5 plus the rest of the builder.
 | RUN-11 | Demo seed (`SEED_DEMO`) | RUN-03, BLD-02, PRJ-01 | S | Runtime |
 | RUN-12 | Postgres `LISTEN`/`NOTIFY` cache fan-out — **dropped (ADR 0020)** | RUN-06 | S | Runtime |
 | RUN-13 | Data-plane rate cap (`MOCK_RATE_LIMIT`) | RUN-05 | S | Runtime |
+| RUN-14 | Total baked-size cap per version (64 MiB, `422 baked_too_large`), ADR 0017/0021 | RUN-01, RUN-02, RUN-09 | S | Runtime |
 
 ## 6. Phase 5 — Release   *(DESIGN M6)*
 
