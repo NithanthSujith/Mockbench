@@ -1,6 +1,6 @@
 # RUN-14 — Total baked-size cap per version
 
-Status: approved
+Status: in review
 Phase: 4   Team: Runtime (+ main session for the contract)
 Depends on: RUN-01, RUN-02, RUN-09
 Size: S
@@ -40,16 +40,16 @@ Publishing a deterministic project whose baked responses add up to more than 64 
 - No schema change; no new dependency.
 
 ## Acceptance criteria
-- [ ] A seeded-mode project whose bodies total just over 64 MiB:
+- [x] A seeded-mode project whose bodies total just over 64 MiB:
   - `POST /versions` returns `422 baked_too_large`, and its details match the contract (`assertContract`);
   - there are at most 10 entries, sorted by `bytes` descending, and the first is the biggest case;
   - no row is added to `versions` and `projects.version_seq` does not change.
-- [ ] A project just under the cap publishes, with `bakedBytes` under 67,108,864.
-- [ ] The same oversized project in `random` mode publishes, with `baked` null and `bakedBytes` 0.
-- [ ] A project that both has an invalid case and is over the cap returns `publish_invalid`.
-- [ ] Bake memory stays bounded: the bodies kept in memory never exceed the cap plus one case. Test this by counting retained bytes, not by measuring the process.
-- [ ] The Publish dialog shows the message and the listed cases with human-readable sizes, and each entry links to its case (Testing Library, mocked client).
-- [ ] `pnpm contract:docs --check` passes with the new error in API-CONTRACT §3.9.
+- [x] A project just under the cap publishes, with `bakedBytes` under 67,108,864.
+- [x] The same oversized project in `random` mode publishes, with `baked` null and `bakedBytes` 0.
+- [x] A project that both has an invalid case and is over the cap returns `publish_invalid`.
+- [x] Bake memory stays bounded: the bodies kept in memory never exceed the cap plus one case. Test this by counting retained bytes, not by measuring the process.
+- [x] The Publish dialog shows the message and the listed cases with human-readable sizes, and each entry links to its case (Testing Library, mocked client).
+- [x] `pnpm contract:docs --check` passes with the new error in API-CONTRACT §3.9.
 
 ## Tests
 - Unit tests on `buildVersionPayload`. Use a small test-only cap override (an optional parameter, not configuration) so the tests don't bake 64 MiB.
@@ -58,3 +58,10 @@ Publishing a deterministic project whose baked responses add up to more than 64 
 
 ## Open questions
 - Whether a version already stored over 64 MiB, which can't happen today, should still load. Assumed yes: the cap applies at publish only.
+
+## Implementation notes
+- `snapshot.ts` measures the exact size of `JSON.stringify(bodies)` as it goes: braces, commas and each `"key":"body"` entry. It compares that number with the cap, so `bakedBytes` of a stored version is never over 64 MiB. `bytes` in the details is the body alone.
+- Once the total passes the cap, bodies already kept are dropped and new ones are only measured. `BakedTooLargeError.retainedBytes` records the most held at once; the test asserts it stays at or under the cap plus one case.
+- `buildVersionPayload` and `publishVersion` take an optional `{ maxBakedBytes }`. It is test-only and not configuration (ADR 0021).
+- The real-cap API test publishes 5 cases of 14 MiB (`fixed` string values), which takes a few seconds against Postgres.
+- The Publish dialog shows the server's message and lists the cases as links with sizes (`formatBytes`: B, KiB or MiB).

@@ -23,22 +23,45 @@ interface Offender {
   message: string
 }
 
-/** Reads `publish_invalid` details defensively: one entry per offending case. */
-function toOffenders(details: unknown[]): Offender[] {
+/** A byte count as KiB or MiB with one decimal (bytes below 1 KiB). */
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KiB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MiB`
+}
+
+/** `publish_invalid`: the first issue's message. */
+function issueMessage(o: Record<string, unknown>): string {
+  const issues = Array.isArray(o.issues) ? (o.issues as { message?: unknown }[]) : []
+  const first = issues.find((i) => typeof i?.message === 'string')
+  return first ? String(first.message) : 'Invalid response case.'
+}
+
+/** `baked_too_large` (RUN-14): the case's baked size. */
+function sizeMessage(o: Record<string, unknown>): string {
+  return typeof o.bytes === 'number' ? formatBytes(o.bytes) : 'size unknown'
+}
+
+/**
+ * Reads `publish_invalid` or `baked_too_large` details defensively: one entry per listed case,
+ * with `describe` giving the text after the dash.
+ */
+function toOffenders(
+  details: unknown[],
+  describe: (o: Record<string, unknown>) => string,
+): Offender[] {
   const out: Offender[] = []
   for (const d of details) {
     if (!d || typeof d !== 'object') continue
     const o = d as Record<string, unknown>
     if (typeof o.routeId !== 'string' || typeof o.caseId !== 'string') continue
-    const issues = Array.isArray(o.issues) ? (o.issues as { message?: unknown }[]) : []
-    const first = issues.find((i) => typeof i?.message === 'string')
     out.push({
       routeId: o.routeId,
       caseId: o.caseId,
       method: String(o.method ?? ''),
       path: String(o.path ?? ''),
       caseName: String(o.caseName ?? ''),
-      message: first ? String(first.message) : 'Invalid response case.',
+      message: describe(o),
     })
   }
   return out
@@ -122,8 +145,11 @@ export function PublishDialog({
       else if (error.code === 'empty_project')
         setFailure('Add at least one route before publishing')
       else if (error.code === 'publish_invalid') {
-        setOffenders(toOffenders(error.details))
+        setOffenders(toOffenders(error.details, issueMessage))
         setFailure('Fix these response cases, then publish again.')
+      } else if (error.code === 'baked_too_large') {
+        setOffenders(toOffenders(error.details, sizeMessage))
+        setFailure(error.message)
       } else setFailure(error.message)
     } finally {
       setBusy(false)

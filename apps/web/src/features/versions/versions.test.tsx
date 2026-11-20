@@ -254,6 +254,41 @@ describe('publish dialog', () => {
     expect(link).toHaveAttribute('href', '/p/billing-api/routes/r1/cases/c1')
   })
 
+  it('baked_too_large: shows the message and the largest cases with sizes, as links', async () => {
+    publishError = {
+      status: 422,
+      error: 'baked_too_large',
+      details: [
+        {
+          routeId: 'r1',
+          method: 'GET',
+          path: '/big',
+          caseId: 'c1',
+          caseName: 'huge',
+          bytes: 14_680_064,
+        },
+        {
+          routeId: 'r2',
+          method: 'GET',
+          path: '/small',
+          caseId: 'c2',
+          caseName: 'tiny',
+          bytes: 2048,
+        },
+      ],
+    }
+    mount()
+    const dialog = await openPublish()
+    await userEvent.click(dialog.getByRole('button', { name: 'Publish and deploy' }))
+    expect(await dialog.findByRole('alert')).toHaveTextContent('server says no')
+    const big = await dialog.findByRole('link', { name: /GET \/big › huge — 14\.0 MiB/ })
+    expect(big).toHaveAttribute('href', '/p/billing-api/routes/r1/cases/c1')
+    expect(dialog.getByRole('link', { name: /GET \/small › tiny — 2\.0 KiB/ })).toHaveAttribute(
+      'href',
+      '/p/billing-api/routes/r2/cases/c2',
+    )
+  })
+
   it('explains empty_project and label_taken', async () => {
     publishError = { status: 422, error: 'empty_project' }
     mount()
