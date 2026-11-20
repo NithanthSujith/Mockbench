@@ -1,6 +1,6 @@
 # RUN-14 — Total baked-size cap per version
 
-Status: in review
+Status: done
 Phase: 4   Team: Runtime (+ main session for the contract)
 Depends on: RUN-01, RUN-02, RUN-09
 Size: S
