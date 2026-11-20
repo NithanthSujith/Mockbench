@@ -34,6 +34,8 @@ New runtime dependency: `zod` 4.x as a direct dependency of `apps/web` (the stac
 ## Tests
 Handler tests (filters, pagination, role matrix); Testing Library for table states; Playwright poll/refresh test in MSW mode.
 
+_Added 2026-11-21: `e2e/logs.spec.ts` covers the polling half against the real stack — a request made by a client outside the browser while the screen is open appears without a reload, unchecking Auto-refresh stops that, re-checking resumes it, the status filter re-queries, and an expanded row shows `authorization` as `[redacted]` with the secret absent from the row. The empty state and the retention note are asserted on a deployed project with no requests._
+
 ## Open questions
 - Expose `LOG_RETENTION_DAYS/ROWS` to the UI (additive field on `system.instance`) so the prototype's "pruned after 7 days" can be shown accurately? Needs a contract ruling.
 

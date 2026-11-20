@@ -30,6 +30,8 @@ Endpoints `members.list`, `members.add`, `members.update`, `members.remove`, `wo
 ## Tests
 Testing Library for permission variants and error mapping; Playwright for add → change role → remove against MSW mode and, once available, the real API.
 
+_Added 2026-11-21: `e2e/members.spec.ts` covers add → refuse → change role → remove against the real API, so the server's own `user_not_found`, `already_member` and last-owner refusals are what produce the three messages. The second account is registered first because registering replaces the context's session cookie (a later registrant owns no workspace until it is added, D3)._
+
 ## Open questions
 - Whether to show a copyable "registration link" for the instance to hand to teammates (the LAN URL is already visible elsewhere; assumed no).
 

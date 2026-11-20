@@ -31,7 +31,7 @@ Last updated: 2026-11-20 (after #60-#61; every planned unit is merged, RUN-14 in
 2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion.
 3. (Done 2026-11-20, #61) RUN-14, the total baked-size cap: 64 MiB, `422 baked_too_large`, ADR 0017 and ADR 0021. It added an error to `versions.publish` (still 53 endpoints).
 4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
-5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
+5. (Done 2026-11-21) Playwright backlog cleared: `e2e/infer.spec.ts` (BLD-09), `e2e/logs.spec.ts` (RUN-08 polling) and `e2e/members.spec.ts` (WS-04) run against the real stack. The loop suite is 21 tests, about 31 s. Only the REL-01 README GIF is still outstanding from the old backlog.
 6. The permission system blocks merges the owner has not named, merges of PRs with a failing check unless named, and `--admin` merges. Force-pushes need explicit approval per branch.
 
 ## Decisions pending (owner)
@@ -59,7 +59,7 @@ Last updated: 2026-11-20 (after #60-#61; every planned unit is merged, RUN-14 in
 - **Known limitation:** `inferSchema` cannot preserve the order of integer-like keys (`"200"`).
 - **Node floor:** `apps/web/test-node-shim.mjs` exists only because this machine has Node 22.12 (jsdom needs 22.15+).
 - **Golden-loop wording (XC-01):** UUIDs are v5 over the project id, so a new project's preview cannot equal the committed golden; the suite masks UUIDs. The preview is pretty-printed and the data plane serves compact JSON; the suite compares `JSON.stringify(JSON.parse(preview))`.
-- **e2e:** `e2e/` is not covered by the root typecheck (the Playwright `.mjs` entry has no types). Playwright's request client ignores Chromium's `--host-resolver-rules`, so `e2e/support/lan.ts` shims Node's `dns.lookup`. `pnpm e2e` uses `E2E_PORT` (default 8080; use 18080 when something else holds 8080).
+- **e2e:** `e2e/` is not covered by the root typecheck (the Playwright `.mjs` entry has no types), so a wrong property name in a spec only shows up when the suite runs — three of the four first-draft failures in the 2026-11-21 additions were exactly that. Fixtures for the newer specs go over the API through `e2e/support/owner.ts`, which caches the OWNER session **on disk** under `test-results/`: Playwright starts a fresh worker after a failing test, and an in-memory cache alone meant every later file signed in again, spending the 10/minute per-IP limiter and turning one real failure into three. Playwright's request client ignores Chromium's `--host-resolver-rules`, so `e2e/support/lan.ts` shims Node's `dns.lookup`. `pnpm e2e` uses `E2E_PORT` (default 8080; use 18080 when something else holds 8080).
 - **RUN-09:** the LIVE pill shows `LIVE <label>`. BLD-04 only counts routes in the rail. BLD-05 asks confirmation before deleting a case.
 - **UI kit:** there is no `danger` button variant; PRJ-05 uses `ghost` with `border-bad text-bad`. Adding one touches `components/ui/` (main session).
 - **WS-04:** the spec's "settings stub link" was left out (no workspace settings route). The 360 px members table is untested in a browser.

@@ -33,5 +33,7 @@ The tree UI (BLD-07), autosave (BLD-05 owns it), server-side inference use.
 ## Tests
 Testing Library for blur/parse/issue states; round-trip test over the shared corpus; Playwright for the infer flow in MSW mode (not added: no builder e2e harness exists yet; the infer flow is covered by Testing Library in `JsonTab.test.tsx`).
 
+_Added 2026-11-21: `e2e/infer.spec.ts` covers the infer flow against the real stack — paste, the amber null flag, accepting into the Builder, the autosave surviving a reload, the keys arriving on the data plane, and a `validateSchema` failure leaving the stored schema untouched. The envelope matters: a case's `schema` is `{version, components, root}`, so the fields live under `root.fields`, and the problems list declares `role="alert"`, which overrides the implicit `list` role._
+
 ## Open questions
 - Whether the JSON tab should show the envelope or only `root` (prototype shows `{version, root}`; this spec shows the envelope so `components` are editable).
