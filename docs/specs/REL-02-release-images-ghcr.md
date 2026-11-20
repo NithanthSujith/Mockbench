@@ -39,5 +39,16 @@ A dry-run of the workflow on a prerelease tag in CI; inspection scripts.
 - **PR-time coverage:** `lan-smoke` runs the same `scripts/image-inspect.sh` on the locally built images, so a regression shows up before a tag.
 - **Dry run:** needs a pushed prerelease tag, which publishes real images. Pending the owner's go-ahead.
 
+### First dry run, `v0.1.0-rc.1` (2026-11-20, run 44790921936) — failed, two bugs fixed
+
+`publish` succeeded for both images; `inspect` failed all 11 checks; `smoke` and `release` never ran, so **no release and no assets were created**. Both causes were in `docker.yml`, not in the images:
+
+1. **The tag lost its `v`.** `type=semver,pattern=v{{version}}` emitted `ghcr.io/…/mockbench-api:0.1.0-rc.1` for git tag `v0.1.0-rc.1` — the `v` in the pattern did not survive. Nothing looks for that tag: `inspect` pulls `$GITHUB_REF_NAME` and `smoke` sets `MOCKBENCH_VERSION=${{ github.ref_name }}`, both `v`-prefixed, and `docker-compose.pull.yml` interpolates the same value. The same quirk would have pushed `0.1` instead of `v0.1` on a stable tag. Tags are now computed in a shell step from `$GITHUB_REF_NAME` verbatim (`vX.Y` and `latest` added only when the tag has no `-`), so the image tag is the git tag by construction; `metadata-action` is kept for labels and annotations only.
+2. **`inspect` and `smoke` pulled from GHCR anonymously.** A package Actions has just created is **private**, and GHCR answers an unauthorized pull with `not found` — which is why the failure read as a missing tag rather than a permission error. Both jobs now log in with `docker/login-action` (same pinned SHA as `publish`).
+
+**Permissions drift (second item on top of the one above):** `inspect` and `smoke` now declare `packages: read` in addition to `contents: read`. The criterion below lists only the `publish` job's permissions; read access for the two jobs that pull is required, and `release` still needs `contents: write`.
+
+Because GHCR carries `0.1.0-rc.1` from the failed run and the git tag `v0.1.0-rc.1` is spent, a retry needs a **new** tag (`v0.1.0-rc.2`) unless the owner approves deleting and re-pushing `v0.1.0-rc.1`. The stray `0.1.0-rc.1` package version can be deleted in Package settings; nothing references it.
+
 ## Open questions
 - GHCR packages created by Actions may start private. If so, set both packages to public once (Package settings) so `docker compose pull` works without a login.

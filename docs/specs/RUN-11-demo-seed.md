@@ -32,4 +32,5 @@ Env `SEED_DEMO`. Seeded content: project `demo`; `GET /users` (200 "List": array
 Integration tests with a fresh DB: seed, double start, flag off, first-registration adoption, failure rollback.
 
 ## Open questions
-- DESIGN says "three routes — a 200 list, a 200 detail, a 404"; this spec reads that as three routes with the detail route carrying the 404 case and a POST for completeness. Confirm the intended set.
+- ~~DESIGN says "three routes — a 200 list, a 200 detail, a 404"; this spec reads that as three routes with the detail route carrying the 404 case and a POST for completeness. Confirm the intended set.~~
+  _Resolved 2026-11-20: the owner confirmed the shipped reading — `GET /users`, `GET /users/:id` (carrying the 404 `Not found` case) and `POST /users`. No change to the seed._
