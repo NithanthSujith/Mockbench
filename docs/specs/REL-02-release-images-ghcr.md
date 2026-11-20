@@ -25,7 +25,7 @@ Image names `ghcr.io/<owner>/mockbench-api` and `…-web`. Tag policy: `vX.Y.Z`,
 - [x] The release has `docker-compose.pull.yml` and `.env.example` attached. _Both are on the `v0.1.0-rc.2` prerelease. **Drift:** GitHub will not serve an asset whose name starts with a dot, so `.env.example` is attached as **`default.env.example`**. The file content is unchanged; anyone following the README downloads it and saves it as `.env`. Worth a line in the README (REL-01) rather than a workflow change._
 - [x] The post-publish smoke job runs the XC-01 golden loop against the pulled images and fails the workflow if it fails. _21 loop tests and 2 seed tests passed against the pulled images (29.8 s), and `release` runs only `needs: smoke`._
 - [x] The images run as non-root and contain no `drizzle-kit`, no source maps with absolute paths, and no `.env` files (inspection step). _`api` runs as uid 1000, `web` as uid 101; both report no `.env`, and `api` no `drizzle-kit`._
-- [x] The workflow requests only `contents: read`, `packages: write`, `id-token: write`/`attestations: write` permissions, and pins third-party actions by SHA. _Every third-party action is pinned by SHA. Two recorded permission drifts: `release` needs `contents: write`, and `inspect`/`smoke` need `packages: read` to pull a private package._
+- [x] The workflow requests only `contents: read`, `packages: write`, `id-token: write`/`attestations: write` permissions, and pins third-party actions by SHA. _Every third-party action is pinned by SHA. Two recorded permission drifts: `release` needs `contents: write`, and `inspect`/`smoke` declare `packages: read` so their pulls are authenticated._
 
 ## Tests
 A dry-run of the workflow on a prerelease tag in CI; inspection scripts.
@@ -44,7 +44,9 @@ A dry-run of the workflow on a prerelease tag in CI; inspection scripts.
 `publish` succeeded for both images; `inspect` failed all 11 checks; `smoke` and `release` never ran, so **no release and no assets were created**. Both causes were in `docker.yml`, not in the images:
 
 1. **The tag lost its `v`.** `type=semver,pattern=v{{version}}` emitted `ghcr.io/…/mockbench-api:0.1.0-rc.1` for git tag `v0.1.0-rc.1` — the `v` in the pattern did not survive. Nothing looks for that tag: `inspect` pulls `$GITHUB_REF_NAME` and `smoke` sets `MOCKBENCH_VERSION=${{ github.ref_name }}`, both `v`-prefixed, and `docker-compose.pull.yml` interpolates the same value. The same quirk would have pushed `0.1` instead of `v0.1` on a stable tag. Tags are now computed in a shell step from `$GITHUB_REF_NAME` verbatim (`vX.Y` and `latest` added only when the tag has no `-`), so the image tag is the git tag by construction; `metadata-action` is kept for labels and annotations only.
-2. **`inspect` and `smoke` pulled from GHCR anonymously.** A package Actions has just created is **private**, and GHCR answers an unauthorized pull with `not found` — which is why the failure read as a missing tag rather than a permission error. Both jobs now log in with `docker/login-action` (same pinned SHA as `publish`).
+2. **`inspect` and `smoke` pulled from GHCR anonymously.** Both now log in with `docker/login-action` (same pinned SHA as `publish`) and declare `packages: read`.
+
+   **Corrected 2026-11-21:** this was first written up as a second root cause, on the theory that a package Actions has just created is private and that GHCR answers an unauthorized pull with `not found`. That theory is wrong for this repository — an anonymous pull of both `v0.1.0-rc.2` manifests returns `200`, because packages linked to a public repository inherit its visibility. **The tag mismatch in item 1 was the only cause of the failure;** every `inspect` check failed because it asked for a tag that had never been pushed. The login is worth keeping (it authenticates the pulls and avoids anonymous rate limits) but it fixed nothing.
 
 **Permissions drift (second item on top of the one above):** `inspect` and `smoke` now declare `packages: read` in addition to `contents: read`. The criterion below lists only the `publish` job's permissions; read access for the two jobs that pull is required, and `release` still needs `contents: write`.
 
@@ -57,4 +59,5 @@ All four jobs passed with the fixes above: `publish` (api 54 s, web 42 s), `insp
 Still manual, once, and only if `docker compose pull` should work without `docker login`: set both GHCR packages to public in Package settings. The workflow itself no longer depends on that.
 
 ## Open questions
-- GHCR packages created by Actions may start private. If so, set both packages to public once (Package settings) so `docker compose pull` works without a login.
+- ~~GHCR packages created by Actions may start private. If so, set both packages to public once (Package settings) so `docker compose pull` works without a login.~~
+  _Resolved 2026-11-21: both packages are public — they inherit the repository's visibility — and an anonymous manifest fetch of each returns `200`. Nothing to set. The README's Option A is therefore login-free, and it was run end to end from the published release on 2026-11-21: all services healthy, `GET /api/v1/readyz` → `200`, and `GET /mock/demo/users` answering before any account existed._
