@@ -51,4 +51,4 @@ Snapshot embeds `generatorVersion`, `project.{id,slug,settings,components}`, ena
 Service tests against the FND-09 harness; the preview/bake equivalence test; a determinism test; a snapshot-isolation test.
 
 ## Open questions
-- Total baked size cap per version (DESIGN gives per-response caps only). Proposal: 64 MiB, error `baked_too_large` listing the largest cases. **Still needs a ruling; not implemented here** (only the per-response limits in schema-core apply).
+- Total baked size cap per version (DESIGN gives per-response caps only). Proposal: 64 MiB, error `baked_too_large` listing the largest cases. Ruled in ADR 0017 and ADR 0021; it is implemented by RUN-14, not here (only the per-response limits in schema-core apply).

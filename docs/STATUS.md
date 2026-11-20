@@ -25,7 +25,7 @@ Last updated: 2026-11-19 (after #54-#58; every planned unit is merged; REL-02 aw
 
 1. **REL-02 dry run:** push `v0.1.0-rc.1`, but only with the owner's explicit go-ahead, because it publishes to GHCR and creates a GitHub prerelease. Then tick REL-02's criteria; they all need a tag. GHCR packages may start private; the owner sets them public once. The criterion allowing only `contents: read` drifts: the release job needs `contents: write`, as recorded in the spec.
 2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion.
-3. Write a spec for the total baked-size cap (64 MiB, `baked_too_large`, ADR 0017). Not implemented.
+3. Implement **RUN-14**, the total baked-size cap: 64 MiB, `422 baked_too_large`, ADR 0017 and ADR 0021. The spec is approved; the contract part belongs to the main session.
 4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
 5. Remaining Playwright backlog: BLD-09 infer flow, RUN-08 log polling, WS-04 members against the real API (Testing Library covers them today).
 6. The permission system blocks merges the owner has not named, merges of PRs with a failing check unless named, and `--admin` merges. Force-pushes need explicit approval per branch.
@@ -84,5 +84,5 @@ Last updated: 2026-11-19 (after #54-#58; every planned unit is merged; REL-02 aw
 | 1 Freeze | 14 | 14 |
 | 2 Slice foundations | 14 | 14 |
 | 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
-| 4 Depth | 10 (RUN-12 dropped, ADR 0020) | 10 |
+| 4 Depth | 11 (RUN-12 dropped, ADR 0020; RUN-14 added, ADR 0021) | 10. RUN-14 spec approved, not started |
 | 5 Release | 4 (AUTH-04 added) | 3 done (REL-01, REL-03, AUTH-04); REL-02 merged, waiting on its first tag |
