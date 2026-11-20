@@ -27,7 +27,7 @@ Last updated: 2026-11-20 (after #60-#61; every planned unit is merged, RUN-14 in
 
 ## Do these next, in order
 
-1. **REL-02 dry run:** push `v0.1.0-rc.1`, but only with the owner's explicit go-ahead, because it publishes to GHCR and creates a GitHub prerelease. Then tick REL-02's criteria; they all need a tag. GHCR packages may start private; the owner sets them public once. The criterion allowing only `contents: read` drifts: the release job needs `contents: write`, as recorded in the spec.
+1. **REL-02 second dry run.** `v0.1.0-rc.1` was pushed on 2026-11-20 with the owner's go-ahead and **failed**: `publish` pushed both images, `inspect` failed, `smoke` and `release` never ran, so no release exists. Two bugs in `docker.yml`, both fixed (see the REL-02 spec): the image tag lost its `v` (`0.1.0-rc.1`, which no consumer looks for), and `inspect`/`smoke` pulled from GHCR without logging in, which a just-created private package answers with `not found`. **Needs:** the fix merged in the web UI (`gh` lacks the `workflow` scope), then a new tag `v0.1.0-rc.2` with the owner's explicit go-ahead — the `v0.1.0-rc.1` tag is spent and GHCR holds a stray `0.1.0-rc.1`. Only then can REL-02's criteria be ticked. GHCR packages may still need setting to public once for `docker compose pull` without a login.
 2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion.
 3. (Done 2026-11-20, #61) RUN-14, the total baked-size cap: 64 MiB, `422 baked_too_large`, ADR 0017 and ADR 0021. It added an error to `versions.publish` (still 53 endpoints).
 4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
@@ -37,8 +37,8 @@ Last updated: 2026-11-20 (after #60-#61; every planned unit is merged, RUN-14 in
 ## Decisions pending (owner)
 
 - **Rate limit:** resolved 2026-11-14: control-plane default raised from 100 to 600 requests a minute per session (ADR 0019). Sign-in stays 10 a minute per IP.
-- **REL-02 tag:** approval to push `v0.1.0-rc.1`.
-- **RUN-11 "three routes":** merged as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`; the owner has not explicitly confirmed this reading.
+- **REL-02 retry:** approval to push `v0.1.0-rc.2` once the `docker.yml` fix is merged (`v0.1.0-rc.1` was approved and used; its run failed). Alternatively, approval to delete and re-push `v0.1.0-rc.1`.
+- ~~**RUN-11 "three routes"**~~: confirmed by the owner on 2026-11-20 as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`, exactly as merged. No change needed.
 
 ## Decisions made
 

@@ -44,16 +44,31 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # Tags are computed here, not by metadata-action: `type=semver,pattern=v{{version}}` dropped the
+      # `v` and pushed `0.1.0-rc.1` for tag `v0.1.0-rc.1`, which no consumer looks for (v0.1.0-rc.1 run
+      # 44790921936). The contract is that the image tag IS the git tag, so MOCKBENCH_VERSION and
+      # docker-compose.pull.yml work with ${{ github.ref_name }} unchanged.
+      - name: Image tags (the git tag verbatim; vX.Y and latest only for a stable release)
+        id: tags
+        run: |
+          image='${{ steps.name.outputs.image }}'
+          ref="$GITHUB_REF_NAME"
+          {
+            echo "tags<<TAGS_EOF"
+            echo "$image:$ref"
+            if [[ "$ref" != *-* ]]; then
+              echo "$image:${ref%.*}"
+              echo "$image:latest"
+            fi
+            echo "TAGS_EOF"
+          } >> "$GITHUB_OUTPUT"
       - id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
           images: ${{ steps.name.outputs.image }}
           flavor: latest=false
-          # {{major}}.{{minor}} is skipped for prerelease tags by metadata-action itself.
-          tags: |
-            type=semver,pattern=v{{version}}
-            type=semver,pattern=v{{major}}.{{minor}}
-            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+          # Labels and annotations only; the `tags` step above owns the tag list.
+          tags: type=raw,value=${{ github.ref_name }}
           labels: |
             org.opencontainers.image.title=mockbench-${{ matrix.image }}
             org.opencontainers.image.licenses=MIT
@@ -64,7 +79,7 @@ jobs:
           file: docker/${{ matrix.image }}.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           provenance: mode=max
           sbom: true
@@ -80,9 +95,19 @@ jobs:
     needs: publish
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # A package Actions has just created is private, so the pulls below are not anonymous. GHCR answers
+    # an unauthorized pull with "not found", which is how the v0.1.0-rc.1 run read as a missing tag.
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Manifest lists, non-root, no drizzle-kit, no .env, no absolute source-map paths
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
@@ -93,10 +118,19 @@ jobs:
     needs: inspect
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Same reason as `inspect`: `docker compose pull` of a private package needs a login.
+    permissions:
+      contents: read
+      packages: read
     env:
       MOCKBENCH_VERSION: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Image owner matches docker-compose.pull.yml
         run: |
           owner="${GITHUB_REPOSITORY_OWNER,,}"
