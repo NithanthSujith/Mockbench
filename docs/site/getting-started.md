@@ -10,11 +10,15 @@ Docker with Compose v2 (`docker compose`). Nothing else runs on the host: the da
 
 ```sh
 git clone https://github.com/NithanthSujith/Mockbench.git && cd Mockbench
-cp .env.example .env
+bash scripts/setup.sh
 docker compose up
 ```
 
-Open `http://localhost:8080`. The port comes from `PORT` in `.env` (see [environment variables](environment-variables.md)).
+`setup.sh` asks which port to use and for two secrets, then writes `.env`. Press **Enter** at either secret to have a strong one generated. It leaves an existing `.env` alone, so re-running it is safe; `--defaults` skips the questions entirely, and Windows users outside Git Bash can run `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1` instead.
+
+The step exists because `SESSION_SECRET` keys the hash of every session token and has no safe default — Compose refuses to start without it, so skipping the script gives a clear error rather than a shared secret.
+
+Open `http://localhost:8080`, or the port you chose. The port comes from `PORT` in `.env` (see [environment variables](environment-variables.md)).
 
 The first account you register becomes the owner of the `Default` workspace. After that, registration stays open unless you set `ALLOW_SIGNUP=false`; later accounts start with no workspace until an owner adds them by email or they create their own.
 
@@ -46,7 +50,7 @@ Teammates open `http://<this-machine's-LAN-IP>:8080`, for example `http://192.16
 - **Docker Desktop on macOS and Windows** routes traffic through a virtual network, so the request log can show a gateway address instead of the caller's real IP. On Linux with the default bridge network the real address is kept.
 - **Change the port** by setting `PORT` in `.env` and running `docker compose up -d` again.
 
-Before sharing: set your own `SESSION_SECRET`, and consider `ALLOW_SIGNUP=false` once your team has accounts. The session cookie is not marked `Secure` by default so that plain HTTP on a LAN address works; set `COOKIE_SECURE=true` only behind HTTPS.
+Before sharing: `scripts/setup.sh` already gave this install its own `SESSION_SECRET` — `docker compose logs api` warns if a placeholder is still in use. Consider `ALLOW_SIGNUP=false` once your team has accounts. The session cookie is not marked `Secure` by default so that plain HTTP on a LAN address works; set `COOKIE_SECURE=true` only behind HTTPS.
 
 Mockbench makes no outbound network calls at runtime: no telemetry, no update checks, no fonts or scripts from a CDN.
 

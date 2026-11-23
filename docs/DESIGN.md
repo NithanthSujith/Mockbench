@@ -568,7 +568,7 @@ One API client module with typed functions per endpoint, generated from or hand-
 
 ## Docker and deployment
 
-`git clone`, `cp .env.example .env`, `docker compose up` — three commands, and the second one only because `SESSION_SECRET` has no safe default. Open `http://localhost:8080`.
+`git clone`, `bash scripts/setup.sh`, `docker compose up` — three commands, and the second one only because `SESSION_SECRET` has no safe default. The script asks for the port and the two secrets (Enter generates a strong value), then writes `.env` from `.env.example`; it refuses to overwrite an existing `.env`, and `--defaults` makes it non-interactive for CI. `.env.example` keeps a known placeholder secret so the test suites can boot straight from it. Open `http://localhost:8080`.
 
 **One stateful volume, by design.** Uploaded OpenAPI specs are stored as text in Postgres rather than on disk, logs go to stdout, and the SPA is baked into its image. So `pgdata` is the only thing that must survive, and "did I mount the right directory" stops being a support question.
 

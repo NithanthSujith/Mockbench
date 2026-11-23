@@ -169,16 +169,18 @@ jobs:
       contents: write # creating the release and uploading its two assets
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Create or update the release with docker-compose.pull.yml and .env.example
+      - name: Create or update the release with the compose file, .env.example and the setup scripts
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
           pre=()
           [[ "$TAG" == *-* ]] && pre=(--prerelease)
+          # setup.sh/.ps1 ride along so the published-image quickstart can generate a real
+          # SESSION_SECRET without cloning the repository.
+          assets=(docker-compose.pull.yml .env.example scripts/setup.sh scripts/setup.ps1)
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" docker-compose.pull.yml .env.example --clobber
+            gh release upload "$TAG" "${assets[@]}" --clobber
           else
-            gh release create "$TAG" --verify-tag --generate-notes "${pre[@]}" \
-              docker-compose.pull.yml .env.example
+            gh release create "$TAG" --verify-tag --generate-notes "${pre[@]}" "${assets[@]}"
           fi

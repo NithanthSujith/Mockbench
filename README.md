@@ -6,13 +6,64 @@ A self-hosted mock API server: your team defines routes and response shapes in a
 
 ## Quickstart
 
+You need **Docker** with Compose v2 and nothing else — no Node, no pnpm, no database to install. The images are multi-arch, so Intel, Apple Silicon and arm64 Linux all work.
+
 ```sh
 git clone https://github.com/NithanthSujith/Mockbench.git && cd Mockbench
-cp .env.example .env
+bash scripts/setup.sh
 docker compose up
 ```
 
-Open **http://localhost:8080**, register (the first account becomes the owner of the `Default` workspace), and you are in. The editor and the mock endpoints share that one port: the UI at `/`, the control API at `/api/v1/…`, the mocks at `/mock/<project-slug>/…`.
+That is the whole thing. `setup.sh` asks three questions — which port to use, a session secret and a database password — and writes a `.env` for you. Press **Enter** at either secret and it generates a strong random one, which is what most people want; type your own if you prefer. It never overwrites an existing `.env`, so it is safe to re-run.
+
+On Windows, use `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1` if you are not in Git Bash. For an unattended install (CI, a provisioning script) use `bash scripts/setup.sh --defaults`, which asks nothing and generates both secrets.
+
+> **Why the extra step?** `SESSION_SECRET` is the one setting with no safe default — it keys the hash of every session token, and shipping a known value would mean every Mockbench install shared it. Compose refuses to start without it, so if you skip the script you get a clear error rather than an insecure instance.
+
+### Open it
+
+Open **http://localhost:8080** (or whichever port you chose), register — the first account becomes the owner of the `Default` workspace — and you are in. The editor and the mock endpoints share that one port: the UI at `/`, the control API at `/api/v1/…`, the mocks at `/mock/<project-slug>/…`.
+
+### Run a published release instead
+
+To run prebuilt images without cloning anything:
+
+```sh
+mkdir mockbench && cd mockbench
+
+B=https://github.com/NithanthSujith/Mockbench/releases/download/v0.1.0-beta.1
+curl -LO          $B/docker-compose.pull.yml
+curl -L -o .env.example $B/default.env.example
+curl -LO          $B/setup.sh
+
+bash setup.sh                                  # writes .env, with generated secrets
+echo MOCKBENCH_VERSION=v0.1.0-beta.1 >> .env     # required: see below
+
+docker compose -f docker-compose.pull.yml up -d --wait
+```
+
+Three things about those commands are easy to get wrong:
+
+- The environment sample is attached to the release as **`default.env.example`**, not `.env.example`. GitHub will not serve a release asset whose name begins with a dot; the content is the same file, which is why the command above saves it back under its real name for `setup.sh` to read.
+- **`MOCKBENCH_VERSION` is required.** `docker-compose.pull.yml` falls back to `:latest`, and a prerelease deliberately does not move `latest`, so without that line the pull fails with a manifest-not-found error. Pick a tag from the [releases page](https://github.com/NithanthSujith/Mockbench/releases).
+- Append `MOCKBENCH_VERSION` **after** running `setup.sh` — the script writes `.env` from scratch, so a line added before it would be lost.
+
+The images are public, so no `docker login` is needed.
+
+### Other settings
+
+Everything else has a sensible default. The ones people change most often:
+
+| Variable          | Default | Why you would change it                                                               |
+| ----------------- | ------- | ------------------------------------------------------------------------------------- |
+| `PORT`            | `8080`  | The single host port serving the UI, the control API and the mocks.                   |
+| `ALLOW_SIGNUP`    | `true`  | Set to `false` once your team has accounts, so strangers on the LAN cannot register.  |
+| `SEED_DEMO`       | `true`  | Seeds the published `demo` project on an empty database. `false` starts with nothing. |
+| `MOCK_RATE_LIMIT` | unset   | Requests per minute per IP on `/mock`. Unset means unlimited.                         |
+
+Every variable is documented in [environment variables](docs/site/environment-variables.md). After editing `.env`, run `docker compose up -d` again to apply it.
+
+### Make your first call
 
 You do not have to build anything to make a first call. On an empty database Mockbench seeds a published `demo` project:
 
@@ -47,6 +98,15 @@ curl -i -H 'X-Mock-Case: Not found' http://localhost:8080/mock/demo/users/3
 <!-- smoke:end -->
 
 That response is a `404`, and it carries `X-Mock-Version`, `X-Mock-Route` and `X-Mock-Case` headers telling you which version, route and case answered. See [case selection and headers](docs/site/case-selection-and-headers.md).
+
+### Stop it
+
+```sh
+docker compose down      # stop, keep your projects
+docker compose down -v   # also delete the database volume
+```
+
+If you started from a published release, add `-f docker-compose.pull.yml` to both. Your data lives in one volume, `pgdata`; see [backup and restore](docs/site/backup-and-restore.md).
 
 ## What it does
 
@@ -85,7 +145,7 @@ Skip virtual adapters (VMware, WSL, Hyper-V, Docker); they are not reachable fro
 
 **Docker Desktop (macOS and Windows) and client IPs:** requests reach the containers through Docker's virtual network, so the request log and any per-IP limit may show a gateway address (such as `192.168.65.1` or `172.x.x.x`) instead of the caller's real LAN IP. On Linux with the default bridge network the real address is kept.
 
-**Before you share the instance:** change `SESSION_SECRET` in `.env` (the placeholder works, but the API logs a warning), change `POSTGRES_PASSWORD` if the database is ever reachable beyond the compose network (by default it is not published), and consider `ALLOW_SIGNUP=false` once your team has accounts. The session cookie is not marked `Secure`, because plain HTTP on a LAN IP must work; set `COOKIE_SECURE=true` only if you put HTTPS in front. Do not publish the port to the internet: the mock URLs take no authentication by design.
+**Before you share the instance:** if you ran `scripts/setup.sh`, your `SESSION_SECRET` and `POSTGRES_PASSWORD` are already unique to this install — check `docker compose logs api` for a `SESSION_SECRET` warning, which means a placeholder is still in use. Consider `ALLOW_SIGNUP=false` once your team has accounts. The session cookie is not marked `Secure`, because plain HTTP on a LAN IP must work; set `COOKIE_SECURE=true` only if you put HTTPS in front. Do not publish the port to the internet: the mock URLs take no authentication by design.
 
 **Forgot a password?** There is no reset email. From the host, run `docker compose exec api node dist/reset-password.js you@example.com`; it prints a new password and signs that user out everywhere. See [Backup and restore](docs/site/backup-and-restore.md#losing-access).
 
