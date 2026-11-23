@@ -2,6 +2,8 @@
 
 A self-hosted mock API server: your team defines routes and response shapes in a web UI, publishes a version, and anyone on the network calls the endpoints over plain HTTP. There is no hosted version, and there never will be.
 
+![The Mockbench editor. The routes of a project are listed on the left, a route's response case and its schema builder fill the middle, and the generated response, its mock headers and a ready-made curl command are on the right.](docs/images/editor.png)
+
 > **Mockbench has no authentication on its mock URLs: anyone who can reach the port can call every published project. It is built for a trusted private network (a laptop, an office LAN) and must never be exposed to the internet.**
 
 ## Quickstart
