@@ -1,6 +1,6 @@
 # Mockbench — status and how to resume
 
-Last updated: 2026-11-20 (after #60-#64; every planned unit is merged and REL-02 is proven by the green `v0.1.0-rc.2` run). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
+Last updated: 2026-11-23 (after #66; `v0.1.0-beta.1` is released and green, and the quickstart now runs `scripts/setup.sh`). This file is the hand-off: read it first in a new session, then `docs/PLAN.md` for the full plan.
 
 ## Where we are
 
@@ -23,12 +23,20 @@ Last updated: 2026-11-20 (after #60-#64; every planned unit is merged and REL-02
 
 **Merged on 2026-11-20 (owner named them):** #60 (ADR 0021 and the RUN-14 spec, docs only) and #61 (the RUN-14 implementation). #61 was built on #60's branch, so once #60 squash-merged, #61 conflicted on `docs/STATUS.md` and `docs/specs/RUN-14-baked-size-cap.md`: the same content had reached `main` as a different commit. It was resolved by merging `main` into the branch and keeping the branch side in every hunk, which left the tree byte-identical to the pre-merge commit. **Expect this whenever a docs PR is split out of an implementation branch; merge the docs PR first and resolve in favour of the implementation branch.**
 
-**Phase 4 is now 11 of 11 and every planned unit is in `main`.** What is left is not implementation: the `v0.1.0-rc.1` tag, two owner checks, and the Playwright backlog.
+**Phase 4 is 11 of 11 and every planned unit is in `main`.** What is left is not implementation: REL-03's owner check, and whether to cut a `v0.1.0` proper.
+
+**Merged on 2026-11-23:** #66, which makes the from-source quickstart `git clone`, `bash scripts/setup.sh`, `docker compose up`. `SESSION_SECRET` is the only setting with no safe default, so `docker compose up` on a fresh clone used to fail; `setup.sh` (and `setup.ps1` for Windows outside Git Bash) asks for the port and the two secrets, generates a strong value when the answer is empty, and derives `.env` from `.env.example`. `--defaults` is the non-interactive form, `--force` overwrites. A fresh install no longer logs the placeholder warning at all.
+
+**`.env.example` keeps its placeholder `SESSION_SECRET` deliberately.** `e2e/run.sh`, `scripts/lan-smoke.sh`, `scripts/readme-smoke.sh` and two CI jobs all boot with `--env-file .env.example`, so emptying that value breaks every one of them. Only its comments changed. Both setup scripts run from wherever `.env.example` is, so the same file works in a checkout and as a standalone asset downloaded beside `docker-compose.pull.yml`; the release workflow now attaches both. `readme-smoke.sh` gained a `setup` step that exercises the script in a temp directory, so it never touches the `.env` of whoever runs it.
+
+**`v0.1.0-beta.1` is released and green** (all five jobs: publish api, publish web, inspect, smoke, release). It is a prerelease, both images are multi-arch, and `latest` still does not exist. Images carry the `v`: `ghcr.io/nithanthsujith/mockbench-api:v0.1.0-beta.1`. Verified by running the README's published-release block in an empty directory against the real assets: `setup.sh` generated a secret standalone, the stack came up healthy, both README curls matched byte for byte, and the api log carried no placeholder warning. https://github.com/NithanthSujith/Mockbench/releases/tag/v0.1.0-beta.1
+
+**Open PR:** #67 adds `docs/images/editor.png` to the README, the repository's first tracked image. It touches no workflow, so it does not need a web-UI merge. More screenshots (request log, version diff, presets) were offered and deferred.
 
 ## Do these next, in order
 
 1. (Done 2026-11-20) **REL-02 is green.** `v0.1.0-rc.1` failed because the pushed image tag lost its `v` (`0.1.0-rc.1`), so every `inspect` check asked for a tag that did not exist; fixed in #63, which also made `inspect`/`smoke` log in to GHCR (worth keeping, but it fixed nothing — see the REL-02 spec's correction, the packages are public) and `v0.1.0-rc.2` (run 44798370535) passed all four jobs - publish, inspect, smoke and release. The prerelease carries `docker-compose.pull.yml` and the env sample, and the smoke job pulled the published images into an empty directory and passed the golden loop. REL-02's criteria are ticked and its status is `done`. One leftover, not blocking: GHCR holds a stray `0.1.0-rc.1` from the failed run, worth deleting in Package settings. The packages are **public** (they inherit the repository's visibility), so `docker compose pull` needs no login — verified by an anonymous manifest fetch and by running the README's Option A end to end on 2026-11-21.
-2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion.
+2. REL-03: the owner checks that the issue forms render under *New issue*, then ticks the last criterion. **This is the only open unit.**
 3. (Done 2026-11-20, #61) RUN-14, the total baked-size cap: 64 MiB, `422 baked_too_large`, ADR 0017 and ADR 0021. It added an error to `versions.publish` (still 53 endpoints).
 4. (Done 2026-11-18) XC-01: both deferred checks are live; spec ticked, `Depends on` left as written.
 5. (Done 2026-11-21) Playwright backlog cleared: `e2e/infer.spec.ts` (BLD-09), `e2e/logs.spec.ts` (RUN-08 polling) and `e2e/members.spec.ts` (WS-04) run against the real stack. The loop suite is 21 tests, about 31 s. Only the REL-01 README GIF is still outstanding from the old backlog.
@@ -37,7 +45,7 @@ Last updated: 2026-11-20 (after #60-#64; every planned unit is merged and REL-02
 ## Decisions pending (owner)
 
 - **Rate limit:** resolved 2026-11-14: control-plane default raised from 100 to 600 requests a minute per session (ADR 0019). Sign-in stays 10 a minute per IP.
-- ~~**REL-02 tag**~~: done. `v0.1.0-rc.2` was approved and pushed on 2026-11-20 and its run is green. A `v0.1.0` proper is the next tag decision whenever the owner wants it; it would also move `vX.Y` and `latest`.
+- ~~**REL-02 tag**~~: done. `v0.1.0-rc.2` (2026-11-20) and `v0.1.0-beta.1` (2026-11-23) both ran green. A `v0.1.0` proper is the next tag decision whenever the owner wants it; it would also move `vX.Y` and `latest`.
 - ~~**RUN-11 "three routes"**~~: confirmed by the owner on 2026-11-20 as `GET /users`, `GET /users/:id` (with the 404 `Not found` case) and `POST /users`, exactly as merged. No change needed.
 
 ## Decisions made
@@ -89,4 +97,4 @@ Last updated: 2026-11-20 (after #60-#64; every planned unit is merged and REL-02
 | 2 Slice foundations | 14 | 14 |
 | 3 Screens and publish loop | 14 | 14 (all merged, including BLD-12 #44) |
 | 4 Depth | 11 (RUN-12 dropped, ADR 0020; RUN-14 added, ADR 0021) | 11 |
-| 5 Release | 4 (AUTH-04 added) | 4. REL-02 proven by `v0.1.0-rc.2`; REL-03 has one owner check left |
+| 5 Release | 4 (AUTH-04 added) | 4. REL-02 proven by `v0.1.0-rc.2` and `v0.1.0-beta.1`; REL-03 has one owner check left |
