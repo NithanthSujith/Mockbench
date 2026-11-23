@@ -7,9 +7,10 @@
 #      projects.import, publish and deploy each, and call a mock
 #   4. compare the README's second example (a case picked by header) with the real response
 #   5. reset the user's password with `docker compose exec api node dist/reset-password.js` (AUTH-04)
+#   6. run scripts/setup.sh in a temp directory and check the .env it generates (the `setup` step)
 #
-#   scripts/readme-smoke.sh          up, check, down
-#   scripts/readme-smoke.sh up|check|down
+#   scripts/readme-smoke.sh          setup, up, check, down
+#   scripts/readme-smoke.sh up|check|setup|down
 #
 # Environment: README_SMOKE_PORT (default 8080), README_SMOKE_PROJECT (default mockbench-readme).
 # Runs from Git Bash on Windows, macOS and Linux. Needs docker, curl and node.
@@ -120,6 +121,53 @@ cmd_check() {
   if [ "$HTTP_CODE" = "200" ]; then pass "the piped password logs in"; else fail "login with the piped password -> ${HTTP_CODE} ${HTTP_BODY}"; fi
 }
 
+cmd_setup() {
+  section "the README's setup step (scripts/setup.sh)"
+  # Run it in a throwaway directory: the repository's own .env belongs to whoever is running this.
+  tmp="$(mktemp -d)"
+  trap 'rm -rf "$tmp"' RETURN
+  cp .env.example "$tmp/.env.example"
+  cp scripts/setup.sh "$tmp/setup.sh"
+
+  rc=0
+  (cd "$tmp" && bash setup.sh --defaults >/dev/null 2>&1) || rc=$?
+  if [ "$rc" = "0" ] && [ -f "$tmp/.env" ]; then
+    pass "setup.sh --defaults writes .env next to .env.example"
+  else
+    fail "setup.sh --defaults (exit ${rc}) wrote no .env"
+    return
+  fi
+
+  secret="$(sed -n 's/^SESSION_SECRET=//p' "$tmp/.env" | head -n 1)"
+  if [ "${#secret}" -ge 32 ] && [ "$secret" != "change-me-this-is-a-placeholder-not-a-secret" ]; then
+    pass "the generated SESSION_SECRET is long and is not the placeholder"
+  else
+    fail "SESSION_SECRET is ${#secret} characters and may still be the placeholder"
+  fi
+
+  pg="$(sed -n 's/^POSTGRES_PASSWORD=//p' "$tmp/.env" | head -n 1)"
+  if [ "${#pg}" -ge 32 ] && [ "$pg" != "$secret" ]; then
+    pass "POSTGRES_PASSWORD is generated separately from SESSION_SECRET"
+  else
+    fail "POSTGRES_PASSWORD is ${#pg} characters or repeats the session secret"
+  fi
+
+  # Every other variable must survive the rewrite untouched.
+  if diff <(grep -vE '^(SESSION_SECRET|POSTGRES_PASSWORD|PORT)=' "$tmp/.env.example") \
+    <(grep -vE '^(SESSION_SECRET|POSTGRES_PASSWORD|PORT)=' "$tmp/.env") >/dev/null; then
+    pass "every other line of .env.example is carried over unchanged"
+  else
+    fail "setup.sh altered lines it should have copied verbatim"
+  fi
+
+  (cd "$tmp" && bash setup.sh >/dev/null 2>&1)
+  if [ "$(sed -n 's/^SESSION_SECRET=//p' "$tmp/.env" | head -n 1)" = "$secret" ]; then
+    pass "a second run leaves an existing .env alone"
+  else
+    fail "a second run overwrote an existing .env"
+  fi
+}
+
 cmd_down() {
   section "tear down"
   compose down -v --remove-orphans >/dev/null 2>&1 && pass "removed ${PROJECT} and its volume"
@@ -128,9 +176,10 @@ cmd_down() {
 case "${1:-all}" in
   up) cmd_up ;;
   check) cmd_check ;;
+  setup) cmd_setup ;;
   down) cmd_down ;;
-  all) cmd_up; cmd_check; cmd_down ;;
-  *) echo "usage: $0 [up|check|down]"; exit 2 ;;
+  all) cmd_setup; cmd_up; cmd_check; cmd_down ;;
+  *) echo "usage: $0 [up|check|setup|down]"; exit 2 ;;
 esac
 
 if [ "$FAILS" -gt 0 ]; then printf '\n%s check(s) failed\n' "$FAILS"; exit 1; fi
