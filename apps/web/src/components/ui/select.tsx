@@ -80,14 +80,16 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
         <S.Trigger
           ref={ref}
           className={cn(
-            'flex w-full items-center justify-between gap-2 rounded-sm border border-line-strong bg-panel-2 py-1.75 pl-2.25 pr-2 text-left text-compact text-ink transition-ui hover:border-ink-3 data-placeholder:text-ink-3 data-[state=open]:border-ink-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad',
+            'flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-sm border border-line-strong bg-panel-2 py-2.25 pl-2.25 pr-2 text-left text-control text-ink transition-ui hover:border-ink-3 data-placeholder:text-ink-3 data-[state=open]:border-ink-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad',
             mono && 'mono',
             className,
           )}
           {...field}
           {...triggerProps}
         >
-          <S.Value placeholder={placeholder} />
+          <span className="min-w-0 truncate">
+            <S.Value placeholder={placeholder} />
+          </span>
           <S.Icon asChild>
             <ChevronDown aria-hidden className="size-3.5 shrink-0 text-ink-3" />
           </S.Icon>

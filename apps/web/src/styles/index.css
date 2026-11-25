@@ -88,6 +88,11 @@
   [hidden]:not([hidden='until-found' i]) {
     display: none !important;
   }
+  /* Native checkboxes and radios share the prototype's accent (.opt input{accent-color:var(--signal)}). */
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-signal);
+  }
   ::placeholder {
     color: var(--color-ink-3);
     opacity: 1;

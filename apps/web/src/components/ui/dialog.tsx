@@ -24,7 +24,7 @@ export function DialogContent({
       <Dlg.Overlay className="fixed inset-0 z-40 bg-bg/70" />
       <Dlg.Content
         className={cn(
-          'fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line-strong bg-panel p-4 shadow-menu',
+          'fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-line-strong bg-panel p-4 shadow-menu',
           className,
         )}
         {...props}
