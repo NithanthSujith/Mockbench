@@ -91,6 +91,13 @@ describe('redaction and truncation', () => {
     })
   })
 
+  it('stores a query or header named __proto__ as an ordinary key', () => {
+    const query = JSON.parse('{"__proto__":"x","n":"1"}') as Record<string, string>
+    const headers = JSON.parse('{"__proto__":"y"}') as Record<string, string>
+    expect(JSON.parse(JSON.stringify(redactQuery(query)))).toEqual(query)
+    expect(JSON.parse(JSON.stringify(redactHeaders(headers)))).toEqual(headers)
+  })
+
   it('truncates the stored path to 2,000 chars', async () => {
     const { db, state } = fakeDb()
     const w = createRequestLogWriter({ db })
@@ -285,6 +292,20 @@ describe('integration', () => {
     expect(h['x-api-key']).toBe('[redacted]')
     expect(h['x-other']).toBe('kept')
     expect(h['x-big']).toHaveLength(1000)
+  })
+
+  it('a query parameter named __proto__ is stored like any other', async () => {
+    const { project, slug } = await publish()
+    const res = await request(t.app).get(`/mock/${slug}/users?__proto__=x&n=1`)
+    expect(res.status).toBe(200)
+    await writer.flush()
+    const rows = await rowsOf(project.id)
+    expect(rows).toHaveLength(1)
+    // jsonb reorders keys, so compare own entries rather than the serialized text.
+    expect(Object.entries(rows[0]!.query as object).sort()).toEqual([
+      ['__proto__', 'x'],
+      ['n', '1'],
+    ])
   })
 
   it('mock errors store mock_error and null matched ids', async () => {

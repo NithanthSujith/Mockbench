@@ -120,8 +120,16 @@ describe('semantic string detection', () => {
     expect(t('ftp://example.com')).toBe('string')
     expect(t('example.com')).toBe('string')
     expect(t('not an email@')).toBe('string')
+    expect(t('a@b..co')).toBe('string') // empty domain label
+    expect(t('a@.co')).toBe('string')
     expect(t('8c1f0e2a-5b43-4c9d-9f12')).toBe('string')
     expect(t('')).toBe('string')
+  })
+  it('email detection is linear on a hostile string (CodeQL js/polynomial-redos)', () => {
+    const hostile = 'a@' + '.'.repeat(100_000) + '@'
+    const started = Date.now()
+    expect(t(hostile)).toBe('string')
+    expect(Date.now() - started).toBeLessThan(2000)
   })
   it('whole numbers are integer, including 1.0 (which JSON parses as 1)', () => {
     expect(only(JSON.parse('1.0')).type).toBe('integer')

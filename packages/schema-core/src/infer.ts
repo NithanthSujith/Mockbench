@@ -24,7 +24,8 @@ export interface InferResult {
 }
 
 // Semantic detectors, tried in DESIGN's order: email, UUID, date, datetime, URL.
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Domain labels exclude `.`, so each character has one way to match: linear time on any input.
+const EMAIL_RE = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 const DATETIME_RE =

@@ -108,8 +108,12 @@ describe('runMigrations: lock is released when the holder is killed mid-migratio
       if (!inMigration) await new Promise((res) => setTimeout(res, 100))
     }
     expect(inMigration, `child never reached the migration. stderr: ${childErr}`).toBe(true)
+    // pg_locks is cluster-wide: count only this test database's locks, or a migrator running in
+    // another test file at the same moment makes this 2.
     const locks = await t.pool.query(
-      `SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND granted`,
+      `SELECT 1 FROM pg_locks
+        WHERE locktype = 'advisory' AND granted
+          AND database = (SELECT oid FROM pg_database WHERE datname = current_database())`,
     )
     expect(locks.rowCount).toBe(1)
 

@@ -55,35 +55,37 @@ function clean(value: string, max: number): string {
 }
 
 export function redactHeaders(headers: Record<string, string>): Record<string, string> {
-  const out: Record<string, string> = {}
-  let n = 0
-  for (const [name, value] of Object.entries(headers)) {
-    if (n >= MAX_HEADERS) break
-    const key = clean(name, MAX_HEADER_VALUE)
-    out[key] = REDACTED_HEADERS.has(name.toLowerCase()) ? REDACTED : clean(value, MAX_HEADER_VALUE)
-    n++
-  }
-  return out
+  // Object.fromEntries defines each key as an own property, so a client-chosen name such as
+  // `__proto__` is stored like any other instead of being swallowed by an assignment.
+  return Object.fromEntries(
+    Object.entries(headers)
+      .slice(0, MAX_HEADERS)
+      .map(([name, value]) => [
+        clean(name, MAX_HEADER_VALUE),
+        REDACTED_HEADERS.has(name.toLowerCase()) ? REDACTED : clean(value, MAX_HEADER_VALUE),
+      ]),
+  )
 }
 
 export function redactQuery(
   query: Record<string, string | string[]>,
 ): Record<string, string | string[]> {
-  const out: Record<string, string | string[]> = {}
-  let n = 0
-  for (const [name, value] of Object.entries(query)) {
-    if (n >= MAX_HEADERS) break
-    const secret = REDACTED_QUERY_KEYS.has(name.toLowerCase())
-    out[clean(name, MAX_HEADER_VALUE)] = secret
-      ? Array.isArray(value)
-        ? value.map(() => REDACTED)
-        : REDACTED
-      : Array.isArray(value)
-        ? value.slice(0, MAX_HEADERS).map((v) => clean(v, MAX_HEADER_VALUE))
-        : clean(value, MAX_HEADER_VALUE)
-    n++
-  }
-  return out
+  // Own properties via Object.fromEntries, as in redactHeaders.
+  return Object.fromEntries(
+    Object.entries(query)
+      .slice(0, MAX_HEADERS)
+      .map(([name, value]) => {
+        const secret = REDACTED_QUERY_KEYS.has(name.toLowerCase())
+        const stored = secret
+          ? Array.isArray(value)
+            ? value.map(() => REDACTED)
+            : REDACTED
+          : Array.isArray(value)
+            ? value.slice(0, MAX_HEADERS).map((v) => clean(v, MAX_HEADER_VALUE))
+            : clean(value, MAX_HEADER_VALUE)
+        return [clean(name, MAX_HEADER_VALUE), stored]
+      }),
+  )
 }
 
 // ---------------------------------------------------------------------------------------------------
