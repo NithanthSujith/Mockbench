@@ -3,6 +3,7 @@
 ---
 
 A design pass over every screen, with the rulings in ADR 0022:
+
 - The schema builder's columns line up at every depth.
 - Tables no longer widen the page on phones, and tall dialogs scroll.
 - Selects match input height.
