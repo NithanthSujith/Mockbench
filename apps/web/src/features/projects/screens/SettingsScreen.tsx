@@ -227,7 +227,8 @@ function SettingsForm({
                 onChange={edit(() => form.setFieldValue('indexing', 'path'))}
               />
               <p data-testid="indexing-example" className="m-0 pt-1 text-small text-ink-2">
-                <span className="mono">users[2].tags</span> {'→'} <span className="mono">{JSON.stringify(example)}</span>
+                <span className="mono">users[2].tags</span> {'→'}{' '}
+                <span className="mono">{JSON.stringify(example)}</span>
               </p>
             </div>
           </div>
