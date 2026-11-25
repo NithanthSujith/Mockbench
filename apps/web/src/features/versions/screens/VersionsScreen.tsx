@@ -132,6 +132,13 @@ function DeploymentsPanel({ projectId }: { projectId: string }) {
       <PanelBody>
         {query.isPending ? (
           <Spinner />
+        ) : query.isError ? (
+          <p role="alert" className="m-0 flex flex-wrap items-center gap-2 text-small text-bad">
+            Could not load the deployment history.
+            <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>
+              Try again
+            </Button>
+          </p>
         ) : items.length === 0 ? (
           <p className="m-0 text-small text-ink-3">No deployments yet.</p>
         ) : (
@@ -237,6 +244,16 @@ export function VersionsScreen() {
           <PanelBody>
             <Spinner />
           </PanelBody>
+        ) : versionsQuery.isError ? (
+          <EmptyState
+            title="Could not load versions"
+            description={versionsQuery.error?.message}
+            action={
+              <Button variant="ghost" onClick={() => void versionsQuery.refetch()}>
+                Try again
+              </Button>
+            }
+          />
         ) : versions.length === 0 ? (
           <EmptyState title="No versions" description={EMPTY_TEXT} />
         ) : (

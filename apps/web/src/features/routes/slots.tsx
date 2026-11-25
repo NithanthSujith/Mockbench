@@ -25,7 +25,11 @@ export function SchemaEditorSlot({
 }) {
   const { components, save } = useProjectComponents(projectId)
   return (
-    <Card data-screen="schema-builder/SchemaEditorSlot" data-case-id={caseId}>
+    <Card
+      data-screen="schema-builder/SchemaEditorSlot"
+      data-case-id={caseId}
+      className="overflow-clip"
+    >
       <PanelHead>
         <h3>Response body</h3>
       </PanelHead>

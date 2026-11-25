@@ -185,7 +185,7 @@ function LogTable({ data }: { data: RequestLogEntry[] }) {
               {expanded ? (
                 <tr data-testid="log-details">
                   <td colSpan={columns.length} className="border-b border-line bg-slab px-3.5 py-3">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 narrow:grid-cols-2">
                       <KeyValues title="Request headers" values={entry.requestHeaders} />
                       <KeyValues title="Query" values={entry.query} />
                     </div>
@@ -264,7 +264,7 @@ export function LogsScreen() {
           <Select
             aria-label="Status"
             mono
-            className="w-28"
+            className="w-32"
             value={status ?? 'all'}
             onValueChange={(v) =>
               setFilter({ status: v === 'all' ? undefined : (v as LogsSearch['status']) })
@@ -312,6 +312,16 @@ export function LogsScreen() {
           <PanelBody>
             <Spinner />
           </PanelBody>
+        ) : query.isError && items.length === 0 ? (
+          <EmptyState
+            title="Could not load the request log"
+            description={query.error?.message}
+            action={
+              <Button variant="ghost" onClick={() => void query.refetch()}>
+                Try again
+              </Button>
+            }
+          />
         ) : items.length === 0 ? (
           filtered ? (
             <EmptyState title="No requests match these filters." />

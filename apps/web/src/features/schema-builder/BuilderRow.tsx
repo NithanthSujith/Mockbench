@@ -113,7 +113,7 @@ export function BuilderRow({
         onMoveKey(row.id, move)
       }}
       className={cn(
-        'group relative grid min-w-0 grid-cols-[auto_minmax(96px,1.3fr)_118px_minmax(0,1.4fr)_auto] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-[860px]:grid-cols-[auto_minmax(80px,1fr)_104px] max-[860px]:gap-y-1',
+        'group relative grid min-w-0 grid-cols-[auto_minmax(96px,1.3fr)_118px_minmax(0,1.4fr)_auto] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-narrow:grid-cols-[auto_minmax(80px,1fr)_104px] max-narrow:gap-y-1',
         drag.isDragging && 'opacity-40',
       )}
       style={{ paddingLeft: INDENT_BASE_PX + row.depth * INDENT_STEP_PX }}
@@ -207,7 +207,7 @@ export function BuilderRow({
         <IssueBadges issues={issues} refName={node.attrs.name} />
       </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 max-[860px]:col-span-full max-[860px]:row-start-2 max-[860px]:pl-6">
+      <div className="flex min-w-0 items-center gap-1.5 max-narrow:col-start-2 max-narrow:row-start-2">
         <ExtraControl
           node={node}
           disabled={readOnly}
@@ -222,7 +222,7 @@ export function BuilderRow({
       <div
         className={cn(
           'flex items-center gap-0.5 opacity-30 transition-ui focus-within:opacity-100 group-hover:opacity-100',
-          'max-[860px]:col-start-3 max-[860px]:row-start-1 max-[860px]:opacity-100',
+          'max-narrow:col-start-3 max-narrow:row-start-2 max-narrow:justify-end max-narrow:opacity-100',
         )}
       >
         <IconButton

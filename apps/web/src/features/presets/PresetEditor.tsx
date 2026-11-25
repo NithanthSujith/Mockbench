@@ -124,7 +124,7 @@ function EditorForm({
 
   return (
     <form noValidate onSubmit={(e) => void save(e)} className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-[1fr_9rem]">
+      <div className="grid gap-3 narrow:grid-cols-[1fr_9rem]">
         <Field label="Name" error={attempted ? nameError : undefined}>
           <Input
             value={name}

@@ -25,7 +25,7 @@ export function ProjectSwitcher() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <DropdownButton data-slot="project-switcher" disabled={!workspace}>
-            <span className="mono">{currentProjectSlug ?? 'All projects'}</span>
+            {currentProjectSlug ? <span className="mono">{currentProjectSlug}</span> : 'All projects'}
           </DropdownButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

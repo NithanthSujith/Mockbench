@@ -81,7 +81,7 @@ export function TryItPanel({ case: caseItem, route }: { case: ResponseCase; rout
           <pre
             ref={snippetRef}
             aria-label="curl command"
-            className="mono m-0 overflow-x-auto rounded-md border border-line bg-panel-2 py-2.5 pl-3 pr-10 text-small text-ink-2 select-text"
+            className="mono m-0 whitespace-pre-wrap break-all rounded-md border border-line bg-panel-2 py-2.5 pl-3 pr-10 text-small text-ink-2 select-text"
           >
             {curl}
           </pre>
