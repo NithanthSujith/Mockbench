@@ -85,12 +85,14 @@ test('a project with no requests shows the empty state', async ({ page }) => {
     path: '/nothing',
     schema: SCHEMA,
   })
-  // Deployed, so the empty text is the plain one without the Versions hint.
+  // Deployed, so the empty state says calls will show up, without the Versions hint (ADR 0022).
   await publishAndDeploy(page.context(), quiet.projectId)
 
   await page.goto(`/p/${quiet.slug}/logs`)
+  await expect(page.getByText('No requests yet', { exact: true })).toBeVisible()
   await expect(
-    page.getByText('No requests yet. The log starts filling once this project is deployed.'),
+    page.getByText("Calls to this project's mock URL show up here as they arrive."),
   ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Go to Versions' })).toHaveCount(0)
   await expect(page.getByText('Older entries are pruned automatically.')).toBeVisible()
 })
