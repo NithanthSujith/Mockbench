@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Card, EmptyState } from '../components/ui'
+import { Card, EmptyState, cn, textLink } from '../components/ui'
 import { SoloShell } from './columns'
 import { Topbar } from './topbar'
 
@@ -12,7 +12,7 @@ export function NotFoundBody() {
           title="Page not found"
           description="There is nothing at this address, or you do not have access to it."
           action={
-            <Link to="/" className="text-control text-info hover:underline">
+            <Link to="/" className={cn('text-control', textLink)}>
               Go to the start page
             </Link>
           }

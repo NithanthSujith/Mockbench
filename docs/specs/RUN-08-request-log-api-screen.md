@@ -28,7 +28,7 @@ New runtime dependency: `zod` 4.x as a direct dependency of `apps/web` (the stac
 - [x] Changing a filter re-queries with the corresponding parameters and resets the cursor; "Load more" appends the next page.
 - [x] Auto-refresh polls every 3 s only while the tab is visible, prepends new rows without losing scroll position, and can be paused.
 - [x] Expanding a row shows request headers (redacted values shown as `[redacted]`) and query as mono key/value pairs.
-- [x] A project with no requests shows "No requests yet. The log starts filling once this project is deployed."; one with no active version says the same plus a link to Versions.
+- [x] A project with no requests shows the title "No requests yet" with "Calls to this project's mock URL show up here as they arrive."; one with no active version says "The log starts filling once this project is deployed." plus a link to Versions (amended by ADR 0022, which removed the repeated title).
 - [x] The retention note says entries are pruned automatically, without hard-coded numbers unless the server exposes them (see Open questions).
 
 ## Tests

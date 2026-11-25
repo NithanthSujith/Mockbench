@@ -39,9 +39,11 @@ export function WorkspaceSwitcher() {
     )
   } else if (all.length === 1) {
     body = (
+      // WS-03: a plain label with one workspace. Styled as text, not as a control, so it does not look
+      // clickable (ADR 0022).
       <span
         data-slot="workspace-switcher"
-        className="inline-flex items-center rounded-md border border-line-strong bg-panel-2 px-2.5 py-1.5 text-control"
+        className="inline-flex items-center px-1 text-control font-medium leading-none text-ink"
       >
         {workspace?.name ?? all[0]!.name}
       </span>

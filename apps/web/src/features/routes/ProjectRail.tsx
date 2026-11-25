@@ -11,7 +11,7 @@ import { NewRouteDialog } from './NewRouteDialog'
 import { useProjectBySlug, useProjectRoutes } from './queries'
 
 const NAV_LINK =
-  'flex items-center justify-between gap-2 rounded-sm px-2.5 py-1.75 text-body text-ink-2 hover:bg-panel-2 hover:text-ink aria-[current=page]:bg-panel-2 aria-[current=page]:text-ink'
+  'flex items-center justify-between gap-2 rounded-sm px-2.5 py-1.75 text-body text-ink-2 hover:bg-panel-2 hover:text-ink aria-[current=page]:bg-panel-3 aria-[current=page]:text-ink'
 
 /** Case-insensitive substring match on "METHOD /path". Client-side only. */
 export function filterRoutes<T extends { method: string; path: string }>(
@@ -144,7 +144,7 @@ function RailBody({
                     to="/p/$projectSlug/routes/$routeId"
                     params={{ projectSlug, routeId: route.id }}
                     title={`${route.method} ${route.path}`}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-sm px-2 py-1.5 text-ink-2 hover:bg-panel-2 hover:text-ink aria-[current=page]:bg-panel-2 aria-[current=page]:text-ink"
+                    className="flex min-w-0 flex-1 items-center gap-2 rounded-sm px-2 py-1.5 text-ink-2 hover:bg-panel-2 hover:text-ink aria-[current=page]:bg-panel-3 aria-[current=page]:text-ink"
                   >
                     <MethodBadge method={route.method} />
                     <span className="mono min-w-0 flex-1 truncate text-compact">{route.path}</span>

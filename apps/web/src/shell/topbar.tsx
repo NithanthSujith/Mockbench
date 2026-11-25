@@ -20,7 +20,7 @@ function BaseUrl() {
   return (
     <div
       data-slot="base-url"
-      className="mono flex min-w-0 items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1.25 text-small text-ink-2 max-narrow:order-last max-narrow:w-full"
+      className="mono ml-auto flex min-w-0 max-w-max grow basis-0 items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1.25 text-small text-ink-2 max-narrow:order-last max-narrow:ml-0 max-narrow:max-w-none max-narrow:basis-full"
     >
       <span ref={textRef} className="truncate" title={value}>
         {value}
@@ -54,7 +54,9 @@ export function Topbar() {
         </span>
         <ProjectSwitcher />
         <LivePill />
-        <span className="min-w-0 flex-1" />
+        {/* Below 860px the address moves to its own line, so this pushes Publish and the account right.
+            Wider, the address itself takes the free space and truncates instead of wrapping (ADR 0022). */}
+        <span aria-hidden className="hidden min-w-0 flex-1 max-narrow:block" />
         <BaseUrl />
         <PublishButton />
         <AccountMenu />

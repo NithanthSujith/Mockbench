@@ -124,7 +124,7 @@ function EditorForm({
 
   return (
     <form noValidate onSubmit={(e) => void save(e)} className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-[1fr_9rem]">
+      <div className="grid gap-3 narrow:grid-cols-[1fr_9rem]">
         <Field label="Name" error={attempted ? nameError : undefined}>
           <Input
             value={name}
@@ -251,7 +251,10 @@ function EditorForm({
                         ) : null}
                       </div>
                     </Td>
-                    <Td className="mono min-w-40 text-small text-ink-2">{row?.text ?? '—'}</Td>
+                    {/* Wraps, so a long sample no longer pushes the Delete column out of the dialog (ADR 0022). */}
+                    <Td className="mono min-w-32 whitespace-normal break-words text-small text-ink-2">
+                      {row?.text ?? '—'}
+                    </Td>
                     <Td>
                       {readOnly ? null : (
                         <IconButton

@@ -9,7 +9,7 @@ export function NoWorkspaceState() {
     <>
       <EmptyState
         title="You aren't in any workspace yet"
-        description="or ask an owner to add your email"
+        description="Create one, or ask a workspace owner to add your email."
         action={<Button onClick={() => setOpen(true)}>Create workspace</Button>}
       />
       <NewWorkspaceDialog open={open} onOpenChange={setOpen} />

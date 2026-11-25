@@ -135,7 +135,7 @@ function ImportForm({ workspaceId, onDone }: { workspaceId: string; onDone: () =
           accept=".json,application/json"
           aria-label="Project file"
           onChange={(e) => void choose(e)}
-          className="text-small text-ink-2"
+          className="text-small text-ink-2 file:mr-2.5 file:cursor-pointer file:rounded-md file:border file:border-solid file:border-line-strong file:bg-panel file:px-2.5 file:py-1 file:text-compact file:font-semibold file:text-ink file:transition-ui hover:file:bg-panel-2 active:file:bg-panel-3"
         />
       </Field>
       {file ? (

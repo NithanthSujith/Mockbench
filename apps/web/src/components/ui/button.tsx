@@ -7,10 +7,10 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-btn text-btn-ink hover:opacity-90',
-        ghost: 'border-line-strong bg-panel text-ink hover:bg-panel-2',
+        primary: 'bg-btn text-btn-ink hover:opacity-90 active:opacity-80',
+        ghost: 'border-line-strong bg-panel text-ink hover:bg-panel-2 active:bg-panel-3',
         dashed:
-          'w-full justify-center border-dashed border-line-strong bg-transparent font-medium text-ink-2 hover:border-solid hover:bg-panel-2 hover:text-ink',
+          'w-full justify-center border-dashed border-line-strong bg-transparent font-medium text-ink-2 hover:border-solid hover:bg-panel-2 hover:text-ink active:bg-panel-3',
       },
       size: {
         md: 'px-3.25 py-1.75 text-control',

@@ -125,7 +125,7 @@ function SettingsForm({
               You have view access to this workspace, so settings are read-only.
             </p>
           ) : null}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 narrow:grid-cols-2">
             <form.Field name="name" validators={{ onChange: ({ value }) => nameProblem(value) }}>
               {(field) => (
                 <Field
@@ -166,7 +166,7 @@ function SettingsForm({
             </form.Field>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="grid gap-5 narrow:grid-cols-2">
             <div className="flex flex-col gap-2" role="radiogroup" aria-label="Generation mode">
               <Eyebrow>Generation mode</Eyebrow>
               {(
@@ -227,12 +227,13 @@ function SettingsForm({
                 onChange={edit(() => form.setFieldValue('indexing', 'path'))}
               />
               <p data-testid="indexing-example" className="m-0 pt-1 text-small text-ink-2">
-                users[2].tags {'→'} <span className="mono">{JSON.stringify(example)}</span>
+                <span className="mono">users[2].tags</span> {'→'}{' '}
+                <span className="mono">{JSON.stringify(example)}</span>
               </p>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 narrow:grid-cols-2">
             <form.Field name="cors">
               {(field) => (
                 <Field label="CORS">

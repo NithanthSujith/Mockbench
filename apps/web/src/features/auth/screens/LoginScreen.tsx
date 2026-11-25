@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useState, type FormEvent } from 'react'
-import { Button, Field, Input, Spinner } from '../../../components/ui'
+import { Button, Field, Input, Spinner, textLink } from '../../../components/ui'
 import { api } from '../../../lib/api/client'
 import { isApiError } from '../../../lib/api/errors'
 import { resetUnauthenticated } from '../../../lib/api/unauthenticated'
@@ -71,7 +71,7 @@ export function LoginScreen() {
           {info?.setupRequired ? (
             <p className="m-0 text-control text-ink-2">
               No accounts exist yet.{' '}
-              <Link to="/register" search={{ redirect: search.redirect }} className="text-signal">
+              <Link to="/register" search={{ redirect: search.redirect }} className={textLink}>
                 Create the first account
               </Link>
             </p>
@@ -102,7 +102,7 @@ export function LoginScreen() {
           {canRegister && !info?.setupRequired ? (
             <p className="m-0 text-small text-ink-3">
               Need an account?{' '}
-              <Link to="/register" search={{ redirect: search.redirect }} className="text-signal">
+              <Link to="/register" search={{ redirect: search.redirect }} className={textLink}>
                 Register
               </Link>
             </p>

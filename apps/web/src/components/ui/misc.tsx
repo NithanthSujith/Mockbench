@@ -19,6 +19,14 @@ export function Slab({ className, ...props }: HTMLAttributes<HTMLPreElement>) {
   )
 }
 
+/**
+ * The one style for a link inside running text (ADR 0022): info blue and underlined at rest, since blue
+ * on the grey body text is not a 3:1 difference and colour alone must not mark a link (WCAG 1.4.1). The
+ * underline goes from soft to solid on hover.
+ */
+export const textLink =
+  'text-info underline decoration-info/50 underline-offset-2 transition-ui hover:decoration-info'
+
 export function Spinner({ className, label = 'Loading' }: { className?: string; label?: string }) {
   return (
     <span role="status" aria-label={label} className="inline-flex">

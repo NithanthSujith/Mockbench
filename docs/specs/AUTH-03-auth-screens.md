@@ -27,7 +27,7 @@ Change-password UI (not in v1 screens), workspace switcher (WS-03), any server c
 - [x] Wrong credentials show the `invalid_credentials` message inline under the form (not a toast), keep the typed email, clear the password.
 - [x] When `setupRequired` is true `/login` shows "Create the first account" and links to `/register`; when `allowSignup` is false and `setupRequired` is false there is no register link and `/register` shows "Registration is closed on this server" and a link back; when `allowSignup` is true the hint "Set ALLOW_SIGNUP=false once your team has accounts" appears.
 - [x] A `403 signup_disabled` or `409 email_taken` from register maps to an inline field/form message, not a generic error.
-- [x] A user with zero workspaces sees the empty state "You aren't in any workspace yet" with a "Create workspace" action and the text "or ask an owner to add your email".
+- [x] A user with zero workspaces sees the empty state "You aren't in any workspace yet" with a "Create workspace" action and the text "Create one, or ask a workspace owner to add your email." (amended by ADR 0022; was "or ask an owner to add your email").
 - [x] A `401` on any API call mid-session redirects to `/login` with "Your session ended" once and clears the Query cache.
 - [x] Sign out calls `auth.logout`, clears the Query cache and lands on `/login`.
 - [x] Inputs have correct `autocomplete` (`username`, `current-password`, `new-password`), labels tied to inputs, and Enter submits.

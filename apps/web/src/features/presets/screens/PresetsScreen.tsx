@@ -326,19 +326,19 @@ export function PresetsScreen() {
             </>
           ) : null}
         </PanelHead>
-        <PanelBody>
-          <p className="m-0 mb-3 text-small text-ink-2">
+        <PanelBody className="flex flex-col gap-3">
+          <p className="m-0 text-small text-ink-2">
             Presets pick the value of fields by name instead of by chance. When several rules match
             one field, the most specific wins: path, then key, then key glob, then type. Ties go to
             the higher priority, then the later rule.
           </p>
           {!canEdit && workspace ? (
-            <p className="m-0 mb-3 text-small text-ink-2">
+            <p className="m-0 text-small text-ink-2">
               You have view access to this workspace, so presets are read-only.
             </p>
           ) : null}
           {importIssues ? (
-            <div role="alert" className="mb-3 rounded-lg border border-bad p-3">
+            <div role="alert" className="rounded-lg border border-bad p-3">
               <p className="m-0 text-small font-semibold text-bad">
                 Nothing was imported. Fix these and try again.
               </p>
@@ -352,99 +352,106 @@ export function PresetsScreen() {
           {notice ? (
             <p
               role={notice.kind === 'error' ? 'alert' : 'status'}
-              className={`m-0 mb-3 text-small ${notice.kind === 'error' ? 'text-bad' : 'text-good'}`}
+              className={`m-0 text-small ${notice.kind === 'error' ? 'text-bad' : 'text-good'}`}
             >
               {notice.text}
             </p>
           ) : null}
+        </PanelBody>
 
-          {loading ? (
+        {/* The table runs to the card edges like every other table; the states keep the padding. */}
+        {loading ? (
+          <PanelBody>
             <div className="grid place-items-center py-10">
               <Spinner label="Loading presets" />
             </div>
-          ) : project.isError || presets.isError ? (
+          </PanelBody>
+        ) : project.isError || presets.isError ? (
+          <PanelBody>
             <EmptyState
               title="Could not load presets"
               description="Reload the page to try again."
             />
-          ) : items.length === 0 ? (
+          </PanelBody>
+        ) : items.length === 0 ? (
+          <PanelBody>
             <EmptyState
               title="No presets yet"
               description="Start from a template or add your own rules."
             />
-          ) : (
-            <Table aria-label="Presets">
-              <THead>
-                <tr>
-                  <Th>Name</Th>
-                  <Th>Rules</Th>
-                  <Th>Priority</Th>
-                  <Th>Enabled</Th>
-                  <Th>
-                    <span className="sr-only">Actions</span>
-                  </Th>
-                </tr>
-              </THead>
-              <TBody>
-                {items.map((preset) => (
-                  <Tr key={preset.id}>
-                    <Td className="font-semibold">{preset.name}</Td>
-                    <Td className="mono">{preset.rules.length}</Td>
-                    <Td className="mono">{preset.priority}</Td>
-                    <Td>
-                      <EnableSwitch
-                        preset={preset}
-                        canEdit={canEdit}
-                        onFailure={(text) => setNotice({ kind: 'error', text })}
-                      />
-                    </Td>
-                    <Td>
-                      <div className="flex justify-end gap-2">
+          </PanelBody>
+        ) : (
+          <Table aria-label="Presets" className="border-t border-line">
+            <THead>
+              <tr>
+                <Th>Name</Th>
+                <Th>Rules</Th>
+                <Th>Priority</Th>
+                <Th>Enabled</Th>
+                <Th>
+                  <span className="sr-only">Actions</span>
+                </Th>
+              </tr>
+            </THead>
+            <TBody>
+              {items.map((preset) => (
+                <Tr key={preset.id}>
+                  <Td className="font-semibold">{preset.name}</Td>
+                  <Td className="mono">{preset.rules.length}</Td>
+                  <Td className="mono">{preset.priority}</Td>
+                  <Td>
+                    <EnableSwitch
+                      preset={preset}
+                      canEdit={canEdit}
+                      onFailure={(text) => setNotice({ kind: 'error', text })}
+                    />
+                  </Td>
+                  <Td>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`${canEdit ? 'Edit' : 'View'} ${preset.name}`}
+                        onClick={() => setEditing({ preset })}
+                      >
+                        {canEdit ? 'Edit' : 'View'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Export ${preset.name}`}
+                        onClick={() =>
+                          download(
+                            exportFileName(preset.name),
+                            exportText({
+                              name: preset.name,
+                              priority: preset.priority,
+                              rules: preset.rules,
+                            }),
+                          )
+                        }
+                      >
+                        <Download aria-hidden className="size-3.5" />
+                        Export
+                      </Button>
+                      {canEdit ? (
                         <Button
                           variant="ghost"
                           size="sm"
-                          aria-label={`${canEdit ? 'Edit' : 'View'} ${preset.name}`}
-                          onClick={() => setEditing({ preset })}
+                          className="border-bad text-bad"
+                          aria-label={`Delete ${preset.name}`}
+                          onClick={() => setDeleting(preset)}
                         >
-                          {canEdit ? 'Edit' : 'View'}
+                          Delete
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`Export ${preset.name}`}
-                          onClick={() =>
-                            download(
-                              exportFileName(preset.name),
-                              exportText({
-                                name: preset.name,
-                                priority: preset.priority,
-                                rules: preset.rules,
-                              }),
-                            )
-                          }
-                        >
-                          <Download aria-hidden className="size-3.5" />
-                          Export
-                        </Button>
-                        {canEdit ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="border-bad text-bad"
-                            aria-label={`Delete ${preset.name}`}
-                            onClick={() => setDeleting(preset)}
-                          >
-                            Delete
-                          </Button>
-                        ) : null}
-                      </div>
-                    </Td>
-                  </Tr>
-                ))}
-              </TBody>
-            </Table>
-          )}
-        </PanelBody>
+                      ) : null}
+                    </div>
+                  </Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
+        )}
       </Card>
 
       {projectId ? (

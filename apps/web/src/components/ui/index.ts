@@ -14,7 +14,7 @@ export {
 export { Card, PanelHead, PanelBody } from './card'
 export { Table, THead, TBody, Tr, Th, Td } from './table'
 export { MethodBadge, StatusCode, LivePill, statusClass, type StatusClass } from './badges'
-export { Eyebrow, Slab, Spinner, EmptyState, OptionCard } from './misc'
+export { Eyebrow, Slab, Spinner, EmptyState, OptionCard, textLink } from './misc'
 export { Segmented, CaseTabs, type CaseTabItem } from './tabs'
 export {
   DropdownMenu,

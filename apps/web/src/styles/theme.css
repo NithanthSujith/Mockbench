@@ -29,6 +29,8 @@
   /* Lines */
   --color-line: #242b35;
   --color-line-strong: #39424e;
+  /* Borders of text fields, selects and menu triggers: 3:1 against panel and panel-2 (WCAG 1.4.11), ADR 0022. */
+  --color-line-input: #5f6a78;
   --color-slab-line: #20262f;
 
   /* Primary action */
@@ -60,7 +62,7 @@
   --color-t-num: #e8b37a;
   --color-t-bool: #c9a2ff;
   --color-t-null: #7b8696;
-  --color-t-punc: #5f6b7c;
+  --color-t-punc: #75818f; /* raised from #5f6b7c to 4.5:1 on the code slab, ADR 0022 */
 
   /* Radii (px) */
   --radius-xs: 4px;

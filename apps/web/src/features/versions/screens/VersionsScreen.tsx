@@ -75,10 +75,20 @@ const columns = helper.columns([
   }),
   helper.accessor('createdAt', {
     header: 'Published',
-    cell: (c) => <time dateTime={c.getValue()}>{new Date(c.getValue()).toLocaleString()}</time>,
+    cell: (c) => (
+      <time className="mono" dateTime={c.getValue()}>
+        {new Date(c.getValue()).toLocaleString()}
+      </time>
+    ),
   }),
-  helper.accessor('routeCount', { header: 'Routes' }),
-  helper.accessor('caseCount', { header: 'Cases' }),
+  helper.accessor('routeCount', {
+    header: 'Routes',
+    cell: (c) => <span className="mono">{c.getValue()}</span>,
+  }),
+  helper.accessor('caseCount', {
+    header: 'Cases',
+    cell: (c) => <span className="mono">{c.getValue()}</span>,
+  }),
   helper.display({
     id: 'state',
     header: 'State',
@@ -132,6 +142,13 @@ function DeploymentsPanel({ projectId }: { projectId: string }) {
       <PanelBody>
         {query.isPending ? (
           <Spinner />
+        ) : query.isError ? (
+          <p role="alert" className="m-0 flex flex-wrap items-center gap-2 text-small text-bad">
+            Could not load the deployment history.
+            <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>
+              Try again
+            </Button>
+          </p>
         ) : items.length === 0 ? (
           <p className="m-0 text-small text-ink-3">No deployments yet.</p>
         ) : (
@@ -139,7 +156,7 @@ function DeploymentsPanel({ projectId }: { projectId: string }) {
             {items.map((d) => (
               <li key={d.id} className="flex flex-wrap items-baseline gap-2">
                 <span className="mono">{d.versionLabel}</span>
-                <time className="text-small text-ink-3" dateTime={d.deployedAt}>
+                <time className="mono text-small text-ink-3" dateTime={d.deployedAt}>
                   {new Date(d.deployedAt).toLocaleString()}
                 </time>
                 {d.deployedBy ? (
@@ -237,6 +254,16 @@ export function VersionsScreen() {
           <PanelBody>
             <Spinner />
           </PanelBody>
+        ) : versionsQuery.isError ? (
+          <EmptyState
+            title="Could not load versions"
+            description={versionsQuery.error?.message}
+            action={
+              <Button variant="ghost" onClick={() => void versionsQuery.refetch()}>
+                Try again
+              </Button>
+            }
+          />
         ) : versions.length === 0 ? (
           <EmptyState title="No versions" description={EMPTY_TEXT} />
         ) : (
