@@ -51,7 +51,7 @@ async function connectWithRetry(
   timeoutMs: number,
 ): Promise<pg.Client> {
   const deadline = Date.now() + timeoutMs
-  let lastError = 'unknown error'
+  let lastError: string
   for (;;) {
     const remaining = deadline - Date.now()
     const client = new pg.Client({

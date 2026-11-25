@@ -127,7 +127,7 @@ describe('JSON tab', () => {
     } as unknown as MockSchema
     const { user, onChange } = setup(withSource)
     await openJson(user)
-    setText(editor().state.doc.toString().replace('"id"', '"id"') + '\n')
+    setText(editor().state.doc.toString() + '\n')
     blur()
     // Equal schema: nothing to emit.
     expect(onChange).not.toHaveBeenCalled()

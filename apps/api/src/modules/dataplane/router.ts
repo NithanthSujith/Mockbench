@@ -138,21 +138,22 @@ function splitTarget(url: string): { slug: string; rest: string } {
 }
 
 function queryOf(req: Request): Record<string, string | string[]> {
-  const out: Record<string, string | string[]> = {}
+  // Object.fromEntries, not `out[k] = v`: a parameter named `__proto__` stays an ordinary key.
+  const out: [string, string | string[]][] = []
   for (const [k, v] of Object.entries(req.query)) {
-    if (typeof v === 'string') out[k] = v
-    else if (Array.isArray(v)) out[k] = v.filter((x): x is string => typeof x === 'string')
+    if (typeof v === 'string') out.push([k, v])
+    else if (Array.isArray(v)) out.push([k, v.filter((x): x is string => typeof x === 'string')])
   }
-  return out
+  return Object.fromEntries(out)
 }
 
 function redactedHeaders(req: Request): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out: [string, string][] = []
   for (const [k, v] of Object.entries(req.headers)) {
     if (v === undefined) continue
-    out[k] = REDACTED_HEADERS.has(k) ? '[redacted]' : Array.isArray(v) ? v.join(', ') : v
+    out.push([k, REDACTED_HEADERS.has(k) ? '[redacted]' : Array.isArray(v) ? v.join(', ') : v])
   }
-  return out
+  return Object.fromEntries(out)
 }
 
 function writeCase(

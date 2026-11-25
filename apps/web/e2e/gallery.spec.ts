@@ -61,7 +61,9 @@ test.describe('design system in a real browser', () => {
 
     const external = requested.filter((u) => !u.startsWith(origin) && !u.startsWith('data:'))
     expect(external).toEqual([])
-    expect(requested.some((u) => /fonts\.(googleapis|gstatic)\.com/.test(u))).toBe(false)
+    expect(
+      requested.some((u) => /^fonts\.(googleapis|gstatic)\.com$/.test(new URL(u).hostname)),
+    ).toBe(false)
     expect(requested.some((u) => /\.woff2?$/.test(new URL(u).pathname))).toBe(true)
     expect(failed).toEqual([])
   })
