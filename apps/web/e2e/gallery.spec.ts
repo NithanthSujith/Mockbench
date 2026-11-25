@@ -162,8 +162,8 @@ test.describe('design system in a real browser', () => {
     expect(lb!.width).toBeGreaterThanOrEqual(tb!.width - 1)
     expect(lb!.y).toBeGreaterThanOrEqual(tb!.y + tb!.height - 1)
 
-    // The selected option is marked; the highlighted option is panel-3 with a blue focus bar on its
-    // left edge (ADR 0022: panel-2 on panel was about 1.1:1); options are mono.
+    // The selected option is marked; the highlighted option is panel-3 (ADR 0022: panel-2 on panel was
+    // about 1.1:1), with no edge bar (the owner turned it down); options are mono.
     const selected = list.getByRole('option', { name: '200' })
     await expect(selected).toHaveAttribute('aria-selected', 'true')
     const other = list.getByRole('option', { name: '404' })
@@ -171,9 +171,7 @@ test.describe('design system in a real browser', () => {
     await expect
       .poll(() => other.evaluate((el) => getComputedStyle(el).backgroundColor))
       .toBe('rgb(34, 41, 53)') // --color-panel-3
-    expect(await other.evaluate((el) => getComputedStyle(el).boxShadow)).toContain(
-      'rgb(124, 160, 255)', // --color-focus
-    )
+    expect(await other.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none')
     expect(await other.evaluate((el) => getComputedStyle(el).fontFamily)).toContain('IBM Plex Mono')
 
     await page.screenshot({ path: 'gallery-screenshots/select-open.png' })

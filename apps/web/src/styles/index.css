@@ -46,6 +46,16 @@
   html {
     scroll-padding-top: env(safe-area-inset-top, 0px);
     -webkit-text-size-adjust: 100%;
+    /* Always reserve the scrollbar's space, so the layout does not shift sideways between a short
+       page and one that scrolls (ADR 0022). */
+    scrollbar-gutter: stable;
+  }
+  /* Radix dialogs and menus lock scrolling (react-remove-scroll-bar) and add a right margin the
+     width of the scrollbar to stop that same shift. The gutter above already keeps the space, so the
+     margin would double it and push the page left while a dialog is open. An !important rule in a
+     layer beats the library's unlayered one. */
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
   }
   body {
     margin: 0;

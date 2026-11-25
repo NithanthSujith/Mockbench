@@ -118,7 +118,7 @@ export function SelectItem({
   return (
     <S.Item
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.75 pl-2.25 pr-7 text-compact text-ink-2 outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3 data-highlighted:text-ink data-highlighted:shadow-[inset_2px_0_0_0_var(--color-focus)] data-[state=checked]:text-ink',
+        'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.75 pl-2.25 pr-7 text-compact text-ink-2 outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3 data-highlighted:text-ink data-[state=checked]:text-ink',
         mono && 'mono',
         className,
       )}

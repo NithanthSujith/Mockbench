@@ -57,7 +57,7 @@ export function DropdownMenuItem({
   return (
     <Menu.Item
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.25 py-1.75 text-left text-control outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3 data-highlighted:shadow-[inset_2px_0_0_0_var(--color-focus)]',
+        'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.25 py-1.75 text-left text-control outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3',
         className,
       )}
       {...props}
