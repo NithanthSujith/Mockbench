@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react'
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import { IconButton, cn } from '../../components/ui'
 import type { RowIssues } from './attr-utils'
 import { AttributePanel, IssueBadges, PinControl } from './AttrControls'
@@ -30,9 +31,18 @@ const KEY_MOVES: Record<string, KeyMove | undefined> = {
 }
 
 /**
- * One tree row (prototype `.brow`): twist, key, type, type-specific control, actions. The five cells are
- * in DOM order so Tab walks twist -> key -> type -> extra -> actions. Below 860px the extra cell drops to
- * a second line and the actions are always visible.
+ * One tree row (prototype `.brow`): twist, key, type, type-specific control, actions, in DOM order so Tab
+ * walks twist -> key -> type -> extra -> actions.
+ *
+ * Every row has the same grid tracks, whatever its depth or kind, so the type, extra and action columns
+ * line up down the whole tree. The prototype indented the whole row and ended it with an `auto` actions
+ * column, so the fractional key and extra tracks shrank with depth and with the number of action
+ * buttons, and the type select drifted. Here the indent lives inside the first cell (only the key field
+ * gets narrower) and the actions column is fixed at the width of the most buttons a row can show.
+ *
+ * Below 860px the row is two lines: twist, key and type; then the extra control and the actions, which
+ * are always visible. The extra control is indented by 42px past the depth indent (twist cell 16 + 2 + 16
+ * plus the 8px gap) so it lines up under the key.
  */
 export function BuilderRow({
   row,
@@ -113,79 +123,86 @@ export function BuilderRow({
         onMoveKey(row.id, move)
       }}
       className={cn(
-        'group relative grid min-w-0 grid-cols-[auto_minmax(96px,1.3fr)_118px_minmax(0,1.4fr)_auto] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-narrow:grid-cols-[auto_minmax(80px,1fr)_104px] max-narrow:gap-y-1',
+        'group relative grid min-w-0 grid-cols-[minmax(min-content,1.6fr)_118px_minmax(0,1.1fr)_102px] items-center gap-2 py-0.75 pr-3.75 hover:bg-panel-2 max-narrow:grid-cols-[minmax(min-content,1fr)_104px] max-narrow:gap-y-1',
         drag.isDragging && 'opacity-40',
       )}
-      style={{ paddingLeft: INDENT_BASE_PX + row.depth * INDENT_STEP_PX }}
+      style={
+        {
+          paddingLeft: INDENT_BASE_PX,
+          '--indent': `${row.depth * INDENT_STEP_PX}px`,
+        } as CSSProperties
+      }
     >
-      <div className="flex items-center gap-0.5">
-        {row.kind === 'field' ? (
-          <button
-            type="button"
-            ref={drag.setActivatorNodeRef}
-            aria-label={`Drag ${label}`}
-            title="Drag to reorder (Alt+Arrow keys also move the row)"
-            disabled={!canDrag}
-            tabIndex={-1}
-            {...drag.listeners}
-            className="grid size-4 shrink-0 cursor-grab touch-none place-items-center rounded-xs text-ink-3 hover:text-ink disabled:invisible"
-          >
-            <GripVertical aria-hidden className="size-3" />
-          </button>
+      <div data-indent className="flex min-w-0 items-center gap-2 pl-[var(--indent)]">
+        <div className="flex shrink-0 items-center gap-0.5">
+          {row.kind === 'field' ? (
+            <button
+              type="button"
+              ref={drag.setActivatorNodeRef}
+              aria-label={`Drag ${label}`}
+              title="Drag to reorder (Alt+Arrow keys also move the row)"
+              disabled={!canDrag}
+              tabIndex={-1}
+              {...drag.listeners}
+              className="grid size-4 shrink-0 cursor-grab touch-none place-items-center rounded-xs text-ink-3 hover:text-ink disabled:invisible"
+            >
+              <GripVertical aria-hidden className="size-3" />
+            </button>
+          ) : (
+            <span aria-hidden className="size-4 shrink-0" />
+          )}
+          {row.isContainer ? (
+            <button
+              type="button"
+              aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${label}`}
+              aria-expanded={row.expanded}
+              onClick={() => onToggle(row.id)}
+              className="grid size-4 shrink-0 place-items-center rounded-xs text-ink-3 transition-ui hover:bg-panel-3 hover:text-ink"
+            >
+              {row.expanded ? (
+                <ChevronDown aria-hidden className="size-3" />
+              ) : (
+                <ChevronRight aria-hidden className="size-3" />
+              )}
+            </button>
+          ) : (
+            <span aria-hidden className="size-4 shrink-0" />
+          )}
+        </div>
+
+        {row.kind === 'item' ? (
+          <span className="mono inline-block shrink-0 rounded-sm border border-dashed border-line-strong px-2 py-1.25 text-small text-ink-3">
+            [ item ]
+          </span>
         ) : (
-          <span aria-hidden className="size-4 shrink-0" />
-        )}
-        {row.isContainer ? (
-          <button
-            type="button"
-            aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${label}`}
-            aria-expanded={row.expanded}
-            onClick={() => onToggle(row.id)}
-            className="grid size-4 shrink-0 place-items-center rounded-xs text-ink-3 transition-ui hover:bg-panel-3 hover:text-ink"
-          >
-            {row.expanded ? (
-              <ChevronDown aria-hidden className="size-3" />
-            ) : (
-              <ChevronRight aria-hidden className="size-3" />
-            )}
-          </button>
-        ) : (
-          <span aria-hidden className="size-4 shrink-0" />
+          <div className="min-w-16 flex-1">
+            <DraftInput
+              aria-label="Field name"
+              data-node-input={row.id}
+              aria-invalid={row.duplicateKey || undefined}
+              value={row.key ?? ''}
+              disabled={readOnly}
+              className={cn(
+                'border-transparent bg-transparent py-1.25 text-control hover:border-line focus:border-line-strong focus:bg-panel-2',
+                row.duplicateKey && 'border-warn',
+              )}
+              onDraft={(text) => {
+                onKey(row.id, text)
+                return text
+              }}
+            />
+            {row.duplicateKey ? (
+              <span
+                role="status"
+                className="mt-0.5 inline-flex items-center gap-1 text-tiny text-warn"
+              >
+                <TriangleAlert aria-hidden className="size-3" />
+                duplicate key
+              </span>
+            ) : null}
+          </div>
         )}
       </div>
-
-      {row.kind === 'item' ? (
-        <span className="mono inline-block rounded-sm border border-dashed border-line-strong px-2 py-1.25 text-small text-ink-3">
-          [ item ]
-        </span>
-      ) : (
-        <div className="min-w-0">
-          <DraftInput
-            aria-label="Field name"
-            data-node-input={row.id}
-            aria-invalid={row.duplicateKey || undefined}
-            value={row.key ?? ''}
-            disabled={readOnly}
-            className={cn(
-              'border-transparent bg-transparent py-1.25 text-control hover:border-line focus:border-line-strong focus:bg-panel-2',
-              row.duplicateKey && 'border-warn',
-            )}
-            onDraft={(text) => {
-              onKey(row.id, text)
-              return text
-            }}
-          />
-          {row.duplicateKey ? (
-            <span
-              role="status"
-              className="mt-0.5 inline-flex items-center gap-1 text-tiny text-warn"
-            >
-              <TriangleAlert aria-hidden className="size-3" />
-              duplicate key
-            </span>
-          ) : null}
-        </div>
-      )}
 
       <div className="min-w-0">
         <TypeSelect
@@ -207,7 +224,7 @@ export function BuilderRow({
         <IssueBadges issues={issues} refName={node.attrs.name} />
       </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 max-narrow:col-start-2 max-narrow:row-start-2">
+      <div className="flex min-w-0 items-center gap-1.5 max-narrow:col-start-1 max-narrow:row-start-2 max-narrow:pl-[calc(var(--indent)+42px)]">
         <ExtraControl
           node={node}
           disabled={readOnly}
@@ -221,8 +238,8 @@ export function BuilderRow({
 
       <div
         className={cn(
-          'flex items-center gap-0.5 opacity-30 transition-ui focus-within:opacity-100 group-hover:opacity-100',
-          'max-narrow:col-start-3 max-narrow:row-start-2 max-narrow:justify-end max-narrow:opacity-100',
+          'flex items-center justify-end gap-0.5 opacity-30 transition-ui focus-within:opacity-100 group-hover:opacity-100',
+          'max-narrow:col-start-2 max-narrow:row-start-2 max-narrow:opacity-100',
         )}
       >
         <IconButton

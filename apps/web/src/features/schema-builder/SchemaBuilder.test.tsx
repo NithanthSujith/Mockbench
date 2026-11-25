@@ -116,7 +116,10 @@ describe('SchemaBuilder rows', () => {
       ]
     `)
     const city = rowOf('city')
-    expect(city).toHaveStyle({ paddingLeft: '33px' })
+    // Depth 1: the indent is inside the first cell, so every row keeps the same columns.
+    expect(city).toHaveStyle({ paddingLeft: '15px' })
+    expect(city.style.getPropertyValue('--indent')).toBe('18px')
+    expect(city.querySelector('[data-indent]')).not.toBeNull()
     const key = within(city).getByRole('textbox', { name: 'Field name' })
     expect(key).toHaveValue('city')
     expect(key.className).toContain('mono')
