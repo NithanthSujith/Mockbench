@@ -80,7 +80,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
         <S.Trigger
           ref={ref}
           className={cn(
-            'flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-sm border border-line-strong bg-panel-2 py-2.25 pl-2.25 pr-2 text-left text-control text-ink transition-ui hover:border-ink-3 data-placeholder:text-ink-3 data-[state=open]:border-ink-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad',
+            'flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-sm border border-line-input bg-panel-2 py-2.25 pl-2.25 pr-2 text-left text-control text-ink transition-ui hover:border-ink-3 data-placeholder:text-ink-3 data-[state=open]:border-ink-3 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad',
             mono && 'mono',
             className,
           )}
@@ -118,7 +118,7 @@ export function SelectItem({
   return (
     <S.Item
       className={cn(
-        'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.75 pl-2.25 pr-7 text-compact text-ink-2 outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-2 data-highlighted:text-ink data-[state=checked]:text-ink',
+        'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.75 pl-2.25 pr-7 text-compact text-ink-2 outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3 data-highlighted:text-ink data-highlighted:shadow-[inset_2px_0_0_0_var(--color-focus)] data-[state=checked]:text-ink',
         mono && 'mono',
         className,
       )}

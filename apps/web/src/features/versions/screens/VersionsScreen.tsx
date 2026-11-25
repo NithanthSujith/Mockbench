@@ -75,10 +75,20 @@ const columns = helper.columns([
   }),
   helper.accessor('createdAt', {
     header: 'Published',
-    cell: (c) => <time dateTime={c.getValue()}>{new Date(c.getValue()).toLocaleString()}</time>,
+    cell: (c) => (
+      <time className="mono" dateTime={c.getValue()}>
+        {new Date(c.getValue()).toLocaleString()}
+      </time>
+    ),
   }),
-  helper.accessor('routeCount', { header: 'Routes' }),
-  helper.accessor('caseCount', { header: 'Cases' }),
+  helper.accessor('routeCount', {
+    header: 'Routes',
+    cell: (c) => <span className="mono">{c.getValue()}</span>,
+  }),
+  helper.accessor('caseCount', {
+    header: 'Cases',
+    cell: (c) => <span className="mono">{c.getValue()}</span>,
+  }),
   helper.display({
     id: 'state',
     header: 'State',
@@ -146,7 +156,7 @@ function DeploymentsPanel({ projectId }: { projectId: string }) {
             {items.map((d) => (
               <li key={d.id} className="flex flex-wrap items-baseline gap-2">
                 <span className="mono">{d.versionLabel}</span>
-                <time className="text-small text-ink-3" dateTime={d.deployedAt}>
+                <time className="mono text-small text-ink-3" dateTime={d.deployedAt}>
                   {new Date(d.deployedAt).toLocaleString()}
                 </time>
                 {d.deployedBy ? (

@@ -40,9 +40,12 @@ const KEY_MOVES: Record<string, KeyMove | undefined> = {
  * buttons, and the type select drifted. Here the indent lives inside the first cell (only the key field
  * gets narrower) and the actions column is fixed at the width of the most buttons a row can show.
  *
+ * The drag handle and the expand arrow are 24px targets with no gap between them (WCAG 2.5.8, ADR 0022),
+ * drawn at the prototype's 16px; the twist cell is pulled 4px left so the glyphs keep their position.
+ *
  * Below 860px the row is two lines: twist, key and type; then the extra control and the actions, which
- * are always visible. The extra control is indented by 42px past the depth indent (twist cell 16 + 2 + 16
- * plus the 8px gap) so it lines up under the key.
+ * are always visible. The extra control is indented 46px past the depth indent (twist cell 48 - 4 + the
+ * 2px gap) so it lines up under the key.
  */
 export function BuilderRow({
   row,
@@ -133,8 +136,8 @@ export function BuilderRow({
         } as CSSProperties
       }
     >
-      <div data-indent className="flex min-w-0 items-center gap-2 pl-[var(--indent)]">
-        <div className="flex shrink-0 items-center gap-0.5">
+      <div data-indent className="flex min-w-0 items-center gap-0.5 pl-[var(--indent)]">
+        <div className="-ml-1 flex shrink-0 items-center">
           {row.kind === 'field' ? (
             <button
               type="button"
@@ -144,12 +147,12 @@ export function BuilderRow({
               disabled={!canDrag}
               tabIndex={-1}
               {...drag.listeners}
-              className="grid size-4 shrink-0 cursor-grab touch-none place-items-center rounded-xs text-ink-3 hover:text-ink disabled:invisible"
+              className="grid size-6 shrink-0 cursor-grab touch-none place-items-center text-ink-3 hover:text-ink disabled:invisible"
             >
               <GripVertical aria-hidden className="size-3" />
             </button>
           ) : (
-            <span aria-hidden className="size-4 shrink-0" />
+            <span aria-hidden className="size-6 shrink-0" />
           )}
           {row.isContainer ? (
             <button
@@ -157,16 +160,18 @@ export function BuilderRow({
               aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${label}`}
               aria-expanded={row.expanded}
               onClick={() => onToggle(row.id)}
-              className="grid size-4 shrink-0 place-items-center rounded-xs text-ink-3 transition-ui hover:bg-panel-3 hover:text-ink"
+              className="group/twist grid size-6 shrink-0 place-items-center text-ink-3 hover:text-ink"
             >
-              {row.expanded ? (
-                <ChevronDown aria-hidden className="size-3" />
-              ) : (
-                <ChevronRight aria-hidden className="size-3" />
-              )}
+              <span className="grid size-4 place-items-center rounded-xs transition-ui group-hover/twist:bg-panel-3">
+                {row.expanded ? (
+                  <ChevronDown aria-hidden className="size-3" />
+                ) : (
+                  <ChevronRight aria-hidden className="size-3" />
+                )}
+              </span>
             </button>
           ) : (
-            <span aria-hidden className="size-4 shrink-0" />
+            <span aria-hidden className="size-6 shrink-0" />
           )}
         </div>
 
@@ -183,7 +188,7 @@ export function BuilderRow({
               value={row.key ?? ''}
               disabled={readOnly}
               className={cn(
-                'border-transparent bg-transparent py-1.25 text-control hover:border-line focus:border-line-strong focus:bg-panel-2',
+                'border-transparent bg-transparent py-1.25 text-control hover:border-line-input focus:border-line-input focus:bg-panel-2',
                 row.duplicateKey && 'border-warn',
               )}
               onDraft={(text) => {
@@ -224,7 +229,7 @@ export function BuilderRow({
         <IssueBadges issues={issues} refName={node.attrs.name} />
       </div>
 
-      <div className="flex min-w-0 items-center gap-1.5 max-narrow:col-start-1 max-narrow:row-start-2 max-narrow:pl-[calc(var(--indent)+42px)]">
+      <div className="flex min-w-0 items-center gap-1.5 max-narrow:col-start-1 max-narrow:row-start-2 max-narrow:pl-[calc(var(--indent)+46px)]">
         <ExtraControl
           node={node}
           disabled={readOnly}

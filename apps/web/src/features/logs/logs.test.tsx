@@ -186,10 +186,9 @@ describe('request log screen', () => {
 
   it('shows the empty state; without an active version it links to Versions', async () => {
     mount()
+    expect(await screen.findByText('No requests yet')).toBeInTheDocument()
     expect(
-      await screen.findByText(
-        /No requests yet\. The log starts filling once this project is deployed\./,
-      ),
+      screen.getByText("Calls to this project's mock URL show up here as they arrive."),
     ).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Go to Versions/ })).toBeNull()
   })
@@ -199,6 +198,9 @@ describe('request log screen', () => {
     mount()
     const link = await screen.findByRole('link', { name: /Go to Versions/ })
     expect(link).toHaveAttribute('href', '/p/billing-api/versions')
+    expect(
+      screen.getByText(/The log starts filling once this project is deployed\./),
+    ).toBeInTheDocument()
   })
 
   it('changing a filter re-queries with the parameters and resets the cursor; Load more appends', async () => {

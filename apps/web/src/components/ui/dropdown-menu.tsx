@@ -16,7 +16,7 @@ export const DropdownButton = forwardRef<
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex items-center gap-1.75 rounded-md border border-line-strong bg-panel-2 px-2.5 py-1.5 text-control transition-ui hover:border-ink-3 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex items-center gap-1.75 rounded-md border border-line-input bg-panel-2 px-2.5 py-1.5 text-control transition-ui hover:border-ink-3 disabled:pointer-events-none disabled:opacity-50',
         className,
       )}
       {...props}
@@ -57,7 +57,7 @@ export function DropdownMenuItem({
   return (
     <Menu.Item
       className={cn(
-        'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.25 py-1.75 text-left text-control outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-2',
+        'flex w-full cursor-pointer items-center gap-2 rounded-sm px-2.25 py-1.75 text-left text-control outline-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-panel-3 data-highlighted:shadow-[inset_2px_0_0_0_var(--color-focus)]',
         className,
       )}
       {...props}

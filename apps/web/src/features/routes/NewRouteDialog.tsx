@@ -12,6 +12,7 @@ import {
   Input,
   Select,
   SelectItem,
+  textLink,
 } from '../../components/ui'
 import { api } from '../../lib/api/client'
 import { isApiError } from '../../lib/api/errors'
@@ -100,7 +101,7 @@ function NewRouteForm({
                   <Link
                     to="/p/$projectSlug/routes/$routeId"
                     params={{ projectSlug, routeId: shownConflict.routeId }}
-                    className="text-info underline"
+                    className={textLink}
                     onClick={onDone}
                   >
                     Open it

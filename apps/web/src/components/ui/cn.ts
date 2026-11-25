@@ -16,6 +16,7 @@ const twMerge = extendTailwindMerge({
         'ink-3',
         'line',
         'line-strong',
+        'line-input',
         'slab-line',
         'btn',
         'btn-ink',

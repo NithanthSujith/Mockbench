@@ -251,7 +251,10 @@ function EditorForm({
                         ) : null}
                       </div>
                     </Td>
-                    <Td className="mono min-w-40 text-small text-ink-2">{row?.text ?? '—'}</Td>
+                    {/* Wraps, so a long sample no longer pushes the Delete column out of the dialog (ADR 0022). */}
+                    <Td className="mono min-w-32 whitespace-normal break-words text-small text-ink-2">
+                      {row?.text ?? '—'}
+                    </Td>
                     <Td>
                       {readOnly ? null : (
                         <IconButton

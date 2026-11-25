@@ -3,7 +3,7 @@ import { cn } from './cn'
 import { useFieldControlProps } from './field'
 
 const controlBase =
-  'w-full rounded-sm border border-line-strong bg-panel-2 text-ink transition-ui disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad'
+  'w-full rounded-sm border border-line-input bg-panel-2 text-ink transition-ui disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-bad'
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   /** Mono font, for keys, paths and values. */

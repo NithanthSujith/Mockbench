@@ -243,6 +243,17 @@ describe('register', () => {
     expect(await screen.findByText('Use 8 to 128 characters.')).toBeInTheDocument()
     expect(server.calls).not.toContain('POST /api/v1/auth/register')
   })
+
+  it('an empty form flags name, email and password at once, without calling the server', async () => {
+    server.instance.allowSignup = true
+    mount('/register')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Create account' }))
+    expect(await screen.findByText('Enter your name.')).toBeInTheDocument()
+    expect(screen.getByText('Enter an email address, like dev@example.com.')).toBeInTheDocument()
+    expect(screen.getByText('Use 8 to 128 characters.')).toBeInTheDocument()
+    expect(server.calls).not.toContain('POST /api/v1/auth/register')
+  })
 })
 
 describe('signed-in behaviour', () => {
@@ -285,7 +296,9 @@ describe('landing path and empty state', () => {
     await signIn()
     await waitFor(() => expect(router.state.location.pathname).toBe('/welcome'))
     expect(screen.getByText("You aren't in any workspace yet")).toBeInTheDocument()
-    expect(screen.getByText('or ask an owner to add your email')).toBeInTheDocument()
+    expect(
+      screen.getByText('Create one, or ask a workspace owner to add your email.'),
+    ).toBeInTheDocument()
     const user = userEvent.setup()
     await user.click(
       within(document.querySelector('[data-screen="auth/WelcomeScreen"]') as HTMLElement).getByRole(

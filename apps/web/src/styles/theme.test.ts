@@ -43,6 +43,7 @@ describe('theme tokens (extracted from the prototype)', () => {
       'ink-3': '#7c8794',
       line: '#242b35',
       'line-strong': '#39424e',
+      'line-input': '#5f6a78',
       'slab-line': '#20262f',
       btn: '#e8ecf2',
       'btn-ink': '#14171c',
@@ -64,7 +65,7 @@ describe('theme tokens (extracted from the prototype)', () => {
       't-num': '#e8b37a',
       't-bool': '#c9a2ff',
       't-null': '#7b8696',
-      't-punc': '#5f6b7c',
+      't-punc': '#75818f',
     }
     expect(t).toEqual(expected)
   })
@@ -87,6 +88,13 @@ describe('theme tokens (extracted from the prototype)', () => {
       expect(contrast(t[name]!, t.panel!)).toBeGreaterThanOrEqual(4.5)
     })
   }
+  it('input borders reach 3:1 against the panel and the field fill (raised from the prototype, ADR 0022)', () => {
+    expect(contrast(t['line-input']!, t.panel!)).toBeGreaterThanOrEqual(3)
+    expect(contrast(t['line-input']!, t['panel-2']!)).toBeGreaterThanOrEqual(3)
+  })
+  it('JSON punctuation is at least 4.5:1 on the code slab (raised from the prototype, ADR 0022)', () => {
+    expect(contrast(t['t-punc']!, t.slab!)).toBeGreaterThanOrEqual(4.5)
+  })
   it('the primary button text is readable on its background', () => {
     expect(contrast(t['btn-ink']!, t.btn!)).toBeGreaterThanOrEqual(7)
   })
